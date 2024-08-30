@@ -6,8 +6,8 @@ from ..utils.prepare_data import DataPrep, load_scigen_dataset
 def main():
     file_names = ["numericnlg", "scigen"]
     scigen_rootdir = "../../data/SciGen/test_set/"
-    save_directory_numericnlg = "../../data/numericNLG/pdfs/"
-    save_directory_scigen = "../../data/SciGen/pdfs/"
+    save_directory_numericnlg = "../../data/test/numericNLG/"
+    save_directory_scigen = "../../data/test/SciGen/"
 
     for file_name in file_names:
         if "numericnlg" in file_name:

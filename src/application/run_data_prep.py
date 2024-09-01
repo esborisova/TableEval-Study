@@ -1,5 +1,6 @@
 import datasets
 from datasets import load_dataset
+import os
 from ..utils.prepare_data import DataPrep, load_scigen_dataset
 
 

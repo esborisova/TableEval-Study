@@ -18,9 +18,10 @@ def main():
         scigen_file_names = os.listdir(scigen_rootdir)
         for name in scigen_file_names:
             file_path = os.path.join(scigen_rootdir, name)
-            data_tuple = load_scigen_dataset(file_path)
+            data_tuple = load_scigen_dataset(file_path, return_tuple=True)
             save_directory_scigen = f"../../data/SciGen/{name}/pdfs/"
             data_pre_instance = DataPrep(data_tuple, save_directory_scigen)
+            data_pre_instance.process_scigen()
 
 
 if __name__ == "__main__":

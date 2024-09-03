@@ -108,6 +108,7 @@ class DataPrep:
         paper_ids = [self.data[1][key]["paper_id"] for key in self.data[1].keys()]
         unique_paper_ids = list(set(paper_ids))
         downloaded_paper_ids = set()
+        id_to_substitute = {}
 
         paper_found = False
 
@@ -125,21 +126,31 @@ class DataPrep:
                             self.data[1][key]["paper_id"] = arxiv_id
                             downloaded_paper_ids.add(id)
                             downloaded_paper_ids.add(arxiv_id)
+                            id_to_substitute[id] = arxiv_id
                         else:
                             paper_found, acl_id = self.download_pdf_by_title_acl(title)
                             if paper_found:
                                 self.data[1][key]["paper_id"] = acl_id
                                 downloaded_paper_ids.add(id)
                                 downloaded_paper_ids.add(acl_id)
+                                id_to_substitute[id] = acl_id
                             else:
                                 self.log_download_failure(id)
+
+        for key in self.data[1].keys():
+            current_id = self.data[1][key]["paper_id"]
+            if current_id in id_to_substitute:
+                self.data[1][key]["paper_id"] = id_to_substitute[current_id]
 
         updated_json_filename = "updated_" + self.data[0].split("/")[-1]
         self.save_updated_data(updated_json_filename, self.data[1])
 
 
-def load_scigen_dataset(file_path: str) -> Tuple[str, dict]:
+def load_scigen_dataset(file_path: str, return_tuple = False) -> Tuple[str, dict]:
     """Load datasets from the directory and return as a list of (filename, data) tuples."""
     with open(file_path) as f:
         data = json.load(f)
-    return (file_path, data)
+    if not return_tuple:
+        return data
+    else:
+        return (file_path, data)

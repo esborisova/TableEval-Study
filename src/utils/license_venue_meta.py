@@ -34,13 +34,14 @@ def get_license_venue_info(url: str) -> Tuple[Optional[str], Optional[str]]:
         return license, venue
     soup = BeautifulSoup(response, "html.parser")
     license_divs = soup.find_all("div", class_="abs-license")
+    
+    venue = "arxiv"
     if license_divs:
         licence_url = license_divs[0].find("a")["href"]
         parsed_license_url = parse_license_url(licence_url)
-        venue = "arxiv"
         return parsed_license_url, venue
     else:
-        return None, None
+        return None, venue
 
 
 def add_license_venue_scigen(data: dict) -> dict:

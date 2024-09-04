@@ -6,7 +6,7 @@ from ..utils.license_venue_meta import (
     add_license_venue_scigen,
 )
 
-
+    
 def main():
     file_names = ["numericnlg", "scigen"]
     numeric_nlg_path = "../../data/numericNLG/data_with_imgs_meta"
@@ -15,12 +15,8 @@ def main():
         "../../data/SciGen/test-Other/test_Other_with_imgs_meta.json",
     ]
 
-    scigen_cl_save_dir = (
-        "../../data/SciGen/test-CL/test_CL_with_imgs_license_venue.json"
-    )
-    scigen_other_save_dir = (
-        "../../data/SciGen/test-Other/test_Other_with_imgs_license_venue.json"
-    )
+    scigen_cl_save_dir = "../../data/SciGen/test-CL/test_CL_with_imgs_license_venue.json"
+    scigen_other_save_dir = "../../data/SciGen/test-Other/test_Other_with_imgs_license_venue.json",
 
     for file_name in file_names:
         if "numericnlg" in file_name:

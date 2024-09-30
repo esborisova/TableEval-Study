@@ -29,8 +29,15 @@ class ProcessTableXML:
             return xml_data
         except Exception as e:
             self.logger.error(f"Failed to download {pmcid}: {e}")
+            return None
 
     def save_xml_to_file(self, xml_content, filename: str):
+        if xml_content is None:
+            self.logger.warning(
+                f"Skipping saving XML to {filename} because content is None."
+            )
+            return
+
         if isinstance(xml_content, bytes):
             xml_content = xml_content.decode("utf-8")
         with open(filename, "w", encoding="utf-8") as file:
@@ -39,18 +46,42 @@ class ProcessTableXML:
     def collect_xml(self):
         for pmcid in self.pmc_ids:
             xml_content = self.get_full_text_xml(pmcid)
+            if xml_content is None:
+                self.logger.warning(f"Skipping {pmcid} due to download error.")
+                continue
             file_path = os.path.join(self.save_dir, f"{pmcid}.xml")
             self.save_xml_to_file(xml_content, file_path)
 
     def read_xml_file(self, file_path: str):
-        with open(file_path, "r", encoding="utf-8") as file:
-            xml_content = file.read()
-        return xml_content
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                xml_content = file.read()
+                if not xml_content:
+                    self.logger.warning(f"File {file_path} is empty.")
+                    return None
+                return xml_content
+        except Exception as e:
+            self.logger.error(f"Error reading file {file_path}: {e}")
+            return None
 
     def extract_tables_from_xml(self, xml_content) -> list:
-        root = ET.fromstring(xml_content)
-        tables = root.findall(".//table-wrap")
-        return tables
+        if xml_content is None:
+            self.logger.warning("No XML content to extract tables from.")
+            return []
+
+        if "Error retrieving full-text XML" in xml_content:
+            self.logger.warning(
+                "Error message found in XML content, skipping table extraction."
+            )
+            return []
+
+        try:
+            root = ET.fromstring(xml_content)
+            tables = root.findall(".//table-wrap")
+            return tables
+        except ET.ParseError as e:
+            self.logger.error(f"Error parsing XML content: {e}")
+            return []
 
     def extract_table_title(self, table) -> Optional[str]:
         title = table.find(".//label")
@@ -156,7 +187,8 @@ class ProcessTableXML:
         for pmcid in self.pmc_ids:
             file_path = os.path.join(self.save_dir, f"{pmcid}.xml")
             df_tables = self.get_tables_from_xml(file_path)
-            all_tables.append(df_tables)
+            if not df_tables.empty:
+                all_tables.append(df_tables)
 
         self.tables_df = pd.concat(all_tables, ignore_index=True)
         return self.tables_df

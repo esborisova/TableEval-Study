@@ -3,8 +3,8 @@ from Bio import Entrez
 from ..utils.process_xml_pmc import ProcessTableXML 
 
 def main():
-    Entrez.api_key = "bc1aae8284e4ae5782ac6bb406808e51a508"
-    Entrez.email = "sk.borisova@gmail.com"
+    Entrez.api_key = ""
+    Entrez.email = ""
     save_dir = "../../data/pubmed/xml/"
 
     ds = load_dataset("ByteDance/ComTQA")
@@ -15,7 +15,6 @@ def main():
     processor.collect_xml()
     df_tables = processor.process_xml_files()
     df_tables.to_csv("../../data/pubmed/pubmed_tables.csv", index=False)
-
-
+    
 if __name__ == "__main__":
     main()

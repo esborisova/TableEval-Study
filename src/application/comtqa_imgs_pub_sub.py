@@ -1,13 +1,6 @@
-"""Collecting images from pubtables1m used on ComTQA dataset"""
+"""Collecting images from pubtables1m used in ComTQA dataset"""
 from datasets import load_dataset
-import tarfile
-import os
-
-
-def copy_files(tar_dir, output_dir, image_files):
-    with tarfile.open(tar_dir, "r:gz") as tar:
-        os.makedirs(output_dir, exist_ok=True)
-        tar.extractall(path=output_dir, members=image_files)
+from ..utils.other import copy_files
 
 
 def main():

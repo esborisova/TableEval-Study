@@ -58,10 +58,7 @@ def main():
         }
     )
 
-    bleu_scores_df["average"] = bleu_scores_df[
-        ["text_bleu_scores", "image_bleu_scores", "image_text_bleu_scores"]
-    ].mean(axis=1)
-    bleu_average = compute_average_score(bleu_scores_df)
+    bleu_average = bleu_scores_df[["text_bleu_scores", "image_bleu_scores", "image_text_bleu_scores"]].mean()
     print("Average blue scores:", bleu_average)
     bleu_scores_df.to_csv("../../data/formats_generation/latex_bleu_scores.csv")
 
@@ -86,7 +83,7 @@ def main():
     rouge_scores_df = pd.concat(
         [df_image_based, df_text_based, df_image_text_based], axis=1
     )
-    rouge_scores_df["average"] = rouge_scores_df[
+    rouge_average = rouge_scores_df[
         [
             "img_based_rouge1",
             "img_based_rouge2",
@@ -98,8 +95,7 @@ def main():
             "img_text_based_rouge2",
             "img_text_based_rougeL",
         ]
-    ].mean(axis=1)
-    rouge_average = compute_average_score(rouge_scores_df)
+    ].mean()
     print("Average rouge scores:", rouge_average)
     rouge_scores_df.to_csv("../../data/formats_generation/latex_rouge_scores.csv")
 
@@ -117,10 +113,9 @@ def main():
         }
     )
 
-    meteor_scores_df["average"] = meteor_scores_df[
+    meteor_average = meteor_scores_df[
         ["text_meteor_scores", "image_meteor_scores", "image_text_meteor_scores"]
-    ].mean(axis=1)
-    meteor_average = compute_average_score(meteor_scores_df)
+    ].mean()
     print("Average meteor scores:", meteor_average)
     meteor_scores_df.to_csv("../../data/formats_generation/latex_meteor_scores.csv")
 

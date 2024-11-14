@@ -87,7 +87,7 @@ def main():
     hf_dataset = Dataset.from_pandas(merged_df.reset_index(drop=True))
     hf_dataset_dict = DatasetDict({"train": hf_dataset})
     date = datetime.now().strftime("%Y-%m-%d")
-    hf_dataset_dict.save_to_disk(f"../../data/comtqa_updated_{date}")
+    hf_dataset_dict.save_to_disk(f"../../../data/comtqa_updated_{date}")
 
 
 if __name__ == "__main__":

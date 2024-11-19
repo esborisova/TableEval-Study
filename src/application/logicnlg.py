@@ -34,3 +34,19 @@ for i, entry in enumerate(data["table_id"]):
 
 dataset = Dataset.from_dict(data)
 
+def split_table_column(example):
+    try:
+        table_data = eval(example['table'])  # Safely evaluate the string representation of the list
+        if isinstance(table_data, list) and len(table_data) > 0 and isinstance(table_data[0], list):
+            example['table_column_names'] = table_data[0]
+            example['table_content_values'] = table_data[1:]
+        else:
+            example['table_column_names'] = None
+            example['table_content_values'] = None
+    except (SyntaxError, TypeError, IndexError):
+        example['table_column_names'] = None
+        example['table_content_values'] = None
+    return example
+
+dataset = dataset.map(split_table_column)
+

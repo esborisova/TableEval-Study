@@ -121,33 +121,6 @@ class ProcessTableXML:
             else None
         )
 
-    def extract_cell_content(self, cell) -> str:
-        return "".join(cell.itertext()).strip()
-
-    def extract_table_content(self, table) -> Tuple[str, str]:
-        """Extracts header and content from the table."""
-        column_headers = []
-        table_content_values = []
-
-        rows = table.findall(".//tr")
-        if rows:
-            header_row = rows[0]
-
-            for header_cell in header_row.findall(".//th") + header_row.findall(
-                ".//td"
-            ):
-                header_text = self.extract_cell_content(header_cell)
-                column_headers.append(header_text if header_text else "[EMPTY]")
-
-            for row in rows[1:]:
-                row_data = []
-                for cell in row.findall(".//td") + row.findall(".//th"):
-                    cell_text = self.extract_cell_content(cell)
-                    row_data.append(cell_text if cell_text else "[EMPTY]")
-                table_content_values.append(row_data)
-
-        return column_headers, table_content_values
-
     def get_tables_from_xml(self, file_path: str):
         xml_content = self.read_xml_file(file_path)
         pmc_id = re.search(r"PMC\d+", file_path).group()
@@ -159,8 +132,6 @@ class ProcessTableXML:
             "table_caption": [],
             "table_footnote": [],
             "table_xml": [],
-            "table_header": [],
-            "table_content": [],
         }
 
         for table in tables:
@@ -175,8 +146,6 @@ class ProcessTableXML:
             data["table_caption"].append(caption)
             data["table_footnote"].append(footnote)
             data["table_xml"].append(table_xml)
-            data["table_header"].append(table_column_headers)
-            data["table_content"].append(table_content_values)
 
         df = pd.DataFrame(data)
         return df

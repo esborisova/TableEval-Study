@@ -10,12 +10,13 @@ import google.generativeai as genai
 import PIL.Image
 
 """
-A script that uses Gemini API to get LaTeX code for the tables from the SciGen and NumericNLG datasets.
+A script that uses Gemini API to get code for the tables from the SciGen and NumericNLG datasets.
 The model is prompted using only the image of the table. 
 To run the script the following arguments are needed:
 1. data_path: the path to where the SciGen or NumericNLG data is saved.
 2. images_path: the path for the directory that contains the images of the tables from the dataset. 
 3. gemini_api_key: the Google/Gemini API key to access and prompt the model.
+4. format: chosen from the following options: 'latex', 'html', 'xml', or 'markdown'.
 """
 
 def extract_latex_code(text):
@@ -36,6 +37,7 @@ def main():
     parser.add_argument("--data_path", type=str, help="Path for the SciGen dataset")
     parser.add_argument("--images_path", type=str, help="Path for the images of the SciGen dataset")
     parser.add_argument("--gemini_api_key", type=str, help="API key to access and prompt the Gemini model")
+    parser.add_argument("--format", type=str, help="The format you'd like to receive for the table")
     args = parser.parse_args()
 
     GOOGLE_API_KEY=args.gemini_api_key
@@ -45,6 +47,8 @@ def main():
 
     images_path = args.images_path
     data_path = args.data_path
+
+    format = args.format
 
     with open(data_path) as json_file:
         data = json.load(json_file)
@@ -65,7 +69,7 @@ def main():
           image_path = os.path.join(images_path, image_id)
           img = PIL.Image.open(image_path)
           
-          prompt_img = f"""Task: Given an image  of a table from a scholarly articl along with its caption, generate the latex code that creates the table.
+          prompt_img = f"""Task: Given an image  of a table from a scholarly article along with its caption, generate the {format} code that creates the table.
           Caption: {caption}"""
           
           try:

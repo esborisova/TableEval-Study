@@ -52,7 +52,7 @@ def main():
                         [bbox[0], bbox[1], bbox[2], bbox[3]], outline="red", width=5
                     )
 
-                    img_file_name = f"{row['filename'].replace('/', '_').split('.pdf')[0]}{str(row['table_id'])}.png"
+                    img_file_name = f"{row['filename'].replace('/', '_').split('.pdf')[0]}_{str(row['table_id'])}.png"
                     image_save_dir = os.path.join(save_dir, img_file_name)
                     bbox_annot_save_dir = os.path.join(
                         save_dir_img_with_bbox, img_file_name

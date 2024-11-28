@@ -1,6 +1,7 @@
+"""Script for constructing table html in fintabnet subset based on annotations"""
 import pandas as pd
-from datasets import Dataset, DatasetDict, load_from_disk
-from datetime import datetime
+from datasets import load_from_disk
+from ..utils.other import create_dataset_object, save_dataset_object
 
 
 def main():
@@ -29,12 +30,9 @@ def main():
     ds_df = ds["train"].to_pandas()
     ds_df = ds_df.merge(table_html_df[["table_id", "html"]], on="table_id", how="left")
     ds_df.rename(columns={"html": "table_html"}, inplace=True)
-
     ds_df = ds_df.reset_index(drop=True)
-    hf_dataset = Dataset.from_pandas(ds_df.reset_index(drop=True))
-    hf_dataset_dict = DatasetDict({"train": hf_dataset})
-    date = datetime.now().strftime("%Y-%m-%d")
-    hf_dataset_dict.save_to_disk(f"../../data/comtqa_updated_{date}")
+    dataset_dict = create_dataset_object(ds_df)
+    save_dataset_object(dataset_dict, "../../data/comtqa_updated")
 
 
 if __name__ == "__main__":

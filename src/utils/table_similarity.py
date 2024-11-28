@@ -2,7 +2,9 @@ import ast
 import pandas as pd
 import os
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import CountVectorizer
 from other import read_json
+import numpy as np
 
 
 def clean_headers(row) -> list:
@@ -110,3 +112,18 @@ def substitute_table(
                 else:
                     df.at[indx, col] = best_table[col]
     return df
+
+def preprocess_table(df):
+    return " ".join(df.astype(str).fillna("").values.flatten())
+
+def compute_tables_similarity(gold_table, extracted_tables):
+
+    gold_string = preprocess_table(gold_table)
+    extracted_strings = [preprocess_table(table) for table in extracted_tables]
+
+    vectorizer = CountVectorizer().fit([gold_string] + extracted_strings)
+    vectors = vectorizer.transform([gold_string] + extracted_strings)
+
+    similarities = cosine_similarity(vectors[0:1], vectors[1:]).flatten()
+    best_match_index = np.argmax(similarities)
+    return extracted_tables[best_match_index], similarities[best_match_index]

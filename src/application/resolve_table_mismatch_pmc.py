@@ -1,30 +1,42 @@
+"""Pipeline for resolving incorrectly added PMC tables (relying on tables titles) 
+based on source annotations and cosine similarity score."""
 import pandas as pd
 import ast
+from datetime import datetime
 from sklearn.feature_extraction.text import CountVectorizer
 from ..utils.table_similarity import (
     prepare_tables,
     calculate_similarity_for_row,
     substitute_table,
 )
+from ..utils.other import create_dataset_object, save_dataset_object
 
 
 def main():
-    comtqa_with_tables = pd.read_csv("../../data/pubmed/comtqa_df.csv")
-    jsons_rootdir = "/Users/ekbo01/Downloads/PubTables-1M-Structure_Table_Words/"
-    pmc_all_tables = pd.read_csv("../../data/pubmed/pubmed_tables.csv")
+    comtqa_with_tables = pd.read_csv(
+        "../../data/ComTQA_data/pubmed/utils/comtqa_df_updated_2014-12-01.csv"
+    )
+    jsons_rootdir = (
+        "../../data/ComTQA_data/pubmed/source_data/PubTables-1M-Structure_Table_Words/"
+    )
+    pmc_all_tables = pd.read_csv(
+        "../../data/ComTQA_data/pubmed/utils/pubmed_tables_updated_2014-12-01.csv"
+    )
 
     vectorizer = CountVectorizer()
 
     comtqa_with_tables = prepare_tables(
         df=comtqa_with_tables,
-        header="table_header",
-        content="table_content",
+        header="table_headers",
+        subheader="table_subheaders",
+        content="table_rows",
         merged_content=True,
     )
 
     merged_content_list = comtqa_with_tables[
         comtqa_with_tables["dataset"] == "PubTab1M"
     ]["merged_content"].tolist()
+
     vectorizer.fit(merged_content_list)
 
     comtqa_with_tables["similarity_score"] = comtqa_with_tables.apply(
@@ -39,6 +51,7 @@ def main():
     ].round(2)
 
     pubmed_subset = comtqa_with_tables[comtqa_with_tables["dataset"] == "PubTab1M"]
+
     low_similarity_indices = pubmed_subset[
         pubmed_subset["similarity_score"] < 0.90
     ].index
@@ -46,16 +59,21 @@ def main():
     low_similarity_indices_list = low_similarity_indices.tolist()
 
     pmc_all_tables = prepare_tables(
-        df=pmc_all_tables, header="table_header", content="table_content"
+        df=pmc_all_tables,
+        header="table_headers",
+        subheader="table_subheaders",
+        content="table_rows",
     )
 
     columns_to_update = [
-        "table_header",
-        "table_content",
+        "table_headers",
+        "table_subheaders",
+        "table_rows",
         "table_title",
         "table_caption",
         "table_footnote",
         "table_xml",
+        "table_xml_no_meta",
         "similarity_score",
     ]
 
@@ -72,18 +90,29 @@ def main():
         columns=[
             "cleaned_table_title",
             "clean_headers",
-            "clean_content",
+            "clean_subheaders",
+            "clean_rows",
             "merged_content",
         ]
     )
 
-    updated_comtqa_df["table_header"] = updated_comtqa_df["table_header"].apply(
+    updated_comtqa_df["table_headers"] = updated_comtqa_df["table_headers"].apply(
         lambda x: ast.literal_eval(x) if isinstance(x, str) else x
     )
-    updated_comtqa_df["table_content"] = updated_comtqa_df["table_content"].apply(
+
+    updated_comtqa_df["table_subheaders"] = updated_comtqa_df["table_subheaders"].apply(
         lambda x: ast.literal_eval(x) if isinstance(x, str) else x
     )
-    updated_comtqa_df.to_pickle("../../data/pubmed/comtqa_with_pmc_tables.pkl")
+    updated_comtqa_df["table_rows"] = updated_comtqa_df["table_rows"].apply(
+        lambda x: ast.literal_eval(x) if isinstance(x, str) else x
+    )
+
+    date = datetime.now().strftime("%Y-%m-%d")
+    updated_comtqa_df.to_pickle(
+        f"../../data/ComTQA_data/pubmed/utils/comtqa_with_pmc_tables_updated_{date}.pkl"
+    )
+    dataset_dict = create_dataset_object(updated_comtqa_df)
+    save_dataset_object(dataset_dict, "../../data/ComTQA_data/comtqa_updated")
 
 
 if __name__ == "__main__":

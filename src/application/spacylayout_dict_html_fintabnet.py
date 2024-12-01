@@ -1,5 +1,5 @@
 """Pipeline for matching the tables exctracted using spaCy layout from fintabnet pdfs with the gold tables and 
-obtaing headers, rows, and html"""
+obtaing headers, rows, and html."""
 import pandas as pd
 import numpy as np
 import pickle

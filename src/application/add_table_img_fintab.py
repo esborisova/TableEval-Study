@@ -1,3 +1,6 @@
+"""This script extracts tables by converting the pdf to image first 
+and then croping the table based on annotatios of bonding boxes."""
+
 import os
 from PyPDF2 import PdfReader
 import copy

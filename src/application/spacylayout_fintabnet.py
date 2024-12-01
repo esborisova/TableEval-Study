@@ -1,4 +1,4 @@
-"""Pipeline for extracting tables from fintabnet pdfs using spaCy layout"""
+"""Pipeline for extracting tables from fintabnet pdfs using spaCy layout."""
 import pandas as pd
 import spacy
 import os

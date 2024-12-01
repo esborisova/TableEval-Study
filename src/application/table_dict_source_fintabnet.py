@@ -1,5 +1,5 @@
 """Script for collecting table headers and rows in fintabnet subset 
-based on html generated from source annotations"""
+based on html generated from source annotations."""
 import numpy as np
 import pandas as pd
 from datasets import load_from_disk

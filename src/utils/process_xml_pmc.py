@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from Bio import Entrez
 from typing import List, Tuple, Optional
 import logging
+from html import unescape
 
 
 class ProcessTableXML:
@@ -121,6 +122,65 @@ class ProcessTableXML:
             else None
         )
 
+    def get_max_columns(self, root: ET.Element) -> int:
+        max_columns = 0
+        thead = root.find(".//thead")
+        if thead is not None:
+            header_rows = thead.findall(".//tr")
+            for header_row in header_rows:
+                header_cells = [
+                    unescape("".join(cell.itertext()).strip())
+                    for cell in header_row.findall("td")
+                ]
+                max_columns = max(max_columns, len(header_cells))
+        return max_columns
+
+    def extract_headers(
+        self, root: ET.Element, max_columns: int
+    ) -> Tuple[List[str], List[str]]:
+        headers = []
+        subheaders = []
+
+        thead = root.find(".//thead")
+        if thead is not None:
+            header_rows = thead.findall(".//tr")
+            for i, header_row in enumerate(header_rows):
+                header_cells = [
+                    unescape("".join(cell.itertext()).strip())
+                    for cell in header_row.findall("td")
+                ]
+                while len(header_cells) < max_columns:
+                    header_cells.append("")
+                if i == 0:
+                    headers = header_cells
+                else:
+                    subheaders.append(header_cells)
+        return headers, subheaders
+
+    def extract_rows(self, root: ET.Element, max_columns: int) -> List[List[str]]:
+        rows = []
+
+        tbody = root.find(".//tbody")
+        if tbody is not None:
+            for row in tbody.findall("tr"):
+                cols = [
+                    unescape("".join(col.itertext()).strip())
+                    for col in row.findall("td")
+                ]
+                while len(cols) < max_columns:
+                    cols.append("")
+                rows.append(cols)
+        return rows
+
+    def parse_table(self, raw_table_xml: str):
+        root = ET.fromstring(raw_table_xml)
+
+        max_columns = self.get_max_columns(root)
+        table_headers, table_subheaders = self.extract_headers(root, max_columns)
+        table_rows = self.extract_rows(root, max_columns)
+
+        return table_headers, table_subheaders, table_rows
+
     def get_tables_from_xml(self, file_path: str):
         xml_content = self.read_xml_file(file_path)
         pmc_id = re.search(r"PMC\d+", file_path).group()
@@ -131,21 +191,29 @@ class ProcessTableXML:
             "table_title": [],
             "table_caption": [],
             "table_footnote": [],
+            "table_xml_no_meta": [],
             "table_xml": [],
+            "table_headers": [],
+            "table_subheaders": [],
+            "table_rows": [],
         }
 
         for table in tables:
             title, caption, footnote = self.collect_table_meta(table)
-            table_xml = self.extract_raw_table_xml(table)
-            table_column_headers, table_content_values = self.extract_table_content(
-                table
+            raw_table = ET.tostring(table, encoding="unicode").strip()
+            table_clean_xml = self.extract_raw_table_xml(table)
+            table_headers, table_subheaders, table_rows = self.parse_table(
+                table_clean_xml
             )
-
             data["id"].append(pmc_id)
             data["table_title"].append(title)
             data["table_caption"].append(caption)
             data["table_footnote"].append(footnote)
-            data["table_xml"].append(table_xml)
+            data["table_xml_no_meta"].append(table_clean_xml)
+            data["table_xml"].append(raw_table)
+            data["table_headers"].append(table_headers)
+            data["table_subheaders"].append(table_subheaders)
+            data["table_rows"].append(table_rows)
 
         df = pd.DataFrame(data)
         return df

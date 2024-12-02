@@ -1,0 +1,98 @@
+from typing import List, Dict, Tuple
+from tqdm.auto import tqdm
+from models import LanguageModel
+from tasks import TaskManager
+from utils import load_samples, prompt_gen, calc_metric
+import random
+
+TableResults = Dict[str, str]
+
+
+class Evaluator:
+    def __init__(
+        self,
+        model: LanguageModel,
+        tasks: Optional[List[Union[str, dict, object]]] = None,
+        num_fewshot: Optional[int] = None,
+        batch_size: Optional[Union[int, str]] = None,
+        random_seed: int = 0,
+    ) -> None:
+        """
+        Instantiate and evaluate a model on a list of tasks.
+        :param model: LM object, see models.py
+        :param model_args: Optional[str, dict] String or dict arguments for each model class, see LM.create_from_arg_string and LM.create_from_arg_object. Ignored if `model` argument is a LM object.
+        :param tasks: list[Union[str, dict, Task]] List of task names.
+        :param num_fewshot: int Number of examples in few-shot context
+        :param batch_size: int or str, optional Batch size for model
+        :param random_seed: int Random seed for python's random module. If set to None, the seed will not be set.
+        """
+        self.register = TaskManager()
+        self.tasks_list = self.register.get_task(tasks)
+        self.num_fewshot = num_fewshot
+        self.batch_size = batch_size
+        self.model = model
+        random.seed(random_seed)
+
+    def simple_eval(self) -> Dict:
+        results = {}
+        for task in self.tasks_list:
+            task_results = []
+            # load the evaluation and few_shot samples
+            if task["test_split"]:
+                samples = load_samples(task["path"], task["test_split"])
+                if task["validation_split"]:
+                    few_shot_samples = load_samples(
+                        task["path"], task["validation_split"]
+                    )
+                else:
+                    few_shot_samples = load_samples(task["path"], task["train_split"])
+            elif task["validation_split"]:
+                samples = load_samples(task["path"], task["validation_split"])
+                few_shot_samples = load_samples(task["path"], task["train_split"])
+
+            # generate the input prompts
+            inputs = generate_prompt(samples, few_shot_samples, self.num_fewshot, task)
+
+            # run all samples
+            for i in tqdm(range(0, len(inputs), self.batch_size)):
+                output = self.model(inputs[i : i + self.batch_size])
+                # generate tuple for each output and sample
+                task_results.extend(
+                    [(output[j], samples[i + j]) for j in range(0, self.batch_size)]
+                )
+                # breakpoint()
+
+            scores = {}
+            # calculate the scores for the task
+            for metric in task["metric_list"]:
+                scores[metric] = calc_metric(metric, task_results, doc["doc_to_target"])
+
+            # save results
+            results[task["task_name"]] = {
+                "scores": scores,
+                "results": task_results,
+            }
+        return results
+
+    def generate_prompt(self, samples, few_shot_samples, num_fewshot, task):
+        # generate the prompts from the template
+        sample_to_prompt = prompt_gen(task["doc_to_text"], samples)
+        few_shot_to_prompt = prompt_gen(
+            task["doc_to_text"], few_shot_samples, "fewshot", task["doc_to_target"]
+        )
+
+        # sample the few shot examples
+        few_shot_examples = random.sample(few_shot_to_prompt, num_fewshot)
+
+        # generate the few shot example and instruction prompt
+        if "instruction" in task:
+            few_shot_to_prompt = task["instruction"] + "\n".join(few_shot_examples)
+        else:
+            few_shot_to_prompt = "\n".join(few_shot_examples)
+
+        # return list of prompts
+        return [few_shot_to_prompt + i for i in sample_to_prompt]
+
+    def reset(self):
+        # TODO: clean up
+        pass

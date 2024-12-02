@@ -1,0 +1,10 @@
+task_name: QA_test_task
+instruction: "instruction head (optional)"
+doc_to_target: <Target_Row>
+doc_to_text: "Prompt template"
+metric_list:
+  - metric_name (optional)
+test_split: <Name_of_Test_split> 
+validation_split: <Name_of_Val_split> 
+train_split: <Name_of_Train_split> (optional)
+path: <Path_to_data_or_HF_ID>

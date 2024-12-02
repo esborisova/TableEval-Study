@@ -7,9 +7,9 @@ from ..utils.other import create_dataset_object, save_dataset_object
 
 
 def main():
-    ds = load_from_disk(f"../../../data/ComTQA_data/comtqa_updated_2024-11-26")
+    ds = load_from_disk(f"../../data/ComTQA_data/comtqa_updated_2024-11-26")
     comtqa_df = ds["train"].to_pandas()
-    fintab_subset = ds.filter(lambda x: x["dataset"] == "FinTabNet")
+    fintab_subset = comtqa_df[comtqa_df["dataset"] == "FinTabNet"]
     fintab_df = fintab_subset["train"].to_pandas()
 
     parsed_tables = []
@@ -38,13 +38,16 @@ def main():
                 "image_name": row["image_name"],
                 "table_headers": headers,
                 "table_rows": rows,
+                "table_id": row["table_id"],
+                "question": row["question"],
+                "answer": row["answer"],
             }
         )
         parsed_tables_df = pd.DataFrame(parsed_tables)
         merged_df = pd.merge(
             comtqa_df,
-            parsed_tables_df[["image_name", "table_headers", "table_rows"]],
-            on="image_name",
+            parsed_tables_df,
+            on=["image_name", "table_id", "question", "answer"],
             how="left",
             suffixes=("_df2", "_df1"),
         )

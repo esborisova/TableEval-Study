@@ -10,12 +10,17 @@ def main():
 
     pmc_subset = comtqa_df[comtqa_df["dataset"] == "PubTab1M"]
     pmc_xml = pmc_subset["table_xml"].tolist()
+    pmc_xml_no_meta = pmc_subset["table_xml_no_meta"].tolist()
+
     pmc_html = [pmc_tables_to_html(table) for table in pmc_xml]
+    pmc_html_no_meta = [pmc_tables_to_html(table) for table in pmc_xml_no_meta]
+    
     pmc_subset["table_html"] = pmc_html
+    pmc_subset["table_html_no_meta"] = pmc_html_no_meta
 
     merged_df = comtqa_df.merge(
         pmc_subset[
-            ["id", "table_html", "table_title", "image_name", "question", "answer"]
+            ["id", "table_html", "table_html_no_meta", "table_title", "image_name", "question", "answer"]
         ],
         on=["id", "image_name", "table_title", "question", "answer"],
         how="left",

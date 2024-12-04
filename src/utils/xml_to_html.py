@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 
 def map_pmc_to_html_tags(soup):
     """Replace PMC XML specific tags with HTML equivalents."""
-    tag_replacements = {"bold": "strong", "italic": "em", "sup": "sup", "sub": "sub"}
+    tag_replacements = {"bold": "strong", 
+                        "italic": "em"}
 
     for pmc_tag, html_tag in tag_replacements.items():
         for tag in soup.find_all(pmc_tag):

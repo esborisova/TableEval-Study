@@ -10,6 +10,7 @@ from datasets import Dataset, DatasetDict, load_from_disk
 from datetime import datetime
 from PIL import ImageDraw
 import copy
+from ..utils.other import create_and_save_dataset
 
 
 def main():
@@ -87,10 +88,7 @@ def main():
     )
     merged_df = merged_df.drop(columns=["image_name_df2", "image_name_df1"])
 
-    hf_dataset = Dataset.from_pandas(merged_df.reset_index(drop=True))
-    hf_dataset_dict = DatasetDict({"train": hf_dataset})
-    date = datetime.now().strftime("%Y-%m-%d")
-    hf_dataset_dict.save_to_disk(f"../../../data/comtqa_updated_{date}")
+    create_and_save_dataset(merged_df, "train", "../../data/comtqa_updated")
 
 
 if __name__ == "__main__":

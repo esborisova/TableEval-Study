@@ -3,7 +3,7 @@ from datasets import load_dataset
 import pandas as pd
 import re
 from datetime import datetime
-from ..utils.other import create_dataset_object, save_dataset_object
+from ..utils.other import create_and_save_dataset
 
 
 def main():
@@ -41,9 +41,7 @@ def main():
     merged_df.to_csv(
         f"../../data/ComTQA_data/pubmed/utils/comtqa_df_updated_{date}.csv", index=False
     )
-
-    dataset_dict = create_dataset_object(merged_df)
-    save_dataset_object(dataset_dict, "../../data/ComTQA_data/comtqa_updated")
+    create_and_save_dataset(merged_df, "train", "../../data/ComTQA_data/comtqa_updated")
 
 
 if __name__ == "__main__":

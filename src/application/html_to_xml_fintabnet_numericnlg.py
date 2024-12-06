@@ -1,12 +1,25 @@
-"""Pipeline for convering tables HTML in fintabnet subset of comtqa into XML"""
+"""Pipeline for convering tables HTML in numericNLG and 
+fintabnet subset of comtqa into XML"""
+import ast
 from ..utils.xml_html_convertion import html_to_xml_table
-from ..utils.other import create_dataset_object, save_dataset_object
+from ..utils.other import create_and_save_dataset
 
 
 def main():
     comtqa = load_from_disk(f"../../data/ComTQA_data/comtqa_updated_2024-12-03")
+    numericnlg = load_from_disk("../../data/numericNLG/numericnlg_updated_2024-11-28")
+
     comtqa_df = comtqa["train"].to_pandas()
+    numericnlg_df = numericnlg["test"].to_pandas()
     fintabnet_df = comtqa_df[comtqa_df["dataset"] == "FinTabNet"]
+
+    columns_to_apply = ["row_headers", "column_headers", "contents"]
+    for column in columns_to_apply:
+        numericnlg_df[column] = numericnlg_df[column].apply(ast.literal_eval)
+    
+    numericnlg_xml = [html_to_xml_table(row.table_html_clean, row.table_id, row.table_name, row.caption)
+    for row in numericnlg_df.itertuples(index=False)]
+    numericnlg_df["table_xml"] = numericnlg_xml
 
     fintabnet_html_source = fintabnet_df["table_html"].tolist()
     fintabnet_xml_source = [html_to_xml_table(html) for html in fintabnet_html_source]
@@ -40,8 +53,8 @@ def main():
     )
     merged_df = merged_df.drop(columns=["table_xml_fintab"])
 
-    dataset_dict = create_dataset_object(merged_df)
-    save_dataset_object(dataset_dict, "../../data/ComTQA_data/comtqa_updated")
+    create_and_save_dataset(merged_df, "train",  "../../data/ComTQA_data/comtqa_updated")
+    create_and_save_dataset(numericnlg_df, "test", "../../data/numericNLG/numericnlg_updated")
 
 
 if __name__ == "__main__":

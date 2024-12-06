@@ -1,7 +1,7 @@
 """Converting PMC tables XML into HTML format."""
 from datasets import load_from_disk
 from ..utils.xml_html_convertion import pmc_tables_to_html
-from ..utils.other import create_dataset_object, save_dataset_object
+from ..utils.other import create_and_save_dataset
 
 
 def main():
@@ -31,8 +31,8 @@ def main():
     )
     merged_df = merged_df.drop(columns=["table_html_pmc"])
 
-    dataset_dict = create_dataset_object(merged_df)
-    save_dataset_object(dataset_dict, "../../data/ComTQA_data/comtqa_updated")
+    create_and_save_dataset(merged_df, "train", "../../data/ComTQA_data/comtqa_updated")
+
 
 
 if __name__ == "__main__":

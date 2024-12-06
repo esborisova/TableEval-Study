@@ -3,7 +3,7 @@ based on html generated from source annotations."""
 import numpy as np
 import pandas as pd
 from datasets import load_from_disk
-from ..utils.other import create_dataset_object, save_dataset_object
+from ..utils.other import create_and_save_dataset
 
 
 def main():
@@ -65,9 +65,7 @@ def main():
                 "table_rows_df1",
             ]
         )
-        dataset_dict = create_dataset_object(merged_df)
-        save_dataset_object(dataset_dict, "../../data/ComTQA_data/comtqa_updated")
-
+        create_and_save_dataset(merged_df, "train", "../../data/ComTQA_data/comtqa_updated")
 
 if __name__ == "__main__":
     main()

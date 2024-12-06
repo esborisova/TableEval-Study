@@ -9,7 +9,7 @@ from ..utils.table_similarity import (
     calculate_similarity_for_row,
     substitute_table,
 )
-from ..utils.other import create_dataset_object, save_dataset_object
+from ..utils.other import create_and_save_dataset
 
 
 def main():
@@ -111,8 +111,9 @@ def main():
     updated_comtqa_df.to_pickle(
         f"../../data/ComTQA_data/pubmed/utils/comtqa_with_pmc_tables_updated_{date}.pkl"
     )
-    dataset_dict = create_dataset_object(updated_comtqa_df)
-    save_dataset_object(dataset_dict, "../../data/ComTQA_data/comtqa_updated")
+
+    create_save_dataset(updated_comtqa_df, "train", "../../data/ComTQA_data/comtqa_updated")
+
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 """Converting PMC tables XML into HTML format."""
 from datasets import load_from_disk
 from ..utils.xml_html_convertion import pmc_tables_to_html
-from utils.other import create_dataset_object, save_dataset_object
+from ..utils.other import create_dataset_object, save_dataset_object
 
 
 def main():

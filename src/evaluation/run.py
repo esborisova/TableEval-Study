@@ -1,6 +1,6 @@
 import argparse
+from typing import Union
 
-from tqdm import main
 
 from evaluator import Evaluator
 from models import HFModel
@@ -83,25 +83,26 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         args = parser.parse_args()
 
     model = HFModel(
-        args["model_name"],
-        args["model_args"],
-        batch_size=args["batch_size"],
-        random_seed=args["seed"],
+        args.model_name,
+        args.model_args,
+        batch_size=args.batch_size,
+        random_seed=args.seed,
+        device=args.device,
     )
 
     eval = Evaluator(
         model=model,
-        tasks=args["tasks"].split(","),
-        num_fewshot=args["num_fewshot"],
-        batch_size=args["batch_size"],
-        random_seed=args["seed"],
+        tasks=args.tasks.split(","),
+        num_fewshot=args.num_fewshot,
+        batch_size=args.batch_size,
+        random_seed=args.seed,
     )
 
     results = eval.simple_eval()
 
-    if args["output_path"]:
+    if args.output_path:
         save_results(
-            args["output_path"],
+            args.output_path,
             results,
         )
 

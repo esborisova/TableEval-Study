@@ -1,8 +1,9 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Optional, Union
 from tqdm.auto import tqdm
 from models import LanguageModel
 from tasks import TaskManager
-from utils import load_samples, prompt_gen, calc_metric
+from metrics import Metrics
+from utils import load_samples, prompt_gen
 import random
 
 TableResults = Dict[str, str]
@@ -44,28 +45,54 @@ class Evaluator:
                     few_shot_samples = load_samples(
                         task["path"], task["validation_split"]
                     )
-                else:
+                elif task["train_split"]:
                     few_shot_samples = load_samples(task["path"], task["train_split"])
+                else:
+                    few_shot_samples = None
+                    # WARNING: should throw error if num_fewshot > 0
             elif task["validation_split"]:
                 samples = load_samples(task["path"], task["validation_split"])
-                few_shot_samples = load_samples(task["path"], task["train_split"])
+                if task["train_split"]:
+                    few_shot_samples = load_samples(task["path"], task["train_split"])
+                else:
+                    few_shot_samples = None
+                    # WARNING: should throw error if num_fewshot > 0
 
             # generate the input prompts
-            inputs = generate_prompt(samples, few_shot_samples, self.num_fewshot, task)
+            # WARNING: DEBUG MODE
+            inputs = self.generate_prompt(
+                samples, few_shot_samples, self.num_fewshot, task
+            )[0:1]
 
             # run all samples
             for i in tqdm(range(0, len(inputs), self.batch_size)):
                 output = self.model(inputs[i : i + self.batch_size])
                 # generate tuple for each output and sample
                 task_results.extend(
-                    [(output[j], samples[i + j]) for j in range(0, self.batch_size)]
+                    [
+                        {
+                            "output": output[j]["generated_text"].removeprefix(
+                                inputs[i + j]
+                            ),
+                            "input": inputs[i + j],
+                            "example": samples[i + j],
+                        }
+                        for j in range(0, self.batch_size)
+                    ]
                 )
-                # breakpoint()
 
+            # calculation of the scores
             scores = {}
-            # calculate the scores for the task
+            metric_calc = Metrics()
+            # load all results
+            metric_calc.add(
+                prediction=[x["output"] for x in task_results],
+                reference=[x["example"][task["doc_to_target"]] for x in task_results],
+            )
+            # calculate the scores for the task and each metric
             for metric in task["metric_list"]:
-                scores[metric] = calc_metric(metric, task_results, doc["doc_to_target"])
+                metric_calc.metric_type(metric)
+                scores[metric] = metric_calc.compute()
 
             # save results
             results[task["task_name"]] = {
@@ -78,20 +105,23 @@ class Evaluator:
         # generate the prompts from the template
         sample_to_prompt = prompt_gen(task["doc_to_text"], samples)
         few_shot_to_prompt = prompt_gen(
-            task["doc_to_text"], few_shot_samples, "fewshot", task["doc_to_target"]
+            task["doc_to_text"], few_shot_samples, task["doc_to_target"]
         )
 
-        # sample the few shot examples
-        few_shot_examples = random.sample(few_shot_to_prompt, num_fewshot)
-
-        # generate the few shot example and instruction prompt
         if "instruction" in task:
-            few_shot_to_prompt = task["instruction"] + "\n".join(few_shot_examples)
+            few_shot_prompt = task["instruction"]
         else:
-            few_shot_to_prompt = "\n".join(few_shot_examples)
+            few_shot_prompt = ""
 
+        # sample the few shot examples
+        if num_fewshot:
+            few_shot_examples = random.sample(few_shot_to_prompt, num_fewshot)
+            # generate the few shot example and instruction prompt
+            few_shot_prompt += "\n".join(few_shot_examples) + "\n"
+        else:
+            few_shot_prompt += ""
         # return list of prompts
-        return [few_shot_to_prompt + i for i in sample_to_prompt]
+        return [few_shot_prompt + i for i in sample_to_prompt]
 
     def reset(self):
         # TODO: clean up

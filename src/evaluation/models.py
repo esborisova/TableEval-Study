@@ -2,6 +2,7 @@ from abc import abstractmethod
 from abc import ABC, abstractmethod
 from typing import Dict, List
 from transformers import pipeline, set_seed
+import torch
 
 
 class LanguageModel(ABC):
@@ -26,23 +27,30 @@ class HFModel(LanguageModel):
         torch_random_seed: int = 1234,
     ) -> None:
         super().__init__()
+
+        set_seed(random_seed)
         self.model_name = model_name
         self.model_args = model_args
-        self.devide = device
+        self.device = device
         self.batch_size = batch_size
-        set_seed(random_seed)
-        self.pipe = pipeline(
-            "text-generation",
-            model=model_name,
-            device=device,
-            trust_remote_code=True,
-            model_kwargs=model_args,
-        )
+        if model_args:
+            self.pipe = pipeline(
+                "text-generation",
+                model=model_name,
+                device=self.device,
+                trust_remote_code=True,
+                model_kwargs=self.model_args,
+            )
+        else:
+            self.pipe = pipeline(
+                "text-generation",
+                model=model_name,
+                device=self.device,
+                trust_remote_code=True,
+            )
 
-    def __call__(self, input: str, **kwargs):
-        return self.pipe(input, batch_size=self.batch_size, **kwargs)[0][
-            "generated_text"
-        ]
+    def __call__(self, input: List, **kwargs):
+        return self.pipe(input, batch_size=self.batch_size, **kwargs)[0]
 
     def get_model_info(self):
         return f"HF Model: {self.model_name}"

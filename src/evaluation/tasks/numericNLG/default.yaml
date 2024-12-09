@@ -1,0 +1,14 @@
+task_name: numericnlg
+path: kasnerz/numericnlg
+test_split: test
+validation_split: validation
+train_split: train
+instruction: ""
+doc_to_text: "{{caption}} {{row_headers}} {{column_headers}}"
+doc_to_target: description
+metric_list:
+  - bleu
+  - ROUGE-L 
+  - METEOR
+  - PARENT
+

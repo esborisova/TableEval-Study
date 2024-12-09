@@ -1,6 +1,6 @@
 import os
 import yaml
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 TaskConfig = Dict[str, str]
 
@@ -24,10 +24,10 @@ class TaskManager:
                         task_dirs.append(task["task_name"])
                         self.tasks[task["task_name"]] = task
 
-    def get_task(self, task_name: List[str]) -> List[TaskConfig]:
+    def get_task(self, task_name: Union[List[str], str]) -> List[TaskConfig]:
         if isinstance(task_name, str):
             return [self.tasks[task_name]]
-        if isinstance(task_name, List):
+        else:
             return [self.tasks[n] for n in task_name]
 
     def _init_task(self, root_path: str, file_name: str) -> Optional[TaskConfig]:

@@ -240,6 +240,10 @@ def extract_matched_table_html_and_similarity(html_content, title, table):
         if similarity > best_similarity:
             best_similarity = similarity
             best_table_html = str(table_element)
+    if best_table_html is None:
+        best_table_html = ""
+    if best_similarity is None:
+        best_similarity = -1.0
 
     return best_table_html, best_similarity
 

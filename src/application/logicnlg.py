@@ -10,7 +10,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-data = load_dataset("kasnerz/logicnlg", split="train")
+data = load_dataset("kasnerz/logicnlg", split="test")
 WIKI_SCRAPE_DATE = "2019-03-23"
 
 # URL of the JSON file

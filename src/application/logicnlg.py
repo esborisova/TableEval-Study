@@ -1,3 +1,4 @@
+import json
 import requests
 import requests_cache
 import time
@@ -12,10 +13,12 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 data = load_dataset("kasnerz/logicnlg", split="test")
 WIKI_SCRAPE_DATE = "2019-03-23"
+scrape_time = datetime.strptime(WIKI_SCRAPE_DATE, "%Y-%m-%d")
 
-# URL of the JSON file
-mapping_url = "https://raw.githubusercontent.com/wenhuchen/LogicNLG/refs/heads/master/data/table_to_page.json"
-
+# Load the original test_lm.json file to get the dict representation
+test_lm_url = "https://raw.githubusercontent.com/wenhuchen/LogicNLG/master/data/test_lm.json"
+test_lm_response = requests.get(test_lm_url)
+test_lm_data = test_lm_response.json()  # A dict keyed by table_id with a list of items
 
 def safe_requests_get(url, retries=3, backoff_factor=1.0):
     for i in range(retries):
@@ -28,14 +31,12 @@ def safe_requests_get(url, retries=3, backoff_factor=1.0):
     return None
 
 # Fetch the JSON data
+mapping_url = "https://raw.githubusercontent.com/wenhuchen/LogicNLG/refs/heads/master/data/table_to_page.json"
 response = safe_requests_get(mapping_url)
-
-# Check if the request was successful
-if response.status_code == 200:
-    mapping = response.json()  # Parse JSON data
-    #print(mapping)  # Print or process the JSON data
+if response and response.status_code == 200:
+    mapping = response.json()
 else:
-    print(f"Failed to fetch data: {response.status_code}")
+    raise ValueError("No mapping has been downloaded.")
 
 # Ensure data is loaded as a list of dictionaries (converting from Hugging Face Dataset if needed)
 data = data.to_dict()  # Converts Hugging Face dataset to a Python dictionary format
@@ -68,76 +69,73 @@ def split_table_column(example):
         example['table_content_values'] = None
     return example
 
-#dataset = dataset.shuffle().select(range(10))  # FIXME: Remove after debugging!
+#dataset = dataset.select(range(25))  # FIXME: Remove after debugging!
 dataset = dataset.map(split_table_column)
 
 requests_cache.install_cache('wayback_cache', expire_after=86400)  # 1-day expiration
 
-def get_earlier_snapshot(url, date):
+def fetch_snapshot_content(url, ts):
     """
-    Try to find the closest snapshot on or before the given date using the CDX API.
+    Given a timestamp 'ts' (string) and a URL, return the HTML content and the snapshot timestamp as datetime.
     """
-    # Convert the date to a year range for CDX query
-    from_year = "2014"
-    to_year = date.year
-    timestamp_str = date.strftime('%Y%m%d%H%M%S')
+    snapshot_url = f"http://web.archive.org/web/{ts}/{url}"
+    page_response = safe_requests_get(snapshot_url)
+    if page_response and page_response.status_code == 200:
+        # Convert ts string (YYYYMMDDHHMMSS) to a datetime object
+        snap_date = datetime.strptime(ts, '%Y%m%d%H%M%S')
+        return page_response.text, snap_date
+    return None, None
 
+def get_closest_snapshot(url, date):
+    from_year = "2014"
+    current_year = datetime.now().year
     cdx_url = (
         "http://web.archive.org/cdx/search/cdx"
-        f"?url={url}&from={from_year}&to={to_year}"
+        f"?url={url}&from={from_year}&to={current_year}"
         "&fl=timestamp&filter=statuscode:200&collapse=digest&output=json"
     )
 
     response = safe_requests_get(cdx_url)
-    if response.status_code != 200:
-        print(f"Error accessing CDX API for {url}: {response.status_code}")
-        return None
+    if not response or response.status_code != 200:
+        return None, None
 
     data = response.json()
-    # data[0] will be the header row ['timestamp'], so actual timestamps start at data[1]
     if len(data) <= 1:
-        print(f"No snapshots found for {url} in {from_year}")
-        return None
+        return None, None
 
-    # Extract timestamps and convert to datetime
+    # Parse all snapshots and find the one closest to 'date'
     snapshots = []
     for row in data[1:]:
         ts = row[0]
         snap_date = datetime.strptime(ts, '%Y%m%d%H%M%S')
-        # Only consider snapshots that are on or before the requested date
-        if snap_date <= date:
-            snapshots.append((snap_date, ts))
+        time_diff = abs((snap_date - date).total_seconds())
+        snapshots.append((time_diff, ts))
 
     if not snapshots:
-        # If none are before or on the date, consider after if you wish
-        # or return None if you strictly want an earlier snapshot
-        print(f"No earlier snapshot found for {url} at or before {timestamp_str}")
-        return None
+        return None, None
 
-    # Find the snapshot closest to the desired date
-    snapshots.sort(key=lambda x: x[0], reverse=True)
-    closest_snap = snapshots[0]  # After sorting descending by date, first is the closest before date
-
-    # Now retrieve the actual archived page
-    snapshot_url = f"http://web.archive.org/web/{closest_snap[1]}/{url}"
-    page_response = safe_requests_get(snapshot_url)
-    if page_response.status_code == 200:
-        return page_response.text
-    else:
-        print(f"Snapshot found but failed to retrieve content: {page_response.status_code}")
-        return None
+    # Sort by the absolute time difference
+    snapshots.sort(key=lambda x: x[0])
+    closest_snap = snapshots[0]
+    return fetch_snapshot_content(url, closest_snap[1])  # returns (html, dt)
 
 def get_archived_page_html(url, date):
-    """
-    Get the HTML content of a URL from the Wayback Machine as it was on or before a specific date.
-    Fallbacks to the CDX API approach if the direct 'wayback/available' fails to return earlier snapshots.
-    """
+    if not url:
+        return None, None
+
     timestamp = date.strftime('%Y%m%d%H%M%S')
     wayback_url = f"http://archive.org/wayback/available?url={url}&timestamp={timestamp}"
     response = safe_requests_get(wayback_url)
-    if response.status_code != 200:
-        print(f"Error accessing Wayback Machine for {url}: {response.status_code}")
-        return get_earlier_snapshot(url, date)
+    if not response or response.status_code != 200:
+        # Direct lookup failed, try closest snapshot
+        closest_html, closest_dt = get_closest_snapshot(url, date)
+        if closest_html:
+            return closest_html, closest_dt
+        # Fallback to live page
+        live_page = safe_requests_get(url)
+        if live_page and live_page.status_code == 200:
+            return live_page.text, datetime.now()
+        return None, None
 
     data = response.json()
     if 'archived_snapshots' in data and 'closest' in data['archived_snapshots']:
@@ -145,29 +143,47 @@ def get_archived_page_html(url, date):
         snap_ts = snap['timestamp']
         snap_date = datetime.strptime(snap_ts, '%Y%m%d%H%M%S')
 
-        # Check if the snapshot is on or before the requested date
-        if snap_date <= date:
-            # This is acceptable; return it directly
-            snapshot_url = snap['url']
-            snapshot_response = safe_requests_get(snapshot_url)
-            if snapshot_response.status_code == 200:
-                return snapshot_response.text
-            else:
-                print(f"Failed to retrieve snapshot content: {snapshot_response.status_code}")
-                return None
+        # If this snapshot is acceptable (before or after doesn't matter now, we just have one),
+        # try fetching it directly.
+        html, dt = fetch_snapshot_content(url, snap_ts)
+        if html:
+            return html, dt
         else:
-            # The closest snapshot is after the requested date, so fall back to CDX approach
-            return get_earlier_snapshot(url, date)
+            # If the direct snapshot failed, try the closest snapshot overall
+            closest_html, closest_dt = get_closest_snapshot(url, date)
+            if closest_html:
+                return closest_html, closest_dt
+            # Fallback to live page
+            live_page = safe_requests_get(url)
+            if live_page and live_page.status_code == 200:
+                return live_page.text, datetime.now()
+            return None, None
     else:
-        # No snapshot found directly, fall back to the CDX approach
-        print(f"No archived version found for {url} at {timestamp} directly, checking CDX...")
-        return get_earlier_snapshot(url, date)
+        # No direct snapshot from wayback/available, just use the closest snapshot
+        closest_html, closest_dt = get_closest_snapshot(url, date)
+        if closest_html:
+            return closest_html, closest_dt
+        # Fallback to live page
+        live_page = safe_requests_get(url)
+        if live_page and live_page.status_code == 200:
+            return live_page.text, datetime.now()
+        return None, None
 
-# Convert the date string to a datetime object
-scrape_time = datetime.strptime(WIKI_SCRAPE_DATE, "%Y-%m-%d")
-dataset = dataset.map(lambda example: {
-    "html_content": get_archived_page_html(example["wiki_url"], scrape_time) if example["wiki_url"] else None})
-print()
+page_cache = {}
+
+def fetch_html(example):
+    table_id = example["table_id"]
+    if table_id in page_cache:
+        html, dt = page_cache[table_id]
+        dt_str = dt.isoformat() if dt else None
+        return {"html_content": html, "snapshot_timestamp": dt_str}
+    else:
+        html, dt = get_archived_page_html(example["wiki_url"], scrape_time)
+        page_cache[table_id] = (html, dt)
+        dt_str = dt.isoformat() if dt else None
+        return {"html_content": html, "snapshot_timestamp": dt_str}
+
+dataset = dataset.map(fetch_html)
 
 def normalize_value(val):
     val_str = str(val).strip().lower()
@@ -229,14 +245,33 @@ def extract_matched_table_html_and_similarity(html_content, title, table):
 
 
 def map_example(example):
+    # If html_content is None, skip by returning None fields
+    if example.get("html_content") is None:
+        return {
+            "matched_table_html": None,
+            "matched_table_similarity": None,
+            "original_test_dict": None,
+            "snapshot_timestamp": example.get("snapshot_timestamp")
+        }
+
     best_table_html, best_similarity = extract_matched_table_html_and_similarity(
         example.get("html_content"),
         example.get("title", ""),
         example.get("table", [])
     )
+
+    # 5) Add dict representation from test_lm_data
+    table_id = example["table_id"]
+    original_test_dict = test_lm_data.get(table_id, None)
+
+    # Convert the dict to a JSON string
+    original_test_dict_str = json.dumps(original_test_dict) if original_test_dict is not None else None
+
     return {
         "matched_table_html": best_table_html,
-        "matched_table_similarity": best_similarity
+        "matched_table_similarity": best_similarity,
+        "original_test_dict": original_test_dict_str,
+        "snapshot_timestamp": example.get("snapshot_timestamp")
     }
 
 dataset = dataset.map(map_example)

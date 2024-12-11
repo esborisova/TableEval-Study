@@ -216,7 +216,7 @@ def extract_table_text_from_html(table_element):
 
 def extract_matched_table_html_and_similarity(html_content, title, table):
     if not html_content:
-        return None
+        return ("", 1.0)
 
     # Create the desired string from dataset fields "title" and "table"
     desired_str = normalize_value(title) + normalize_value(table)
@@ -225,7 +225,7 @@ def extract_matched_table_html_and_similarity(html_content, title, table):
     tables = soup.find_all('table', class_='wikitable')
 
     if not tables:
-        return None
+        return ("", -1.0)
 
     # Fit vectorizer on desired_str to create vocabulary
     vectorizer = CountVectorizer().fit([desired_str])

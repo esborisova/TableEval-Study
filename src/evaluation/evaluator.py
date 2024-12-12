@@ -62,7 +62,7 @@ class Evaluator:
             # WARNING: DEBUG MODE
             inputs = self.generate_prompt(
                 samples, few_shot_samples, self.num_fewshot, task
-            )[0:1]
+            )
 
             # run all samples
             for i in tqdm(range(0, len(inputs), self.batch_size)):

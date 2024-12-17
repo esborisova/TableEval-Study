@@ -11,14 +11,10 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-data = load_dataset("kasnerz/logicnlg", split="test")
+page_cache = {}
 WIKI_SCRAPE_DATE = "2019-03-23"
 scrape_time = datetime.strptime(WIKI_SCRAPE_DATE, "%Y-%m-%d")
 
-# Load the original test_lm.json file to get the dict representation
-test_lm_url = "https://raw.githubusercontent.com/wenhuchen/LogicNLG/master/data/test_lm.json"
-test_lm_response = requests.get(test_lm_url)
-test_lm_data = test_lm_response.json()  # A dict keyed by table_id with a list of items
 
 def safe_requests_get(url, retries=3, backoff_factor=1.0):
     for i in range(retries):
@@ -29,31 +25,6 @@ def safe_requests_get(url, retries=3, backoff_factor=1.0):
             time.sleep(backoff_factor * (2 ** i))
     print(f"Failed after {retries} retries for: {url}")
     return None
-
-# Fetch the JSON data
-mapping_url = "https://raw.githubusercontent.com/wenhuchen/LogicNLG/refs/heads/master/data/table_to_page.json"
-response = safe_requests_get(mapping_url)
-if response and response.status_code == 200:
-    mapping = response.json()
-else:
-    raise ValueError("No mapping has been downloaded.")
-
-# Ensure data is loaded as a list of dictionaries (converting from Hugging Face Dataset if needed)
-data = data.to_dict()  # Converts Hugging Face dataset to a Python dictionary format
-
-# Iterate over each entry in `data` and add mapping information if available
-for i, entry in enumerate(data["table_id"]):
-    table_id = entry
-    if table_id in mapping:
-        # Add the mapping values to the current entry in `data`
-        data["wiki_title"] = data.get("wiki_title", []) + [mapping[table_id][0]]
-        data["wiki_url"] = data.get("wiki_url", []) + [mapping[table_id][1]]
-    else:
-        # If no mapping, add placeholders or empty values
-        data["wiki_title"] = data.get("wiki_title", []) + [None]
-        data["wiki_url"] = data.get("wiki_url", []) + [None]
-
-dataset = Dataset.from_dict(data)
 
 def split_table_column(example):
     try:
@@ -68,11 +39,6 @@ def split_table_column(example):
         example['table_column_names'] = None
         example['table_content_values'] = None
     return example
-
-#dataset = dataset.select(range(25))  # FIXME: Remove after debugging!
-dataset = dataset.map(split_table_column)
-
-requests_cache.install_cache('wayback_cache', expire_after=86400)  # 1-day expiration
 
 def fetch_snapshot_content(url, ts):
     """
@@ -169,21 +135,17 @@ def get_archived_page_html(url, date):
             return live_page.text, datetime.now()
         return None, None
 
-page_cache = {}
-
-def fetch_html(example):
+def fetch_html(example, wiki_url_column_name="wiki_url"):
     table_id = example["table_id"]
     if table_id in page_cache:
         html, dt = page_cache[table_id]
         dt_str = dt.isoformat() if dt else None
         return {"html_content": html, "snapshot_timestamp": dt_str}
     else:
-        html, dt = get_archived_page_html(example["wiki_url"], scrape_time)
+        html, dt = get_archived_page_html(example[wiki_url_column_name], scrape_time)
         page_cache[table_id] = (html, dt)
         dt_str = dt.isoformat() if dt else None
         return {"html_content": html, "snapshot_timestamp": dt_str}
-
-dataset = dataset.map(fetch_html)
 
 def normalize_value(val):
     val_str = str(val).strip().lower()
@@ -278,7 +240,46 @@ def map_example(example):
         "snapshot_timestamp": example.get("snapshot_timestamp")
     }
 
-dataset = dataset.map(map_example)
 
-print()
-dataset.save_to_disk("../../data/logicnlg")
+if __name__ == "__main__":
+    data = load_dataset("kasnerz/logicnlg", split="test")
+
+    # Load the original test_lm.json file to get the dict representation
+    test_lm_url = "https://raw.githubusercontent.com/wenhuchen/LogicNLG/master/data/test_lm.json"
+    test_lm_response = requests.get(test_lm_url)
+    test_lm_data = test_lm_response.json()  # A dict keyed by table_id with a list of items
+
+    # Fetch the JSON data
+    mapping_url = "https://raw.githubusercontent.com/wenhuchen/LogicNLG/refs/heads/master/data/table_to_page.json"
+    response = safe_requests_get(mapping_url)
+    if response and response.status_code == 200:
+        mapping = response.json()
+    else:
+        raise ValueError("No mapping has been downloaded.")
+
+    # Ensure data is loaded as a list of dictionaries (converting from Hugging Face Dataset if needed)
+    data = data.to_dict()  # Converts Hugging Face dataset to a Python dictionary format
+
+    # Iterate over each entry in `data` and add mapping information if available
+    for i, entry in enumerate(data["table_id"]):
+        table_id = entry
+        if table_id in mapping:
+            # Add the mapping values to the current entry in `data`
+            data["wiki_title"] = data.get("wiki_title", []) + [mapping[table_id][0]]
+            data["wiki_url"] = data.get("wiki_url", []) + [mapping[table_id][1]]
+        else:
+            # If no mapping, add placeholders or empty values
+            data["wiki_title"] = data.get("wiki_title", []) + [None]
+            data["wiki_url"] = data.get("wiki_url", []) + [None]
+
+    dataset = Dataset.from_dict(data)
+
+    #dataset = dataset.select(range(25))  # FIXME: Remove after debugging!
+    dataset = dataset.map(split_table_column)
+
+    requests_cache.install_cache('wayback_cache', expire_after=86400)  # 1-day expiration
+    dataset = dataset.map(fetch_html)
+    dataset = dataset.map(map_example)
+
+    print()
+    dataset.save_to_disk("../../data/logicnlg")

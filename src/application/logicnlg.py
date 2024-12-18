@@ -2,15 +2,11 @@ import json
 import requests
 import requests_cache
 
-from datasets import Dataset, load_dataset
 from datetime import datetime
+from datasets import Dataset, load_dataset
 
 from utils.logic_datasets_utils import safe_requests_get, split_table_column, fetch_html, \
     extract_matched_table_html_and_similarity
-
-page_cache = {}
-WIKI_SCRAPE_DATE = "2019-03-23"
-scrape_time = datetime.strptime(WIKI_SCRAPE_DATE, "%Y-%m-%d")
 
 
 def map_example(example):
@@ -45,6 +41,10 @@ def map_example(example):
 
 
 if __name__ == "__main__":
+    page_cache = {}
+    WIKI_SCRAPE_DATE = "2019-03-23"
+    scrape_time = datetime.strptime(WIKI_SCRAPE_DATE, "%Y-%m-%d")
+
     data = load_dataset("kasnerz/logicnlg", split="test")
 
     # Load the original test_lm.json file to get the dict representation
@@ -77,11 +77,11 @@ if __name__ == "__main__":
 
     dataset = Dataset.from_dict(data)
 
-    #dataset = dataset.select(range(25))  # FIXME: Remove after debugging!
+    dataset = dataset.select(range(3))  # FIXME: Remove after debugging!
     dataset = dataset.map(split_table_column)
 
     requests_cache.install_cache('wayback_cache', expire_after=86400)  # 1-day expiration
-    dataset = dataset.map(fetch_html)
+    dataset = dataset.map(fetch_html, fn_kwargs={"cache": page_cache, "scrape_time": scrape_time})
     dataset = dataset.map(map_example)
 
     print()

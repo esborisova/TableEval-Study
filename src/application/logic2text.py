@@ -57,18 +57,22 @@ def map_example(example):
 
 
 if __name__ == "__main__":
-    dataset = load_dataset("kasnerz/logic2text", split="test")
-
+    page_cache = {}
     WIKI_SCRAPE_DATE = "2019-03-23"
     scrape_time = datetime.strptime(WIKI_SCRAPE_DATE, "%Y-%m-%d")
 
-    page_cache = {}
+    dataset = load_dataset("kasnerz/logic2text", split="test")
+
     requests_cache.install_cache('wayback_cache', expire_after=86400)  # 1-day expiration
 
     dataset = dataset.map(add_metadata)
     #dataset = dataset.select(range(3))  # FIXME: For debug purposes only
 
-    dataset = dataset.map(fetch_html, fn_kwargs={"wiki_url_column_name": "wiki"})
+    dataset = dataset.map(fetch_html, fn_kwargs={
+        "cache": page_cache,
+        "scrape_time": scrape_time,
+        "wiki_url_column_name": "wiki"
+    })
 
     dataset = dataset.map(map_example)
 

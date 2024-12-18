@@ -7,8 +7,6 @@ from bs4 import BeautifulSoup
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from application.logicnlg import page_cache, scrape_time
-
 
 def safe_requests_get(url, retries=3, backoff_factor=1.0):
     for i in range(retries):
@@ -134,15 +132,15 @@ def get_archived_page_html(url, date):
         return None, None
 
 
-def fetch_html(example, wiki_url_column_name="wiki_url"):
+def fetch_html(example, cache, scrape_time, wiki_url_column_name="wiki_url"):
     table_id = example["table_id"]
-    if table_id in page_cache:
-        html, dt = page_cache[table_id]
+    if table_id in cache:
+        html, dt = cache[table_id]
         dt_str = dt.isoformat() if dt else None
         return {"html_content": html, "snapshot_timestamp": dt_str}
     else:
         html, dt = get_archived_page_html(example[wiki_url_column_name], scrape_time)
-        page_cache[table_id] = (html, dt)
+        cache[table_id] = (html, dt)
         dt_str = dt.isoformat() if dt else None
         return {"html_content": html, "snapshot_timestamp": dt_str}
 

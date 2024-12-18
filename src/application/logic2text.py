@@ -65,8 +65,7 @@ if __name__ == "__main__":
     requests_cache.install_cache('wayback_cache', expire_after=86400)  # 1-day expiration
 
     dataset = dataset.map(add_metadata)
-
-    dataset = dataset.select(range(3))
+    #dataset = dataset.select(range(3))  # FIXME: For debug purposes only
 
     dataset = dataset.map(fetch_html, fn_kwargs={"wiki_url_column_name": "wiki"})
 

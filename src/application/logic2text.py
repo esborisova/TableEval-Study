@@ -3,7 +3,8 @@ import requests_cache
 
 from datasets import load_dataset
 from datetime import datetime
-from logicnlg import fetch_html, extract_matched_table_html_and_similarity
+
+from utils.logic_datasets_utils import fetch_html, extract_matched_table_html_and_similarity
 
 
 def add_metadata(example):

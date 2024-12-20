@@ -5,6 +5,9 @@ import nltk
 from bleurt import score
 from evaluate import load
 from moverscore_v2 import get_idf_dict, word_mover_score
+from nltk.translate.bleu_score import sentence_bleu
+from rouge_score import rouge_scorer
+import re
 
 METRIC_REGISTRY = {}
 
@@ -138,26 +141,14 @@ def accuracy(predictions, references):
 @register("f1")
 def f1(predictions, references):
     # Check if both lists have the same length
-    if len(predictions) != len(references):
-        raise ValueError("The length of predictions and references must be the same.")
-
-    # Initialize counts
-    tp = 0  # True Positives
-    fp = 0  # False Positives
-    fn = 0  # False Negatives
 
     # Iterate through predictions and references
-    for pred, ref in zip(predictions, references):
-        if pred == 1 and ref == 1:
-            tp += 1  # True Positive
-        elif pred == 1 and ref == 0:
-            fp += 1  # False Positive
-        elif pred == 0 and ref == 1:
-            fn += 1  # False Negative
+    result_intersection = references.intersection(predictions)
+    intersec = len(result_intersection)
 
     # Calculate Precision and Recall
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    precision = intersec / len(references)
+    recall = intersec / len(predictions)
 
     # Calculate F1 Score
     if precision + recall == 0:
@@ -177,7 +168,13 @@ def perplexity(predictions, model_id):
 
 @register("rouge")
 def rouge(predictions, references, r_type: str = ""):
-    pass
+    """there are multiple rouge scores (rougeS, rougeL, rougeN, rouge1, rouge2,
+    rouge3, rouge4) you can evaluate on any if you write the type in the yaml
+    file. More information read on https://thepythoncode.com/article/calculate-rouge-score-in-python
+    """
+    scorer = rouge_scorer.RougeScorer([r_type], use_stemmer=True)
+    score = scorer.score(references, predictions)
+    return score
 
 
 @register("bleu")
@@ -192,7 +189,16 @@ def bleu(predictions, references, b_type: str = ""):
 
     Higher is better
     """
-    return sacrebleu.corpus_bleu(predictions, references).score
+    if re.match(".\\d+", b_type):
+        weights = [0, 0, 0, 0, 0]
+        index = int(b_type[-1])
+        weights[index] = 1
+        weights = tuple(weights)
 
-
-# TODO: BLEU-1, BLEU-2, BLEU-3, BLEU-45, ROUGE-, ROUGE-4L (F measure), R-1, R-2, R-4, and R-L
+    else:
+        # default bleu is 4-gram
+        weights = (0, 0, 0, 1)
+    bleu_score = []
+    for pred, ref in zip(predictions, references):
+        bleu_score.append(sentence_bleu(ref.split(), pred.split(), weights=weights))
+    return sum(bleu_score) / len(bleu_score)

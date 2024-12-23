@@ -47,7 +47,6 @@ def setup_parser() -> argparse.ArgumentParser:
         metavar="auto|auto:N|N",
         help="Acceptable values are 'auto', 'auto:N' or N, where N is an integer. Default 1.",
     )
-    # TODO: if none given search in yaml file else throw error
     parser.add_argument(
         "--device",
         type=str,
@@ -74,6 +73,12 @@ def setup_parser() -> argparse.ArgumentParser:
             "E.g, `--seed 42` sets all four seeds to 42."
         ),
     )
+    parser.add_argument(
+        "--log_samples",
+        action="store_true",
+        help="saves the samples together with the scores",
+    )
+    breakpoint()
     return parser
 
 
@@ -96,6 +101,7 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         num_fewshot=args.num_fewshot,
         batch_size=args.batch_size,
         random_seed=args.seed,
+        log_samples=args.log_samples,
     )
 
     results = eval.simple_eval()

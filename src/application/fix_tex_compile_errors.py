@@ -1,4 +1,4 @@
-"""Script for fixing remaining the latex compile errors in numericNLG and ComTQA PMC subset instances"""
+"""Script for fixing remaining latex compile errors in numericNLG and ComTQA PMC subset instances"""
 
 import pandas as pd
 from datasets import load_from_disk
@@ -12,18 +12,18 @@ def replace_latex_symbols_df(df, column_name, condition, old_sybm, new_symb):
 
 
 def main():
-    comtqa = load_from_disk("../../../data/ComTQA_data/comtqa_updated_2024-12-25")
+    comtqa = load_from_disk("../../data/ComTQA_data/comtqa_updated_2024-12-25")
     comtqa_df = comtqa["train"].to_pandas()
     comtqa_condition = (comtqa_df["dataset"] == "PubTab1M") & (
         comtqa_df["id"] == "PMC1079919"
     )
     replace_latex_symbols_df(comtqa_df, "table_latex", comtqa_condition, "$", r"\$")
     create_and_save_dataset(
-        comtqa_df, "train", "../../../data/ComTQA_data/comtqa_updated"
+        comtqa_df, "train", "../../data/ComTQA_data/comtqa_updated"
     )
 
     numericnlg = load_from_disk(
-        "../../../data/numericNLG/numericnlg_updated_2024-12-25"
+        "../../data/numericNLG/numericnlg_updated_2024-12-25"
     )
     numericnlg_df = numericnlg["test"].to_pandas()
     numericnlg_condition = numericnlg_df["table_id_paper"].isin(
@@ -33,7 +33,7 @@ def main():
         numericnlg_df, "table_latex", numericnlg_condition, r"\}", r"$\pm$"
     )
     create_and_save_dataset(
-        numericnlg_df, "test", "../../../data/numericNLG/numericnlg_updated"
+        numericnlg_df, "test", "../../data/numericNLG/numericnlg_updated"
     )
 
 

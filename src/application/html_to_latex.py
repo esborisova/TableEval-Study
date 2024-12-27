@@ -15,6 +15,7 @@ def main():
     )
     numericnlg = numericnlg.to_pandas()
     numericnlg = numericnlg.rename(columns={"table_latex": "table_latex_gemini"})
+    numericnlg = numericnlg.drop(columns=["table_latex_source"])
 
     replacements_path = "../../utils/latex_symbols.json"
     replacements = read_json(replacements_path)

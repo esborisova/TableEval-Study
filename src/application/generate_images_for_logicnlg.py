@@ -47,12 +47,13 @@ def map_example(example):
         return {"matched_table_image_path": None}
 
     table_id = example["table_id"]
-    output_dir = "../../data/logicnlg_table_images"
+    output_dir = f"../../data/{dataset_name}_table_images"
     os.makedirs(output_dir, exist_ok=True)
     output_path = f"{output_dir}/{table_id}.png"
     html_to_image(example["matched_table_html"], output_path=output_path)
     return {"matched_table_image_path": output_path}
 
 
-dataset = load_from_disk("../../data/logicnlg")
+dataset_name = "logicnlg"  # "logic2text"
+dataset = load_from_disk(f"../../data/{dataset_name}")
 dataset = dataset.map(map_example)

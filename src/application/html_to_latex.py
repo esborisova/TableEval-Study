@@ -6,18 +6,18 @@ from ..utils.html_latex_convertion import convert_html_to_latex_tables
 
 
 def main():
-    comtqa = load_from_disk("../../../data/ComTQA_data/comtqa_updated_2024-12-06")
+    comtqa = load_from_disk("../../data/ComTQA_data/comtqa_updated_2024-12-06")
     comtqa = comtqa["train"].to_pandas()
     pmc_subset = comtqa[comtqa["dataset"] == "PubTab1M"]
 
     numericnlg = load_from_disk(
-        "../../../data/numericNLG/numericnlg_test_2024_12_17.hf"
+        "../../data/numericNLG/numericnlg_test_2024_12_17.hf"
     )
     numericnlg = numericnlg.to_pandas()
     numericnlg = numericnlg.rename(columns={"table_latex": "table_latex_gemini"})
     numericnlg = numericnlg.drop(columns=["table_latex_source"])
 
-    replacements_path = "../../utils/latex_symbols.json"
+    replacements_path = "../utils/latex_symbols.json"
     replacements = read_json(replacements_path)
 
     html_replacements = replacements["html_escape_characters"]

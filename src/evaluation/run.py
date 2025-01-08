@@ -1,5 +1,6 @@
 import argparse
 from typing import Union
+import ast
 
 
 from evaluator import Evaluator
@@ -56,7 +57,7 @@ def setup_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output_path",
         "-o",
-        default=None,
+        default="./output",
         type=str,
         metavar="DIR|DIR/file.json",
         help="The path to the output file where the result metrics will be saved. If the path is a directory and log_samples is true, the results will be saved in the directory. Else the parent directory will be used.",
@@ -78,7 +79,6 @@ def setup_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="saves the samples together with the scores",
     )
-    breakpoint()
     return parser
 
 
@@ -89,7 +89,7 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
 
     model = HFModel(
         args.model_name,
-        args.model_args,
+        ast.literal_eval(args.model_args),
         batch_size=args.batch_size,
         random_seed=args.seed,
         device=args.device,

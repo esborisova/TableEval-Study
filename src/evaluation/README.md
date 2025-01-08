@@ -14,7 +14,7 @@ The **Table Understanding Evaluation Pipeline** provides a comprehensive framewo
 ## Installation
 1. Clone the repository:
    ```bash
-   git clone <repo_url>
+   git clone https://github.com/esborisova/Table-Understanding-Evaluation-Study.git
    cd Table-Understanding-Evaluation-Study/src/evaluation
    ```
 2. Install the required dependencies:

@@ -72,7 +72,7 @@ class Evaluator:
                         few_shot_samples = None
                 else:
                     few_shot_samples = None
-
+            breakpoint()
             # generate the input prompts
             inputs = self.generate_prompt(samples, few_shot_samples, num_fewshot, task)
 
@@ -121,9 +121,10 @@ class Evaluator:
     def generate_prompt(self, samples, few_shot_samples, num_fewshot, task):
         # generate the prompts from the template
         sample_to_prompt = prompt_gen(task["doc_to_text"], samples)
-        few_shot_to_prompt = prompt_gen(
-            task["doc_to_text"], few_shot_samples, task["doc_to_target"]
-        )
+        if num_fewshot == 0:
+            few_shot_to_prompt = prompt_gen(
+                task["doc_to_text"], few_shot_samples, task["doc_to_target"]
+            )
 
         if "instruction" in task:
             few_shot_prompt = task["instruction"]

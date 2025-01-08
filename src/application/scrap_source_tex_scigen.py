@@ -4,17 +4,14 @@ import requests
 import logging
 import tarfile
 from datasets import load_from_disk
+from ..utils.other import create_dir
+
 
 logging.basicConfig(
     filename="download_errors.log",
     level=logging.ERROR,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
-
-
-def create_dir(root_dir: str):
-    if not os.path.exists(root_dir):
-        os.makedirs(root_dir)
 
 
 def fetch_arxiv_source(arxiv_url: str):

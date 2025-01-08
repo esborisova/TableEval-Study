@@ -30,3 +30,7 @@ torch==2.5.1
 PyYAML==6.0.2
 Jinja2==3.1.5
 evaluate==0.4.3
+sacrebleu
+moverscore
+pyemd
+git+https://github.com/google-research/bleurt.git

@@ -11,6 +11,12 @@ def read_json(file_path: str) -> list:
         return json.load(f)
 
 
+def read_html(file: str):
+    with open(os.path.join(file), "r") as f:
+        content = f.read()
+    return content
+
+
 def create_dir(root_dir: str):
     if not os.path.exists(root_dir):
         os.makedirs(root_dir)
@@ -20,6 +26,19 @@ def copy_files(tar_dir: str, output_dir: str, image_files):
     with tarfile.open(tar_dir, "r:gz") as tar:
         os.makedirs(output_dir, exist_ok=True)
         tar.extractall(path=output_dir, members=image_files)
+
+
+def find_file(root_folder: str, paper_id: str, file_format: str) -> List[str]:
+    format = f".{file_format.lower()}"
+    paper_folder = os.path.join(root_folder, paper_id)
+
+    found_files = []
+    if os.path.exists(paper_folder) and os.path.isdir(paper_folder):
+        for root, _, files in os.walk(paper_folder):
+            for file in files:
+                if file.lower().endswith(format):
+                    found_files.append(file)
+    return found_files
 
 
 def create_dataset_object(df: pd.DataFrame, split) -> Dataset:

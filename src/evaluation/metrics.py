@@ -179,9 +179,11 @@ def rouge(predictions, references, r_type: str = ""):
     rouge3, rouge4) you can evaluate on any if you write the type in the yaml
     file. More information read on https://thepythoncode.com/article/calculate-rouge-score-in-python
     """
+    score = []
     scorer = rouge_scorer.RougeScorer([r_type], use_stemmer=True)
-    score = scorer.score(references, predictions)
-    return score
+    for ref, pred in zip(references, predictions):
+        score.append(scorer.score(ref, pred))
+    return sum(score) / len(score)
 
 
 @register("bleu")

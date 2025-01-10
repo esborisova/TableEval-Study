@@ -31,7 +31,7 @@ class Evaluator:
         self.register = TaskManager()
         self.tasks_list = self.register.get_task(tasks)
         self.num_fewshot = num_fewshot
-        self.batch_size = batch_size
+        self.batch_size = int(batch_size)
         self.log_samples = log_samples
         self.model = model
         random.seed(random_seed)
@@ -72,7 +72,6 @@ class Evaluator:
                         few_shot_samples = None
                 else:
                     few_shot_samples = None
-            breakpoint()
             # generate the input prompts
             inputs = self.generate_prompt(samples, few_shot_samples, num_fewshot, task)
 
@@ -121,7 +120,7 @@ class Evaluator:
     def generate_prompt(self, samples, few_shot_samples, num_fewshot, task):
         # generate the prompts from the template
         sample_to_prompt = prompt_gen(task["doc_to_text"], samples)
-        if num_fewshot == 0:
+        if num_fewshot != 0:
             few_shot_to_prompt = prompt_gen(
                 task["doc_to_text"], few_shot_samples, task["doc_to_target"]
             )

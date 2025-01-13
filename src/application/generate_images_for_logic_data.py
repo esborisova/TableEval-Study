@@ -6,6 +6,7 @@ import tempfile
 import time
 from bs4 import BeautifulSoup
 from datasets import Dataset, load_from_disk
+from tqdm import tqdm
 from urllib.parse import urlparse, unquote
 
 
@@ -195,8 +196,8 @@ def generate_html_from_dataframe(df, output_file):
                 text-align: center;
             }
             img {
-                max-width: 200px;   /* Adjust image width */
-                max-height: 200px;  /* Adjust image height */
+                max-width: 500px;   /* Adjust image width */
+                max-height: 500px;  /* Adjust image height */
             }
         </style>
     </head>
@@ -205,27 +206,39 @@ def generate_html_from_dataframe(df, output_file):
             <thead>
                 <tr>
                     <th>Filename</th>
-                    <th>Table</th>
+                    <th>Topic / Similarity</th>
+                    <th>Original Content</th>
+                    <th>Matched Table</th>
                     <th>Image</th>
                 </tr>
             </thead>
             <tbody>
     """
 
+    seen_table_ids = set()
     # Iterate through DataFrame rows
-    for _, row in df.iterrows():
-        image_path = f"../../data/{dataset_name}_table_images/{row['image_id']}"
+    for _, row in tqdm(df.iterrows(), total=len(df), desc="Generating HTML Explorer"):
+        table_id = row["table_id"]
+        if table_id not in seen_table_ids:
+            seen_table_ids.add(table_id)
 
-        # Debugging: Print the image path to check if it's correct
-        print(f"Image path: {image_path}")
+            image_path = f"../../data/{dataset_name}_table_images/{row['table_id']}.png"
 
-        html_content += f"""
-        <tr>
-            <td>{row['image_id']}</td>
-            <td>{row['table_xml']}</td>
-            <td><img src="{image_path}" alt="Image"></td>
-        </tr>
-        """
+            table_body = row[body_column]
+            # Clean up the table body content with explicit <br> tags
+            if dataset_name == "logicnlg":
+                # Use a list comprehension to join each inner array's elements and separate with <br>
+                table_body = "<br>".join([", ".join(map(str, sub_array)) for sub_array in table_body])
+
+            html_content += f"""
+            <tr>
+                <td>{row['table_id']}</td>
+                <td><h2>{row[topic_column]}</h2><br>{row['matched_table_similarity']}</td>
+                <td><b>{row[header_column]}</b><br>{table_body}</td>
+                <td>{row['matched_table_html']}</td>
+                <td><img src="{image_path}" alt="Image"></td>
+            </tr>
+            """
 
     # Close HTML structure
     html_content += """
@@ -239,9 +252,26 @@ def generate_html_from_dataframe(df, output_file):
     with open(output_file, "w", encoding="utf-8") as file:
         file.write(html_content)
 
-dataset_name = "logicnlg"  # "logic2text" / "logicnlg"
+dataset_name = "logic2text"  # "logic2text" / "logicnlg"
 dataset = load_from_disk(f"../../data/{dataset_name}").to_pandas()
 dataset.loc[dataset["matched_table_similarity"] < 0.90,["matched_table_html"]] = None
 filtered_dataset = dataset[dataset["matched_table_html"].notna()]
+
+if dataset_name == "logic2text":
+    topic_column = "topic"
+    header_column = "table_header"
+    body_column = "table_cont"
+elif dataset_name == "logicnlg":
+    topic_column = "title"
+    header_column = "table_column_names"
+    body_column = "table_content_values"
+else:
+    raise ValueError(f"Unknown dataset name: {dataset_name}")
+
+generate_html_from_dataframe(
+    filtered_dataset,
+    output_file=f"../../data/{dataset_name}_table_images/{dataset_name}_explorer.html"
+)
+
 dataset = Dataset.from_pandas(filtered_dataset)
 dataset = dataset.map(map_example)

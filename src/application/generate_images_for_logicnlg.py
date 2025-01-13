@@ -3,7 +3,7 @@ import os
 import re
 import tempfile
 import time
-from datasets import load_from_disk
+from datasets import Dataset, load_from_disk
 
 
 imgkit.config(wkhtmltoimage='/usr/local/bin/wkhtmltoimage')
@@ -82,27 +82,89 @@ def map_example(example):
         return {"matched_table_image_path": output_path}
 
     # 4) Modify HTML to fix protocol-relative // URLs (example)
-    replaced_html = example["matched_table_html"]
+    #replaced_html = example["matched_table_html"]
+    replaced_html = remove_wayback_prefix(example["matched_table_html"])
     replaced_html = replaced_html.replace('src="//', 'src="https://')
     replaced_html = replaced_html.replace('href="//', 'href="https://')
 
     # 5) Create the image
-    try:
-        html_to_image(replaced_html, output_path=output_path)
-    except ConnectionRefusedError:
-        replaced_html = remove_wayback_prefix(example["matched_table_html"])
-        replaced_html = replaced_html.replace('src="//', 'src="https://')
-        replaced_html = replaced_html.replace('href="//', 'href="https://')
-        html_to_image(replaced_html, output_path=output_path)
+    html_to_image(replaced_html, output_path=output_path)
 
     # 6) Mark this table_id as processed
     processed_ids.add(table_id)
 
-    time.sleep(30)
+    time.sleep(10)
 
     return {"matched_table_image_path": output_path}
 
 
-dataset_name = "logic2text"  # "logic2text"
-dataset = load_from_disk(f"../../data/{dataset_name}")
+def generate_html_from_dataframe(df, output_file):
+    # Start HTML structure with CSS for image resizing
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>HTML Table</title>
+        <style>
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid black;
+                padding: 8px;
+                text-align: center;
+            }
+            img {
+                max-width: 200px;   /* Adjust image width */
+                max-height: 200px;  /* Adjust image height */
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Table</th>
+                    <th>Image</th>
+                </tr>
+            </thead>
+            <tbody>
+    """
+
+    # Iterate through DataFrame rows
+    for _, row in df.iterrows():
+        image_path = f"../../data/{dataset_name}_table_images/{row['image_id']}"
+
+        # Debugging: Print the image path to check if it's correct
+        print(f"Image path: {image_path}")
+
+        html_content += f"""
+        <tr>
+            <td>{row['image_id']}</td>
+            <td>{row['table_xml']}</td>
+            <td><img src="{image_path}" alt="Image"></td>
+        </tr>
+        """
+
+    # Close HTML structure
+    html_content += """
+            </tbody>
+        </table>
+    </body>
+    </html>
+    """
+
+    # Save to an HTML file
+    with open(output_file, "w", encoding="utf-8") as file:
+        file.write(html_content)
+
+dataset_name = "logicnlg"  # "logic2text" / "logicnlg"
+dataset = load_from_disk(f"../../data/{dataset_name}").to_pandas()
+dataset.loc[dataset["matched_table_similarity"] < 0.90,["matched_table_html"]] = None
+filtered_dataset = dataset[dataset["matched_table_html"].notna()]
+dataset = Dataset.from_pandas(filtered_dataset)
 dataset = dataset.map(map_example)

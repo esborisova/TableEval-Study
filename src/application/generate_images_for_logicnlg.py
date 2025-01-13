@@ -1,15 +1,92 @@
 import imgkit
 import os
 import re
+import requests
 import tempfile
 import time
+from bs4 import BeautifulSoup
 from datasets import Dataset, load_from_disk
+from urllib.parse import urlparse, unquote
 
 
 imgkit.config(wkhtmltoimage='/usr/local/bin/wkhtmltoimage')
 
 # Global set to track processed table_ids
 processed_ids = set()
+
+
+def rewrite_and_download_images(table_html: str, image_dir: str) -> str:
+    """
+    Parse `table_html`, find all <img> tags, download images locally,
+    and rewrite `src` to point to the downloaded file.
+
+    :param table_html: The raw HTML string containing <img> tags.
+    :param image_dir:  Path to the local directory where images will be saved.
+    :return:           Modified HTML with local image paths instead of remote URLs.
+    """
+    # Ensure the directory for images exists
+    os.makedirs(image_dir, exist_ok=True)
+
+    soup = BeautifulSoup(table_html, "html.parser")
+
+    # Track whether we actually downloaded any images
+    downloaded_any = False
+
+    for img_tag in soup.find_all("img"):
+        src = img_tag.get("src")
+        if not src:
+            continue  # Skip <img> with no src
+
+        # Fix protocol-relative references: //example.com -> https://example.com
+        if src.startswith("//"):
+            src = "https:" + src
+
+        # Optionally remove Wayback prefixes (if you often see web.archive.org)
+        # Example: https://web.archive.org/web/12345im_/https://upload.wikimedia.org/...
+        # We can do a simple replacement or a more robust regex approach
+        if "web.archive.org" in src:
+            # One simplistic approach:
+            # pattern: https://web.archive.org/web/<digits>im_/<actual https://...>
+            match = re.match(r"https?://web\.archive\.org/web/\d+im_/(https?://.*)", src)
+            if match:
+                src = match.group(1)
+
+        # Try downloading the image
+        try:
+            response = requests.get(src, timeout=10)
+            response.raise_for_status()  # Raise an error for 4xx/5xx
+
+            # Build a stable local filename from the URL
+            # Derive filename using unquote
+            parsed_url = urlparse(src)
+            filename = os.path.basename(parsed_url.path)  # e.g. "23px-Flag_of_Canada_%28Pantone%29.svg.png"
+            filename = unquote(filename)  # becomes "23px-Flag_of_Canada_(Pantone).svg.png"
+
+            # If filename is empty or something weird, fallback
+            if not filename:
+                filename = "downloaded_image.png"
+
+            local_path = os.path.join(image_dir, filename)
+
+            # Write to local file
+            with open(local_path, "wb") as f:
+                f.write(response.content)
+
+            # Rewrite the <img> tag to the local path
+            # We can use a relative path if wkhtmltoimage is invoked from the same directory
+            # e.g. "images/filename.png"
+            # Or an absolute path. Either can work with --enable-local-file-access
+            rel_path_for_html = os.path.abspath(local_path)
+
+            img_tag["src"] = rel_path_for_html
+
+        except (requests.RequestException, IOError) as e:
+            # If download fails, remove this <img> or replace with a placeholder
+            img_tag.decompose()  # remove the <img> tag entirely
+            # OR:
+            # img_tag["src"] = "placeholder.png"
+
+    return str(soup)
 
 def remove_wayback_prefix(html: str) -> str:
     # Remove the Wayback Machine prefix if present
@@ -76,24 +153,24 @@ def map_example(example):
     output_dir = f"../../data/{dataset_name}_table_images"
     os.makedirs(output_dir, exist_ok=True)
     output_path = f"{output_dir}/{table_id}.png"
+
+    # 4) Skip if file already exists
     if os.path.exists(output_path):
-        # Already have an image file at this location; skip creation
         processed_ids.add(table_id)
         return {"matched_table_image_path": output_path}
 
-    # 4) Modify HTML to fix protocol-relative // URLs (example)
-    #replaced_html = example["matched_table_html"]
-    replaced_html = remove_wayback_prefix(example["matched_table_html"])
-    replaced_html = replaced_html.replace('src="//', 'src="https://')
-    replaced_html = replaced_html.replace('href="//', 'href="https://')
+    # 5) Pre-download images and rewrite HTML
+    #    We'll store all images in a subfolder named after the table_id (optional)
+    images_dir = os.path.join(output_dir, f"{table_id}_images")
+    replaced_html = rewrite_and_download_images(example["matched_table_html"], images_dir)
 
-    # 5) Create the image
+    # 6) Create the image
     html_to_image(replaced_html, output_path=output_path)
 
-    # 6) Mark this table_id as processed
+    # 7) Mark this table_id as processed
     processed_ids.add(table_id)
 
-    time.sleep(10)
+    time.sleep(5)
 
     return {"matched_table_image_path": output_path}
 

@@ -75,6 +75,7 @@ class Metrics:
                 new_metric = "bleu"
             if "rouge" in new_metric:
                 new_metric = "rouge"
+            self.metric_name = new_metric
             self.function = METRIC_REGISTRY[new_metric]
         else:
             self.function = None

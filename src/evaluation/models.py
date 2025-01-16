@@ -80,7 +80,7 @@ class HFModel(LanguageModel):
         )
 
     def __call__(self, prompts: List, **kwargs):
-        inputs = self.tokenizer(prompts, return_tensors="pt")
+        inputs = self.tokenizer(prompts, truncation=True, padding=True, return_tensors="pt").to(self.device)
         output = self.model.generate(
             **inputs,
             num_return_sequences=1,
@@ -90,7 +90,7 @@ class HFModel(LanguageModel):
         )
         generated_text = [
             self.tokenizer.decode(seq, skip_special_tokens=True)
-            for seq in output.sequences
+            for seq in output.sequences.cpu()
         ]  # skip_special_token = true
         # logits shape: (batch_size, vocab_size)
         logits = output.scores

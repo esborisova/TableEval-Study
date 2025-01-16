@@ -78,7 +78,6 @@ class Evaluator:
             # run all samples
             for i in tqdm(range(0, len(inputs), self.batch_size)):
                 outputs, logits = self.model(inputs[i : i + self.batch_size])
-                breakpoint()
                 # generate tuple for each output and sample
                 task_results.extend(
                     [
@@ -87,7 +86,7 @@ class Evaluator:
                             "reference": samples[i + j][task["doc_to_target"]],
                             "input": inputs[i + j],
                             "example": samples[i + j],
-                            "logits": [logits_step[i] for logits_step in logits],
+                            "logits": [logits_step[j].cpu() for logits_step in logits],
                         }
                         for j in range(0, self.batch_size)
                     ]

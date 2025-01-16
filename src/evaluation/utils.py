@@ -19,13 +19,19 @@ def prompt_gen(template: str, samples: List, target: str = "") -> List[str]:
 def load_samples(path: str, split: str) -> Dataset:
     if os.path.exists(path):
         dataset = load_from_disk(path)
+        dataset = dataset[split]
+        
     else:
-        dataset = load_dataset(path, split=split)
+        dataset = load_dataset(path, split=f"{split}")
     return dataset
 
 
 def save_results(output_path, results):
-    with open(output_path / "result.json", "w") as f:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    if not os.path.exists(f"{dir_path}/{output_path}"):
+            os.makedirs(f"{dir_path}/{output_path}")
+    # TODO: change genereic output name
+    with open( f"{dir_path}/{output_path}/result.json", "w") as f:
         json.dump(
             results,
             f,

@@ -28,7 +28,7 @@ def setup_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--model_args",
         "-a",
-        default="",
+        default="{}",
         type=str,
         help="Comma separated string arguments for model, e.g. `pretrained=EleutherAI/pythia-160m,dtype=float32`",
     )
@@ -43,7 +43,7 @@ def setup_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--batch_size",
         "-b",
-        type=str,
+        type=int,
         default=1,
         metavar="auto|auto:N|N",
         help="Acceptable values are 'auto', 'auto:N' or N, where N is an integer. Default 1.",

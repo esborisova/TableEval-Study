@@ -59,7 +59,7 @@ class Metrics:
             self.predictions.extend(prediction)
 
     def compute(self) -> Dict:
-        if "rouge" or "bleu" in self.metric_name:
+        if ("rouge" or "bleu") in self.metric_name:
             return self.function(self.predictions, self.references, self.metric_name)
         if "perplexity" in self.metric_name:
             return self.function(self.predictions, self.model_id)
@@ -70,6 +70,7 @@ class Metrics:
         self.references = []
 
     def metric_type(self, new_metric: str):
+        self.metric_name = new_metric
         if new_metric:
             if "bleu" in new_metric:
                 new_metric = "bleu"
@@ -85,9 +86,10 @@ def meteor(predictions, references):
     """Return the mean of the meteor_score for each prediction and reference pair."""
     m_score = []
     for prediction, reference in zip(predictions, references):
-        score = nltk.translate.meteor_score.meteor_score(reference, prediction)
+        nltk.download('wordnet')
+        score = nltk.translate.meteor_score.single_meteor_score(reference.split(), prediction.split())
         m_score.append(score)
-    return m_score
+    return {'meteor' : sum(m_score) / len(m_score)}
 
 
 @register("moverS")
@@ -179,11 +181,16 @@ def rouge(predictions, references, r_type: str = ""):
     rouge3, rouge4) you can evaluate on any if you write the type in the yaml
     file. More information read on https://thepythoncode.com/article/calculate-rouge-score-in-python
     """
-    score = []
+    precision = []
+    recall = []
+    f1 = []
     scorer = rouge_scorer.RougeScorer([r_type], use_stemmer=True)
     for ref, pred in zip(references, predictions):
-        score.append(scorer.score(ref, pred))
-    return sum(score) / len(score)
+        score = scorer.score(ref, pred)
+        precision.append(score[r_type].precision)
+        recall.append(score[r_type].recall)
+        f1.append(score[r_type].fmeasure)
+    return {'f1' : sum(f1) / len(f1), 'precision': sum(precision) / len(precision), 'recall': sum(recall) / len(recall)}
 
 
 @register("bleu")

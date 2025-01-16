@@ -1,11 +1,11 @@
-task_name: numericnlg
-path: kasnerz/numericnlg
+task_name: latex_numericnlg
+path: /netscratch/borisova/TableEval/data/numericNLG/numericnlg_updated_2024-12-27
 test_split: test
 validation_split: validation
 train_split: train
 num_fewshot: 2
 instruction: "generate a brief description of the following table:\n"
-doc_to_text: "row_headers:{{row_headers}}\ncolumn_headers:{{column_headers}}\ncontents:{{contents}}\ndescription:"
+doc_to_text: "{{table_latex}}\ndescription:"
 doc_to_target: description
 metric_list:
   - bleu

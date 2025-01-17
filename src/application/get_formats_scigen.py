@@ -92,6 +92,9 @@ def find_table_by_caption(tex_file, caption):
     with open(tex_file, 'r', encoding='utf-8') as file:
         content = file.read()
 
+    content = remove_commented_lines(content)
+    # remove $ from content
+    content = content.replace('$', '')
     # Regex to find all tables and captions
     table_pattern = re.compile(r'\\begin\{table\*?\}(.*?)\\end\{table\*?\}', re.DOTALL)
 
@@ -103,18 +106,18 @@ def find_table_by_caption(tex_file, caption):
         table_soup_2 = soup.find_all('table*')
 
         for item in table_soup_1:
-            if hasattr(item, 'caption'):
-                normalized_caption = normalize_caption(item.caption.string)
-                fuzzy_match_score = fuzz.ratio(normalized_caption, caption)
-                if fuzzy_match_score >= 80:
-                    return table_code
+          if item.caption != None:
+            normalized_caption = normalize_caption(item.caption.string)
+            fuzzy_match_score = fuzz.ratio(normalized_caption, caption)
+            if fuzzy_match_score >= 80:
+              return table_code
 
         for item in table_soup_2:
-            if hasattr(item, 'caption'):
-                normalized_caption = normalize_caption(item.caption.string)
-                fuzzy_match_score = fuzz.ratio(normalized_caption, caption)
-                if fuzzy_match_score >= 80:
-                    return table_code
+          if item.caption != None:
+            normalized_caption = normalize_caption(item.caption.string)
+            fuzzy_match_score = fuzz.ratio(normalized_caption, caption)
+            if fuzzy_match_score >= 80:
+              return table_code
 
     return None
 

@@ -4,7 +4,8 @@ import sacrebleu
 import nltk
 from bleurt import score
 from evaluate import load
-from moverscore_v2 import get_idf_dict, word_mover_score
+
+# from moverscore_v2 import get_idf_dict, word_mover_score
 from nltk.translate.bleu_score import sentence_bleu
 from rouge_score import rouge_scorer
 import re
@@ -87,10 +88,12 @@ def meteor(predictions, references):
     """Return the mean of the meteor_score for each prediction and reference pair."""
     m_score = []
     for prediction, reference in zip(predictions, references):
-        nltk.download('wordnet')
-        score = nltk.translate.meteor_score.single_meteor_score(reference.split(), prediction.split())
+        nltk.download("wordnet")
+        score = nltk.translate.meteor_score.single_meteor_score(
+            reference.split(), prediction.split()
+        )
         m_score.append(score)
-    return {'meteor' : sum(m_score) / len(m_score)}
+    return {"meteor": sum(m_score) / len(m_score)}
 
 
 @register("moverS")
@@ -99,7 +102,7 @@ def moverS(predictions, references):
     from moverscore import get_idf_dict, word_mover_score
     Recommend to use this version (DistilBERT) for evaluation, if the speed is your concern.
     """
-
+    """
     idf_dict_hyp = get_idf_dict(predictions)  # idf_dict_hyp = defaultdict(lambda: 1.)
     idf_dict_ref = get_idf_dict(references)  # idf_dict_ref = defaultdict(lambda: 1.)
 
@@ -111,8 +114,9 @@ def moverS(predictions, references):
         stop_words=[],
         n_gram=1,
         remove_subwords=True,
-    )
-    return score
+    )"""
+
+    return None
 
 
 @register("bleurt")
@@ -191,7 +195,11 @@ def rouge(predictions, references, r_type: str = ""):
         precision.append(score[r_type].precision)
         recall.append(score[r_type].recall)
         f1.append(score[r_type].fmeasure)
-    return {'f1' : sum(f1) / len(f1), 'precision': sum(precision) / len(precision), 'recall': sum(recall) / len(recall)}
+    return {
+        "f1": sum(f1) / len(f1),
+        "precision": sum(precision) / len(precision),
+        "recall": sum(recall) / len(recall),
+    }
 
 
 @register("bleu")

@@ -30,13 +30,14 @@ def setup_parser() -> argparse.ArgumentParser:
         "-a",
         default="{}",
         type=str,
+        # lambda s: ast.literal_eval(s),
         help="Comma separated string arguments for model, e.g. `pretrained=EleutherAI/pythia-160m,dtype=float32`",
     )
     parser.add_argument(
         "--num_fewshot",
         "-f",
         type=int,
-        default=None,
+        default=0,
         metavar="N",
         help="Number of examples in few-shot context",
     )
@@ -79,6 +80,18 @@ def setup_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="saves the samples together with the scores",
     )
+    parser.add_argument(
+        "--multi_modal",
+        "-mm",
+        action="store_true",
+        help="if running multi modal LLMs. default: False",
+    )
+    parser.add_argument(
+        "--image_special_token",
+        type=str,
+        default="<image>",
+        help="Changing the special token for the multi_modal LLMs. The default is <image>",
+    )
     return parser
 
 
@@ -93,6 +106,8 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         batch_size=args.batch_size,
         random_seed=args.seed,
         device=args.device,
+        multi_modal=args.multi_modal,
+        special_token_for_image=args.image_special_token,
     )
 
     eval = Evaluator(
@@ -106,11 +121,7 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
 
     results = eval.simple_eval()
 
-    if args.output_path:
-        save_results(
-            args.output_path,
-            results,
-        )
+    save_results(args.output_path, results, model_name=model.get_model_info())
 
 
 if __name__ == "__main__":

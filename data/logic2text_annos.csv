@@ -1,0 +1,292 @@
+filename,issue,usable,comments
+2-16441561-3.html.csv,none,TRUE,
+1-1969577-1.html.csv,FM,FALSE,"wrong order and missing rows, also wrong numbers"
+2-18369370-4.html.csv,none,TRUE,
+2-10809157-3.html.csv,none,TRUE,
+2-1634072-2.html.csv,AR,FALSE,
+2-10713126-4.html.csv,AC,FALSE,
+1-15869204-8.html.csv,none,TRUE,
+2-10767641-2.html.csv,none,TRUE,
+2-16140345-7.html.csv,AC,TRUE,
+2-18662700-3.html.csv,none,TRUE,
+2-15687212-1.html.csv,AC,FALSE,
+2-16791999-1.html.csv,none,TRUE,
+2-16441868-2.html.csv,none,TRUE,
+2-10776330-2.html.csv,none,TRUE,
+1-1566852-4.html.csv,none,TRUE,
+2-13045475-1.html.csv,AC,FALSE,Notes missing
+2-13762472-8.html.csv,none,TRUE,
+1-12407546-2.html.csv,none,TRUE,
+2-10790099-5.html.csv,none,TRUE,
+2-15399415-1.html.csv,none,TRUE,
+2-11048203-1.html.csv,none,TRUE,
+2-16003508-1.html.csv,none,TRUE,
+2-18662686-4.html.csv,none,TRUE,
+2-14407512-19.html.csv,BM,TRUE,name missspelled
+2-11788447-2.html.csv,none,TRUE,
+2-18167542-1.html.csv,none,TRUE,
+2-15188879-2.html.csv,AC,TRUE,missing comment section
+2-10808681-4.html.csv,none,TRUE,
+2-13594823-1.html.csv,BM,TRUE,name missspelled
+2-1235776-2.html.csv,none,TRUE,
+2-1236138-1.html.csv,FM,FALSE,
+2-1517891-1.html.csv,AC,FALSE,
+2-1894556-1.html.csv,none,TRUE,
+2-10806852-9.html.csv,none,TRUE,
+2-17290159-1.html.csv,none,TRUE,
+1-27816698-2.html.csv,BM,FALSE,read nonexisting data
+1-25461946-5.html.csv,AR,TRUE,read all but the last row
+1-1140085-2.html.csv,AR,TRUE,read all but the last row
+2-16514242-7.html.csv,none,TRUE,
+2-16615322-1.html.csv,none,TRUE,
+1-27631002-1.html.csv,AR,TRUE,read all but the last row
+2-12760940-1.html.csv,FM,FALSE,read nonexistent data
+2-13598632-1.html.csv,none,TRUE,
+2-14904515-1.html.csv,AC,TRUE,missing 2 columns with indexing and reference
+2-14035388-2.html.csv,BM,FALSE,read nonexistent data
+2-11711773-1.html.csv,none,TRUE,
+2-1477679-2.html.csv,BM,FALSE,data is all over the place
+2-11947078-2.html.csv,BM,TRUE,misread character
+2-167482-1.html.csv,FM,FALSE,missing data and missing columns and partial data mismatch
+2-17100961-44.html.csv,none,TRUE,
+2-14890412-3.html.csv,AC,FALSE,missing lots of columns
+2-11650849-12.html.csv,AC,FALSE,missing a column and messed up order
+2-15198842-12.html.csv,none,TRUE,missspelled a column
+2-18937160-2.html.csv,FM,FALSE,messed up order and added rows
+1-2509505-1.html.csv,AR,TRUE,missing a column
+2-15593730-1.html.csv,none,TRUE,
+2-17921347-4.html.csv,FM,FALSE,"added header to body as row, missing columns"
+1-23284271-11.html.csv,FM,TRUE,missing row and column
+2-17941795-5.html.csv,FM,FALSE,"missing rows and colums, also confused the entries"
+1-18946749-4.html.csv,AR,TRUE,
+2-10807990-12.html.csv,none,TRUE,
+2-17265352-1.html.csv,AC,TRUE,missing notes
+2-18732289-1.html.csv,none,TRUE,
+2-18018248-3.html.csv,FM,TRUE,"data inside body is correct, but headers are messed up in order and name"
+2-14094220-1.html.csv,AC,TRUE,missing a empty notes column
+2-1833981-2.html.csv,FM,FALSE,missing a lot of everything
+2-10516844-3.html.csv,FM,TRUE,missing colums and rows but existing data is correct
+2-14033387-1.html.csv,none,TRUE,
+2-10887680-17.html.csv,none,TRUE,
+2-10808933-12.html.csv,none,TRUE,
+2-17323529-9.html.csv,none,TRUE,
+2-13244506-2.html.csv,FM,TRUE,"missing a column and 2 rows, rest is correct"
+2-18625509-4.html.csv,AC,TRUE,missing notes column
+2-11802780-15.html.csv,none,TRUE,
+2-18116279-4.html.csv,AR,TRUE,
+2-10790099-7.html.csv,none,TRUE,
+2-17128242-2.html.csv,AC,FALSE,Missing lots of columns
+2-14314911-1.html.csv,none,TRUE,
+2-1585656-18.html.csv,none,TRUE,misspelled header
+2-10758793-13.html.csv,FM,FALSE,
+2-1792668-1.html.csv,none,TRUE,
+2-1859269-9.html.csv,BM,FALSE,rank mismatched
+2-1140084-2.html.csv,AC,TRUE,
+2-1082589-1.html.csv,FM,FALSE,missing rows and columns
+2-14242137-14.html.csv,AR,TRUE,missing half the rows but existing data matches
+2-15282692-1.html.csv,AC,FALSE,missing too much data
+1-17282875-2.html.csv,AR,TRUE,"missing a row, rest is good"
+2-16013858-13.html.csv,FM,FALSE,"Table is weird, transcription is weird, missing lots of content"
+2-17943933-3.html.csv,none,TRUE,
+2-11880183-1.html.csv,none,TRUE,
+1-13619105-3.html.csv,AR,TRUE,missing last row
+2-14057447-9.html.csv,AC,TRUE,missing attendance and index headers
+2-10265361-1.html.csv,none,TRUE,
+2-10637415-3.html.csv,AC,FALSE,missing 2 sensitive columns
+2-11561331-17.html.csv,FM,FALSE,
+1-28436909-4.html.csv,BM,FALSE,
+2-18518150-1.html.csv,none,TRUE,
+2-16772687-6.html.csv,none,TRUE,
+2-1169552-20.html.csv,AC,FALSE,missing 2 columns
+1-12834315-8.html.csv,FM,FALSE,"missing 2 columns, 1 row"
+2-17577144-1.html.csv,AC,TRUE,missing attendance num
+2-15161245-2.html.csv,FM,FALSE,missing lots of data
+2-10790397-7.html.csv,none,TRUE,
+1-16729930-11.html.csv,AR,TRUE,missing last row
+2-10067496-1.html.csv,FM,FALSE,this is a different table
+2-10661351-1.html.csv,FM,TRUE,"data is correct, columns differently named, one column missing"
+2-15463188-8.html.csv,AC,FALSE,missing sensitive column
+2-10790099-4.html.csv,none,TRUE,
+2-14887186-1.html.csv,AR,FALSE,missing rows in between
+2-18314162-2.html.csv,AC,FALSE,missing 2 columns
+2-10982957-8.html.csv,FM,FALSE,entirely different table
+2-18475946-2.html.csv,none,TRUE,
+1-27133147-3.html.csv,AR,TRUE,missing last row
+2-18564451-1.html.csv,BM,TRUE,read nonexisting data
+2-12207755-6.html.csv,FM,FALSE,
+2-10826385-11.html.csv,none,TRUE,
+2-16952105-2.html.csv,AC,FALSE,missing column
+1-2159547-3.html.csv,AR,FALSE,missing a lot of rows
+2-14292964-22.html.csv,none,TRUE,
+2-13312898-46.html.csv,none,TRUE,
+1-29857115-4.html.csv,none,TRUE,
+2-17302298-2.html.csv,FM,FALSE,
+1-12740151-8.html.csv,FM,TRUE,"Cache header is missing, or more that its not appended to the l2 and l3 header, missing 1 row, data is correct"
+2-16915939-1.html.csv,AC,TRUE,missing notes
+2-17634886-3.html.csv,FM,FALSE,
+2-18842944-2.html.csv,none,TRUE,
+2-14112941-1.html.csv,AC,TRUE,missing ref
+2-12385343-6.html.csv,AC,TRUE,missing ref
+2-10773753-16.html.csv,none,TRUE,
+2-16770037-3.html.csv,AC,FALSE,missing many columns
+2-11044765-1.html.csv,BM,FALSE,content is wrong
+2-16135024-3.html.csv,AC,TRUE,missing ref
+1-1404456-1.html.csv,AR,TRUE,missing summary row
+2-17231267-4.html.csv,none,TRUE,
+2-17129548-1.html.csv,AC,FALSE,missing many columns
+2-12937301-12.html.csv,AC,FALSE,missing many columns
+2-12934739-1.html.csv,AC,FALSE,missing many columns
+2-14034807-7.html.csv,none,TRUE,
+2-16994527-1.html.csv,AC,FALSE,missing important column
+1-27277284-8.html.csv,AR,TRUE,missing last row
+2-12026040-1.html.csv,none,TRUE,
+2-1238577-2.html.csv,AR,TRUE,"missing 3 rows, data matches"
+2-157447-2.html.csv,AC,TRUE,missing index column
+2-10869646-10.html.csv,none,TRUE,
+2-10975034-1.html.csv,none,TRUE, '#' in header in html
+1-1342393-10.html.csv,AR,TRUE,
+2-17759945-2.html.csv,FM,FALSE,
+2-18844321-1.html.csv,AC,TRUE,
+2-17562956-13.html.csv,AC,TRUE,
+2-1579748-6.html.csv,AC,TRUE,
+2-17430272-2.html.csv,FM,FALSE,
+1-28797906-3.html.csv,AR,TRUE,"weird html format? (player names), additional row below table"
+2-12562212-5.html.csv,AC,TRUE, '*' after some scores in html
+2-17334827-4.html.csv,none,TRUE,
+2-1360044-1.html.csv,FM,FALSE,seems to contain old information
+2-12195931-1.html.csv,AC,TRUE,
+2-16489766-7.html.csv,none,TRUE,"column name changed, but seems to contain the same information"
+2-16831299-5.html.csv,AC,TRUE,
+2-1859485-1.html.csv,FM,TRUE,additional column; one different value in winning score column; '-' sign instead of '+' in html
+1-28768469-5.html.csv,AR,TRUE,
+2-10775038-6.html.csv,none,TRUE,
+2-18662695-13.html.csv,none,TRUE,
+2-11739153-7.html.csv,AC,TRUE,
+2-18226024-8.html.csv,AC,TRUE,and additional rows
+2-15887683-22.html.csv,FM,FALSE,columns from gold missing in html
+2-1235982-1.html.csv,AC,TRUE,and additional row; '1st' instead of '1' in html
+2-10809142-7.html.csv,none,TRUE,
+1-1827900-1.html.csv,AR,TRUE,
+2-136773-10.html.csv,none,TRUE,
+2-17386115-2.html.csv,AC,TRUE,column 4 in html containing 'bye' but not in gold
+2-17232312-2.html.csv,FM,FALSE,order of rows mixed up
+2-17371135-13.html.csv,AC,TRUE,
+2-1252116-1.html.csv,AC,TRUE,and additional row; values slightly different occasionally (but no semantic change)
+2-16778188-2.html.csv,AR,TRUE,
+2-1462547-3.html.csv,AC,TRUE,and additional row
+2-17288845-7.html.csv,BM,TRUE,@' symbol before team name in html and '(ot)' after score in html
+2-10814429-12.html.csv,AC,TRUE,and 'south top' as additional value in one cell in peak column 
+2-15660445-7.html.csv,FM,FALSE,
+2-1617901-2.html.csv,AC,TRUE,
+2-11960196-3.html.csv,BM,TRUE,@' symbol before team score name in html
+2-12919860-2.html.csv,AC,TRUE, '-' symbol before numbers in to par column
+2-11902366-4.html.csv,AC,TRUE,
+2-17231267-5.html.csv,BM,TRUE, '-' instead of '+' in scores
+2-11821711-13.html.csv,AC,TRUE,
+2-17004178-1.html.csv,AC,TRUE,
+2-15753220-17.html.csv,AR,TRUE,title above table
+1-27293285-4.html.csv,AR,TRUE,title row and (irrelevant) row below; header row twice in gold
+1-16278602-1.html.csv,AR,TRUE,
+2-15463188-2.html.csv,AC,TRUE,
+2-16023753-2.html.csv,BM,TRUE, 'at' before opponent names in html
+2-18178534-7.html.csv,none,TRUE,
+1-28181347-6.html.csv,AR,TRUE,
+1-13710464-1.html.csv,AR,TRUE,
+2-10809351-14.html.csv,none,TRUE,
+2-18772258-1.html.csv,none,TRUE,*' in header of country of origin
+1-1057316-1.html.csv,AR,TRUE,#' in cells of 'operational owner's' column 
+2-18815934-2.html.csv,AC,FALSE,a few cells with slightly different values
+2-15345444-1.html.csv,AR,TRUE,rows containing 'bye' and 'at' in opponents' names
+2-14305802-4.html.csv,BM,TRUE, '@' symbol before opponents' names
+2-1586876-6.html.csv,AC,TRUE,
+2-18424482-2.html.csv,none,TRUE,
+1-29521180-35.html.csv,FM,FALSE,
+2-12161822-5.html.csv,AC,TRUE, 'red bull racing-renault' instead of 'red bull renault' in html 
+2-12093318-3.html.csv,BM,TRUE,# after some player names in html
+1-26124171-1.html.csv,AC,TRUE,and additional row
+2-10503963-5.html.csv,AR,TRUE,
+1-30047613-12.html.csv,AR,TRUE, '@' symbol before team names
+2-12027173-1.html.csv,BM,TRUE, '@' symbol before team names
+2-10806592-1.html.csv,none,TRUE,
+2-10790510-1.html.csv,none,TRUE,
+2-11695454-2.html.csv,AC,TRUE,dates: order of day and month changed
+2-15198842-16.html.csv,none,TRUE,# in header name
+1-1973816-1.html.csv,BM,FALSE,
+1-19242-5.html.csv,AR,TRUE,
+2-10287593-1.html.csv,AC,TRUE,
+2-10806852-4.html.csv,none,TRUE,
+2-18934662-4.html.csv,AC,TRUE,
+1-2668374-13.html.csv,AR,TRUE,
+2-17924362-1.html.csv,AR,TRUE,one different date; 'at' before some opponents' names
+2-11097420-1.html.csv,AC,TRUE,
+2-12102-3.html.csv,BM,TRUE,order of rows changed
+2-11537397-1.html.csv,AC,TRUE,and additional column below header; 4 400m instead of 4 x 400m
+2-12840409-1.html.csv,BM,TRUE,order of rows changed
+1-27067379-1.html.csv,BM,FALSE,
+2-11172791-1.html.csv,BM,TRUE,at' before some opponents' names
+2-11599375-1.html.csv,AC,TRUE,slightly different header names
+2-14749970-1.html.csv,none,TRUE,
+2-12206491-10.html.csv,AC,TRUE, '@' symbol before opponents' names
+2-12278106-2.html.csv,AC,TRUE,and additional rows
+2-13815322-3.html.csv,AC,TRUE,
+2-10694950-1.html.csv,AC,TRUE,
+2-10823719-9.html.csv,none,TRUE,
+2-14159731-3.html.csv,AC,TRUE,
+2-17703223-7.html.csv,AC,TRUE,
+2-17371135-14.html.csv,AC,TRUE,
+2-10823719-15.html.csv,none,TRUE,
+2-11538407-1.html.csv,none,TRUE,
+2-12161422-16.html.csv,AR,TRUE,additional row below for source
+2-14911550-1.html.csv,none,TRUE,
+2-18569105-11.html.csv,AC,TRUE,
+2-1808199-2.html.csv,AR,TRUE,additional title row 
+2-11916083-27.html.csv,none,TRUE,
+1-13762472-5.html.csv,AR,TRUE,@' symbol before team name in html and '(ot)' after score in html
+2-10887680-13.html.csv,none,TRUE,
+2-17159413-1.html.csv,AC,TRUE,
+1-27722734-11.html.csv,AR,TRUE,@' symbol before team name in html 
+2-10809351-13.html.csv,none,TRUE,
+2-15097001-5.html.csv,AC,TRUE,slightly different header names; one minor change in cell (shi - ting wang instead of wang shi-ting)
+1-2679061-11.html.csv,AR,TRUE,"# in header name, additional row for reference below table"
+2-16660856-1.html.csv,BM,TRUE,at' before opponents' names
+2-16514275-1.html.csv,BM,TRUE, '-' instead of '+' in scores; ($) in header
+2-15418823-1.html.csv,AC,TRUE,
+2-16677963-2.html.csv,none,TRUE,
+2-18373863-2.html.csv,BM,TRUE, '*' symbol in some cells
+2-10808089-14.html.csv,none,TRUE,
+2-14175075-3.html.csv,none,TRUE,
+2-17058856-2.html.csv,AC,TRUE,
+1-23670057-4.html.csv,AR,TRUE,
+1-22815568-6.html.csv,BM,TRUE,"additional $ symbol in cells; first row below header, last cell: 'at risk' instead of '- risk'"
+2-17922810-2.html.csv,FM,FALSE,
+1-1341884-19.html.csv,AR,TRUE,
+2-14417906-8.html.csv,AC,TRUE,and additional rows
+2-16243210-2.html.csv,AC,TRUE,
+2-17063833-1.html.csv,AC,TRUE,
+2-16381189-1.html.csv,AC,TRUE,
+2-12375672-2.html.csv,FM,FALSE,row from gold missing in html
+2-14208862-7.html.csv,AC,TRUE,
+2-18552926-7.html.csv,FM,FALSE,column from gold missing in html
+2-17751797-5.html.csv,none,TRUE,
+2-18649514-5.html.csv,none,TRUE,
+2-10640687-10.html.csv,none,TRUE,
+1-17993994-7.html.csv,BM,TRUE, '*' symbol in some cells; '-' instead of '[month ended]'
+1-26815674-1.html.csv,AC,TRUE,and additional rows
+2-1663052-1.html.csv,FM,FALSE,
+2-16773017-6.html.csv,AC,TRUE,
+2-1568649-3.html.csv,BM,FALSE,
+2-17794610-1.html.csv,BM,TRUE,at' before values in some cells
+2-17995113-2.html.csv,AC,TRUE,and additional rows
+2-11960610-6.html.csv,BM,TRUE,@' symbol before team name in html 
+1-2362606-1.html.csv,BM,TRUE,scores in brackets not in gold; additional row
+2-18504485-1.html.csv,none,TRUE,
+1-17001658-9.html.csv,AR,TRUE,@' symbol before team name in html ; 'ot' after scores in gold
+2-11622562-3.html.csv,none,TRUE,($) in header
+2-10257-5.html.csv,AR,TRUE,title row; slightly different competition names; header contained twice in gold
+1-15405904-1.html.csv,AR,TRUE,
+2-1032084-2.html.csv,FM,FALSE,one column containing additional values
+2-10966872-5.html.csv,FM,FALSE,
+1-19753079-36.html.csv,AR,TRUE,one additional value in one cell (north carolina 5 last cell)
+2-11391762-5.html.csv,BM,TRUE,one wrong value in one cell (first row)
+2-1290024-9.html.csv,AC,TRUE,
+2-10277-6.html.csv,AR,TRUE,

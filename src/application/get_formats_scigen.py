@@ -9,6 +9,9 @@ from thefuzz import fuzz
 import argparse
 import subprocess
 import glob
+from ..utils.other import create_and_save_dataset
+import pandas as pd
+
 
 """
 A script that processes the SciGen data (both CL and Other subsets) and gets the source code of the 
@@ -156,9 +159,12 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_path", type=str, help="Path for the SciGen dataset")
+    parser.add_argument("--output_path", type=str, help="Path for the saving the resulting dataset")
     args = parser.parse_args()
+    
 
     data_path = args.data_path
+    output_path = args.output_path
 
     with open(data_path) as json_file:
         data = json.load(json_file)
@@ -190,15 +196,17 @@ def main():
                 extracted_latex_tables.append((key, None))
  
     
-    # Add extracted info to the data and save a new JSON file
+    # Add extracted info to the data 
     for idx, item in enumerate(extracted_latex_tables):
         key = item[0]
         value = item[1]
         data[key]['table_latex'] = value
 
-    with open('data_with_source_latex.json', 'w') as json_file:
-        json.dump(cl_data, json_file, indent=4)
-
+    # Convert data for pandas DataFrame
+    data_df = pd.DataFrame.from_dict(data, orient='index')
+    # Save as HF Dataset
+    create_and_save_dataset(data_df, "test", output_path)
+    
 
 if __name__ == "__main__":
     main()

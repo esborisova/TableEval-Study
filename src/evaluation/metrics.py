@@ -77,7 +77,6 @@ class Metrics:
                 new_metric = "bleu"
             if "rouge" in new_metric:
                 new_metric = "rouge"
-            self.metric_name = new_metric
             self.function = METRIC_REGISTRY[new_metric]
         else:
             self.function = None
@@ -87,8 +86,8 @@ class Metrics:
 def meteor(predictions, references):
     """Return the mean of the meteor_score for each prediction and reference pair."""
     m_score = []
+    nltk.download("wordnet")
     for prediction, reference in zip(predictions, references):
-        nltk.download("wordnet")
         score = nltk.translate.meteor_score.single_meteor_score(
             reference.split(), prediction.split()
         )

@@ -13,7 +13,7 @@ def prompt_gen(template, samples: List, target: str = "") -> List[str]:
         return multi_modal_gen(template, samples, target)
 
 
-def multi_modal_gen(function, samples: List, target: str = "") -> List[[str, str]]:
+def multi_modal_gen(function, samples: List, target: str = "") -> List[List[str]]:
     # The return value should be a list of a list of an image and a prompt
     return function(samples)
 
@@ -41,12 +41,12 @@ def load_samples(path: str, split: str) -> Dataset:
 
 def save_results(output_path, results, model_name):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    current_datetime = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
     if not os.path.exists(f"{dir_path}/{output_path}"):
         os.makedirs(f"{dir_path}/{output_path}")
     # TODO: change genereic output name
     with open(
-        f"{dir_path}/{output_path}/{model_name}_{current_datetime}.json", "w"
+        f"{dir_path}/{output_path}/{model_name.replace('/', '.')}_{current_datetime}.json", "w+"
     ) as f:
         json.dump(
             results,

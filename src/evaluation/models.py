@@ -163,7 +163,7 @@ class HFModel(LanguageModel):
             return self.multi_modal_forward(input, **kwargs)
 
     def get_model_info(self):
-        return f"HF Model: {self.model_name}"
+        return f"{self.model_name}"
 
 
 # TODO: Ovis not working yet
@@ -222,4 +222,4 @@ class OvisModel(LanguageModel):
         return output
 
     def get_model_info(self):
-        return f"HF Model: {self.model_name}"
+        return f"{self.model_name}"

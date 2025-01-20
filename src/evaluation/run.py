@@ -30,7 +30,6 @@ def setup_parser() -> argparse.ArgumentParser:
         "-a",
         default="{}",
         type=str,
-        # lambda s: ast.literal_eval(s),
         help="Comma separated string arguments for model, e.g. `pretrained=EleutherAI/pythia-160m,dtype=float32`",
     )
     parser.add_argument(
@@ -58,7 +57,7 @@ def setup_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output_path",
         "-o",
-        default="./output",
+        default="output",
         type=str,
         metavar="DIR|DIR/file.json",
         help="The path to the output file where the result metrics will be saved. If the path is a directory and log_samples is true, the results will be saved in the directory. Else the parent directory will be used.",
@@ -99,7 +98,7 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
     if not args:
         parser = setup_parser()
         args = parser.parse_args()
-
+    
     model = HFModel(
         args.model_name,
         ast.literal_eval(args.model_args),

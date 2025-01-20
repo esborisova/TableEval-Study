@@ -1,0 +1,14 @@
+task_name: image_comtqa
+path: /netscratch/borisova/TableEval/data/ComTQA_data/comtqa_subset_test_run_2025-01-15
+test_split: train
+validation_split: validation
+train_split: train
+num_fewshot: 0
+instruction: ""
+doc_to_text: !function image_parser.parse 
+doc_to_target: answer
+metric_list:
+  - bleu
+  - rougeL 
+  - meteor
+

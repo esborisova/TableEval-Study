@@ -79,25 +79,39 @@ class Evaluator:
             for i in tqdm(range(0, len(inputs), self.batch_size)):
                 outputs, logits = self.model(inputs[i : i + self.batch_size])
                 # generate tuple for each output and sample
-                task_results.extend(
-                    [
-                        {
-                            "prediction": outputs[j].removeprefix(inputs[i + j]),
-                            "reference": samples[i + j][task["doc_to_target"]],
-                            "input": inputs[i + j],
-                            "example": samples[i + j],
-                            "logits": [logits_step[j].cpu() for logits_step in logits],
-                        }
-                        for j in range(0, self.batch_size)
-                    ]
-                )
+                if isinstance(task['doc_to_text'], str):
+                    task_results.extend(
+                        [
+                            {
+                                "prediction": outputs[j].removeprefix(inputs[i + j]),
+                                "reference": samples[i + j][task["doc_to_target"]],
+                                "input": inputs[i + j],
+                                "example": samples[i + j],
+                                "logits": [logits_step[j].cpu().tolist() for logits_step in logits],
+                            }
+                            for j in range(0, len(outputs))
+                        ]
+                    )
+                else:
+                    task_results.extend(
+                        [
+                            {
+                                "prediction": outputs[j].removeprefix(inputs[i + j][1]),
+                                "reference": samples[i + j][task["doc_to_target"]],
+                                "input": inputs[i + j][1],
+                                "example": samples[i + j],
+                                "logits": [logits_step[j].cpu().tolist() for logits_step in logits],
+                            }
+                            for j in range(0, len(outputs))
+                        ]
+                    )
 
             # calculation of the scores
             scores = {}
             metric_calc = Metrics()
             # load all results
             metric_calc.add(
-                prediction=[x["output"] for x in task_results],
+                prediction=[x["prediction"] for x in task_results],
                 reference=[x["example"][task["doc_to_target"]] for x in task_results],
             )
             # calculate the scores for the task and each metric
@@ -120,6 +134,7 @@ class Evaluator:
     def generate_prompt(self, samples, few_shot_samples, num_fewshot, task):
         # generate the prompts from the template
         sample_to_prompt = prompt_gen(task["doc_to_text"], samples)
+
         if num_fewshot != 0:
             few_shot_to_prompt = prompt_gen(
                 task["doc_to_text"], few_shot_samples, task["doc_to_target"]
@@ -129,9 +144,19 @@ class Evaluator:
             few_shot_prompt = task["instruction"]
         else:
             few_shot_prompt = ""
+        if isinstance(task['doc_to_text'], str):
+            # for text parsing
+            return self.textual_prompt_gen(sample_to_prompt, few_shot_prompt, num_fewshot)
+        else:
+            # for image parsing
+            textual_prompts = self.textual_prompt_gen([s[1] for s in sample_to_prompt], few_shot_prompt, num_fewshot)
+            for sample, full_prompt in zip(sample_to_prompt, textual_prompts):
+                sample[1] = full_prompt
+            return sample_to_prompt
 
+    def textual_prompt_gen(self, sample_to_prompt, few_shot_prompt, num_fewshot):
         # sample the few shot examples
-        if num_fewshot > 0:
+        if num_fewshot != 0:
             few_shot_examples = random.sample(few_shot_to_prompt, num_fewshot)
             # generate the few shot example and instruction prompt
             few_shot_prompt += "\n".join(few_shot_examples) + "\n"

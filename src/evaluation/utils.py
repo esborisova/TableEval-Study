@@ -39,7 +39,7 @@ def load_samples(path: str, split: str) -> Dataset:
     return dataset
 
 
-def save_results(output_path, results, model_name):
+def save_results(output_path, results, model_name, log_logits: bool=False):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     model_generator, model_id = model_name.split("/")
     current_datetime = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
@@ -54,18 +54,19 @@ def save_results(output_path, results, model_name):
             "w+",
         ) as f:
             json.dump(
-                results["scores"],
+                result["scores"],
                 f,
             )  # indent=4
         if "results" in result.keys():
-            with open(
-                f"{dir_path}/{output_path}/{model_generator}/logits_{task_name}_{model_id}_{current_datetime}.json",
-                "w+",
-            ) as f:
-                json.dump(
-                    [x["logits"] for x in results["results"]],
-                    f,
-                )  # indent=4
+            if log_logits:
+                with open(
+                    f"{dir_path}/{output_path}/{model_generator}/logits_{task_name}_{model_id}_{current_datetime}.json",
+                    "w+",
+                ) as f:
+                    json.dump(
+                        [x["logits"] for x in result["results"]],
+                        f,
+                    )  # indent=4
 
             with open(
                 f"{dir_path}/{output_path}/{model_generator}/results_{task_name}_{model_id}_{current_datetime}.json",
@@ -79,7 +80,7 @@ def save_results(output_path, results, model_name):
                             "input": x["input"],
                             "example": x["example"],
                         }
-                        for x in results["results"]
+                        for x in result["results"]
                     ],
                     f,
                 )  # indent=4

@@ -80,6 +80,11 @@ def setup_parser() -> argparse.ArgumentParser:
         help="saves the samples together with the scores",
     )
     parser.add_argument(
+        "--log_logits",
+        action="store_true",
+        help="saves the samples together with the scores. If log_logits=True the samples will also be saved.",
+    )
+    parser.add_argument(
         "--multi_modal",
         "-mm",
         action="store_true",
@@ -98,7 +103,8 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
     if not args:
         parser = setup_parser()
         args = parser.parse_args()
-    
+    if args.log_logits and not args.log_samples:
+        args.log_samples = True
     model = HFModel(
         args.model_name,
         ast.literal_eval(args.model_args),
@@ -120,7 +126,7 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
 
     results = eval.simple_eval()
 
-    save_results(args.output_path, results, model_name=model.get_model_info())
+    save_results(args.output_path, results, model_name=model.get_model_info(), log_logits=args.log_logits)
 
 
 if __name__ == "__main__":

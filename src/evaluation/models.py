@@ -86,6 +86,10 @@ class HFModel(LanguageModel):
         self.image_token = special_token_for_image
         self.processor = self.load_processor()
         self.model = self.load_model()
+        if not multi_modal:
+            if self.processor.pad_token is None:
+                self.processor.add_special_tokens({'pad_token': '[PAD]'})
+                self.model.resize_token_embeddings(len(self.processor))
 
     def load_model(self):
         if not self.multi_modal:

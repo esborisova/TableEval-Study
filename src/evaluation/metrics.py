@@ -211,7 +211,7 @@ def bleu(predictions, references, b_type: str = ""):
 
     Higher is better
     """
-    from nltk.translate.bleu_score import sentence_bleu
+    from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 
     if re.match(".\\d+", b_type):
         weights = [0, 0, 0, 0, 0]
@@ -222,7 +222,10 @@ def bleu(predictions, references, b_type: str = ""):
     else:
         # default bleu is 4-gram
         weights = (0, 0, 0, 1)
+        
+    smoothing_function = SmoothingFunction().method1
+    
     bleu_score = []
     for pred, ref in zip(predictions, references):
-        bleu_score.append(sentence_bleu(ref.split(), pred.split(), weights=weights))
+        bleu_score.append(sentence_bleu(ref.split(), pred.split(), weights=weights, smoothing_function=smoothing_function))
     return sum(bleu_score) / len(bleu_score)

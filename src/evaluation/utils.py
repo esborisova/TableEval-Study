@@ -41,14 +41,45 @@ def load_samples(path: str, split: str) -> Dataset:
 
 def save_results(output_path, results, model_name):
     dir_path = os.path.dirname(os.path.realpath(__file__))
+    model_generator, model_id = model_name.split("/")
     current_datetime = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
     if not os.path.exists(f"{dir_path}/{output_path}"):
         os.makedirs(f"{dir_path}/{output_path}")
+    if not os.path.exists(f"{dir_path}/{output_path}/{model_generator}"):
+        os.makedirs(f"{dir_path}/{output_path}/{model_generator}")
     # TODO: change genereic output name
-    with open(
-        f"{dir_path}/{output_path}/{model_name.replace('/', '.')}_{current_datetime}.json", "w+"
-    ) as f:
-        json.dump(
-            results,
-            f,
-        )  # indent=4
+    for task_name, result in results.items():
+        with open(
+            f"{dir_path}/{output_path}/{model_generator}/scores_{task_name}_{model_id}_{current_datetime}.json",
+            "w+",
+        ) as f:
+            json.dump(
+                results["scores"],
+                f,
+            )  # indent=4
+        if "results" in result.keys():
+            with open(
+                f"{dir_path}/{output_path}/{model_generator}/logits_{task_name}_{model_id}_{current_datetime}.json",
+                "w+",
+            ) as f:
+                json.dump(
+                    [x["logits"] for x in results["results"]],
+                    f,
+                )  # indent=4
+
+            with open(
+                f"{dir_path}/{output_path}/{model_generator}/results_{task_name}_{model_id}_{current_datetime}.json",
+                "w+",
+            ) as f:
+                json.dump(
+                    [
+                        {
+                            "prediction": x["prediction"],
+                            "reference": x["reference"],
+                            "input": x["input"],
+                            "example": x["example"],
+                        }
+                        for x in results["results"]
+                    ],
+                    f,
+                )  # indent=4

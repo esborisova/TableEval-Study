@@ -1,13 +1,5 @@
 from typing import List, Dict, Union
-
-import sacrebleu
-import nltk
-from bleurt import score
 from evaluate import load
-
-# from moverscore_v2 import get_idf_dict, word_mover_score
-from nltk.translate.bleu_score import sentence_bleu
-from rouge_score import rouge_scorer
 import re
 
 METRIC_REGISTRY = {}
@@ -85,6 +77,7 @@ class Metrics:
 @register("meteor")
 def meteor(predictions, references):
     """Return the mean of the meteor_score for each prediction and reference pair."""
+    import nltk
     m_score = []
     nltk.download("wordnet")
     for prediction, reference in zip(predictions, references):
@@ -101,7 +94,8 @@ def moverS(predictions, references):
     from moverscore import get_idf_dict, word_mover_score
     Recommend to use this version (DistilBERT) for evaluation, if the speed is your concern.
     """
-    """
+    from moverscore_v2 import get_idf_dict, word_mover_score
+
     idf_dict_hyp = get_idf_dict(predictions)  # idf_dict_hyp = defaultdict(lambda: 1.)
     idf_dict_ref = get_idf_dict(references)  # idf_dict_ref = defaultdict(lambda: 1.)
 
@@ -113,13 +107,15 @@ def moverS(predictions, references):
         stop_words=[],
         n_gram=1,
         remove_subwords=True,
-    )"""
+    )
 
-    return None
+    return score
 
 
 @register("bleurt")
 def bleurt(predictions, references):
+    from bleurt import score
+    
     checkpoint = "bleurt/test_checkpoint"
 
     scorer = score.BleurtScorer(checkpoint)
@@ -185,6 +181,8 @@ def rouge(predictions, references, r_type: str = ""):
     rouge3, rouge4) you can evaluate on any if you write the type in the yaml
     file. More information read on https://thepythoncode.com/article/calculate-rouge-score-in-python
     """
+    from rouge_score import rouge_scorer
+    
     precision = []
     recall = []
     f1 = []
@@ -213,6 +211,8 @@ def bleu(predictions, references, b_type: str = ""):
 
     Higher is better
     """
+    from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+
     if re.match(".\\d+", b_type):
         weights = [0, 0, 0, 0, 0]
         index = int(b_type[-1])
@@ -222,7 +222,10 @@ def bleu(predictions, references, b_type: str = ""):
     else:
         # default bleu is 4-gram
         weights = (0, 0, 0, 1)
+        
+    smoothing_function = SmoothingFunction().method1
+    
     bleu_score = []
     for pred, ref in zip(predictions, references):
-        bleu_score.append(sentence_bleu(ref.split(), pred.split(), weights=weights))
+        bleu_score.append(sentence_bleu(ref.split(), pred.split(), weights=weights, smoothing_function=smoothing_function))
     return sum(bleu_score) / len(bleu_score)

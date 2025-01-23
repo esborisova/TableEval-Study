@@ -82,6 +82,7 @@ class Evaluator:
             inputs = generate_prompt(
                 samples, few_shot_samples, num_fewshot, task, self.use_chat_template
             )
+
             # run all samples
             for i in tqdm(range(0, len(inputs), self.batch_size)):
                 outputs, logits = self.model(inputs[i : i + self.batch_size])
@@ -94,8 +95,7 @@ class Evaluator:
                             "input": inputs[i + j],
                             "example": samples[i + j],
                             "logits": [
-                                logits_step[j].cpu().tolist()
-                                for logits_step in logits
+                                logits_step[j].cpu().tolist() for logits_step in logits
                             ],
                         }
                         for j in range(0, len(outputs))

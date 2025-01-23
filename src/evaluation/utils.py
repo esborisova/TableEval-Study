@@ -113,7 +113,7 @@ def generate_template_prompt(samples, few_shot_samples, num_fewshot, task):
         )
 
         for few_shot_example, sample in zip(few_shot_text_samples, few_shot_examples):
-            if isinstance(task["doc_to_text"], str):
+            if not task.get("multi_model_data"):
                 init_message = text_to_template(
                     init_message, few_shot_example, sample, task["doc_to_target"]
                 )
@@ -124,13 +124,11 @@ def generate_template_prompt(samples, few_shot_samples, num_fewshot, task):
     samples_with_input_text = sample_to_text(task["doc_to_text"], samples)
     outputs = []
 
-    if isinstance(task["doc_to_text"], str):
-        for input in samples_with_input_text:
-            message = copy.deepcopy(init_message)
+    for input in samples_with_input_text:
+        message = copy.deepcopy(init_message)
+        if not task.get("multi_model_data"):
             outputs.append(text_to_template(message, input))
-    else:
-        for input in samples_with_input_text:
-            message = copy.deepcopy(init_message)
+        else:
             outputs.append([input[0], mm_to_template(message, input[1])])
     return outputs
 
@@ -179,7 +177,7 @@ def generate_string_prompt(samples, few_shot_samples, num_fewshot, task):
         few_shot_prompt = task["instruction"]
     else:
         few_shot_prompt = ""
-    if isinstance(task["doc_to_text"], str):
+    if task.get("multi_model_data"):
         # for text parsing
         return text_to_prompt(
             samples_with_input_text, text_samples, few_shot_prompt, num_fewshot

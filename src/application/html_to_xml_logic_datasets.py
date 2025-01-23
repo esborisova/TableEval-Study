@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
 from ..utils.other import create_and_save_dataset
+from ..utils.xml_html_convertion import change_table_class
 
 
 def process_cell_attributes(cell, cell_elem):
@@ -113,16 +114,6 @@ def html_to_xml_table(
     return (
         pretty_xml.split("\n", 1)[1] if pretty_xml.startswith("<?xml") else pretty_xml
     )
-
-
-def change_table_class(html: str, new_class="table"):
-    if not isinstance(html, str):
-        return html
-    soup = BeautifulSoup(html, "html.parser")
-    for table in soup.find_all("table"):
-        table.attrs["class"] = [new_class]
-    cleaned_html = str(soup).strip()
-    return cleaned_html
 
 
 def define_agg_rules(df: pd.DataFrame, annotation: str, merged_annotation: str):

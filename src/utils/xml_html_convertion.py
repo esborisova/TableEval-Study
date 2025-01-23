@@ -36,14 +36,48 @@ def map_xml_html_tags(soup, conversion_type="html_to_xml"):
     return soup
 
 
-def generate_html_content(soup):
-    return f"<html><head><meta charset='UTF-8'></head><body>{soup.prettify()}</body></html>"
+def extract_footnotes(soup):
+    """Extract footnotes content."""
+    return [
+        " ".join([p.get_text(strip=True) for p in footnote.find_all("p")])
+        for footnote in soup.find_all("table-wrap-foot")
+    ]
 
 
-def pmc_tables_to_html(xml_table: str) -> str:
-    soup = BeautifulSoup(xml_table, "xml")
-    soup = map_xml_html_tags(soup, convertion_type="xml_to_html")
-    html_table = generate_html_content(soup)
+def add_footnotes_to_html_table(html_table: str, footnotes):
+    footnotes_html = "".join([f"<tr><td>{content}</td></tr>" for content in footnotes])
+    html_table = html_table.replace(
+        "</table>", f"<tfoot>{footnotes_html}</tfoot></table>"
+    )
+    return html_table
+
+
+def pmc_tables_to_html(xml_input: str, meta: bool = True) -> str:
+    soup = BeautifulSoup(xml_input, "xml")
+    soup = map_xml_html_tags(soup, "xml_to_html")
+
+    table = soup.find("table")
+    caption_html = ""
+
+    if meta:
+        caption_tag = soup.find("caption")
+        if caption_tag:
+            p_tag = caption_tag.find("p")
+            if p_tag:
+                p_tag.unwrap()
+            caption_html = (
+                f"<caption>{soup.find('label').get_text(strip=True)}: {caption_tag.get_text(strip=True)}</caption>"
+                if soup.find("label")
+                else f"<caption>{caption_tag.get_text(strip=True)}</caption>"
+            )
+
+        html_table = f'<table border="1" class="table">\n{caption_html}\n{table.prettify().strip()}'
+
+        footnotes = extract_footnotes(soup)
+        if footnotes:
+            html_table = add_footnotes_to_html_table(html_table, footnotes)
+    else:
+        html_table = f'<table border="1" class="table">\n{table.prettify().strip()}'
     return html_table
 
 
@@ -227,3 +261,24 @@ def find_best_match(df: pd.DataFrame, files_dir: str, format="html") -> pd.DataF
 
         best_matches.append(best_table)
     return pd.DataFrame(best_matches)
+
+
+def add_table_metadata(html_table: str, caption_text: str, table_name=None) -> str:
+    if table_name:
+        caption = f"<caption>{table_name}: {caption_text}</caption>\n"
+    else:
+        caption = f"<caption>{caption_text}</caption>\n"
+    if "<table" in html_table:
+        table_parts = html_table.split(">", 1)
+        modified_html = table_parts[0] + ">\n" + caption + table_parts[1]
+    else:
+        modified_html = caption + html_table
+    return modified_html
+
+
+def change_table_class(html: str, new_class="table") -> str:
+    soup = BeautifulSoup(html, "html.parser")
+    for table in soup.find_all("table"):
+        table.attrs["class"] = [new_class]
+    cleaned_html = str(soup).strip()
+    return cleaned_html

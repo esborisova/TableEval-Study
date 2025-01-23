@@ -96,15 +96,24 @@ def setup_parser() -> argparse.ArgumentParser:
         default="<image>",
         help="Changing the special token for the multi_modal LLMs. The default is <image>",
     )
+    parser.add_argument(
+        "--use_chat_template",
+        action="store_true",
+        help="if running multi modal LLMs. default: False",
+    )
     return parser
 
 
 def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
+
+    # load arguments
     if not args:
         parser = setup_parser()
         args = parser.parse_args()
     if args.log_logits and not args.log_samples:
         args.log_samples = True
+
+    # load model
     model = HFModel(
         args.model_name,
         ast.literal_eval(args.model_args),
@@ -113,8 +122,10 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         device=args.device,
         multi_modal=args.multi_modal,
         special_token_for_image=args.image_special_token,
+        use_chat_template=args.use_chat_template,
     )
 
+    # load evaluator
     eval = Evaluator(
         model=model,
         tasks=args.tasks.split(","),
@@ -122,11 +133,19 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         batch_size=args.batch_size,
         random_seed=args.seed,
         log_samples=args.log_samples,
+        use_chat_template=args.use_chat_template,
     )
 
+    # evaluate
     results = eval.simple_eval()
 
-    save_results(args.output_path, results, model_name=model.get_model_info(), log_logits=args.log_logits)
+    # save results
+    save_results(
+        args.output_path,
+        results,
+        model_name=model.get_model_info(),
+        log_logits=args.log_logits,
+    )
 
 
 if __name__ == "__main__":

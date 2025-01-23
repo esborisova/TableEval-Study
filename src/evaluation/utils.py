@@ -1,10 +1,12 @@
-from typing import List
+from typing import List, Optional
 from datetime import datetime
+from datasets.packaged_modules import text
 from jinja2 import Template
 from datasets import Dataset, load_dataset, load_from_disk
 import os
 import json
 import random
+import copy
 
 
 def load_samples(path: str, split: str) -> Dataset:
@@ -93,7 +95,72 @@ def generate_prompt(
 def generate_template_prompt(samples, few_shot_samples, num_fewshot, task):
     """generate the prompts from the template of the yampl file but not in the
     template structure but as a single input string"""
-    pass
+
+    init_message = []
+    if "instruction" in task:
+        if task["instruction"]:
+            init_message.append({"role": "system", "content": task["instruction"]})
+
+    if num_fewshot != 0:
+        if isinstance(few_shot_samples, list):
+            few_shot_examples = random.sample(few_shot_samples, num_fewshot)
+        else:
+            few_shot_examples = few_shot_samples.shuffle().select(range(num_fewshot))
+
+        few_shot_text_samples = sample_to_text(
+            task["doc_to_text"],
+            few_shot_examples,
+        )
+
+        for few_shot_example, sample in zip(few_shot_text_samples, few_shot_examples):
+            if isinstance(task["doc_to_text"], str):
+                init_message = text_to_template(
+                    init_message, few_shot_example, sample, task["doc_to_target"]
+                )
+            else:
+                init_message = mm_to_template(
+                    init_message, few_shot_example, sample, task["doc_to_target"]
+                )
+    samples_with_input_text = sample_to_text(task["doc_to_text"], samples)
+    outputs = []
+
+    if isinstance(task["doc_to_text"], str):
+        for input in samples_with_input_text:
+            message = copy.deepcopy(init_message)
+            outputs.append(text_to_template(message, input))
+    else:
+        for input in samples_with_input_text:
+            message = init_message
+            outputs.append([input[0], mm_to_template(message, input[1])])
+    return outputs
+
+
+def mm_to_template(
+    template: list, text_sample: str, sample=None, doc_to_target: str = ""
+):
+    template.append(
+        {
+            "role": "user",
+            "content": [{"type": "image"}, {"type": "text", "text": text_sample}],
+        }
+    )
+    if doc_to_target:
+        template.append(
+            {
+                "role": "assistant",
+                "content": [{"type": "text", "text": sample[doc_to_target]}],
+            }
+        )
+    return template
+
+
+def text_to_template(
+    template: list, text_sample: str, sample=None, doc_to_target: str = ""
+):
+    template.append({"role": "user", "content": text_sample})
+    if doc_to_target:
+        template.append({"role": "assistant", "content": sample[doc_to_target]})
+    return template
 
 
 def generate_string_prompt(samples, few_shot_samples, num_fewshot, task):
@@ -118,13 +185,14 @@ def generate_string_prompt(samples, few_shot_samples, num_fewshot, task):
             samples_with_input_text, text_samples, few_shot_prompt, num_fewshot
         )
     else:
-        # for image parsing
+        # for image parsing split images samples from text samples
         textual_prompts = text_to_prompt(
             [s[1] for s in samples_with_input_text],
             text_samples,
             few_shot_prompt,
             num_fewshot,
         )
+        # join image and text samples
         for sample, full_prompt in zip(samples_with_input_text, textual_prompts):
             sample[1] = full_prompt
         return samples_with_input_text
@@ -146,12 +214,7 @@ def sample_to_text(template, samples: List, target: str = "") -> List[str]:
     if isinstance(template, str):
         return text_gen(template, samples, target)
     else:
-        return multi_modal_gen(template, samples, target)
-
-
-def multi_modal_gen(function, samples: List, target: str = "") -> List[List[str]]:
-    # The return value should be a list of a list of an image and a prompt
-    return function(samples)
+        return template(samples)
 
 
 def text_gen(template, samples: List, target: str = "") -> List[str]:

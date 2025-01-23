@@ -165,7 +165,7 @@ def f1(predictions, references):
     else:
         f1_score = 2 * (precision * recall) / (precision + recall)
 
-    return f1_score
+    return {"f1": f1_score, "precision": precision, "recall": recall}
 
 
 @register("perplexity")

@@ -130,7 +130,7 @@ def generate_template_prompt(samples, few_shot_samples, num_fewshot, task):
             outputs.append(text_to_template(message, input))
     else:
         for input in samples_with_input_text:
-            message = init_message
+            message = copy.deepcopy(init_message)
             outputs.append([input[0], mm_to_template(message, input[1])])
     return outputs
 

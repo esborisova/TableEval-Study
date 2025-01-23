@@ -88,20 +88,20 @@ class HFModel(LanguageModel):
             ]
         output = self.step(inputs=inputs, **kwargs)
 
-        generated_text = [
-            self.processor.decode(seq, skip_special_tokens=True)
-            for seq in output.sequences.cpu()
-        ]  # skip_special_token = true
-        # logits shape: (batch_size, vocab_size)
+        decoded_outputs = []
+        for i in range(inputs.input_ids.shape[0]):  # Loop over batch samples
+            input_length = inputs.input_ids.shape[1] 
+            generated_token_ids = output.sequences[i, input_length:].cpu()  # Skip input tokens
+            decoded_text = self.processor.decode(generated_token_ids.tolist(), skip_special_tokens=True)
+            decoded_outputs.append(decoded_text)
         logits = output.scores
-
-        return generated_text, logits
+        return decoded_outputs, logits
 
     def multi_modal_forward(self, mm_input: List[tuple], **kwargs):
         images = [i[0] for i in mm_input]
         # adding the <image> special_token to the prompt at the beginning
-        texts = [self.image_token + i[1] for i in mm_input]
         if not self.use_chat_template:
+            texts = [self.image_token + i[1] for i in mm_input]
             inputs = self.processor(
                 images=images,
                 text=texts,
@@ -110,24 +110,32 @@ class HFModel(LanguageModel):
                 return_tensors="pt",
             ).to(self.device)
         else:
-            inputs = [
+            texts = [i[1] for i in mm_input]
+            template_inputs = [
                 self.processor.apply_chat_template(
                     prompt,
-                    tokenize=True,
                     add_generation_prompt=True,
                     return_tensors="pt",
-                ).to(self.device)
+                )
                 for prompt in texts
             ]
+            inputs = self.processor(
+                images=images,
+                text=template_inputs,
+                truncation=True,
+                padding=True,
+                return_tensors="pt",
+            ).to(self.device)
         output = self.step(inputs, **kwargs)
-
-        generated_text = self.processor.batch_decode(
-            output.sequences.cpu(), skip_special_tokens=True
-        )
-        generated_text = [o.removeprefix(self.image_token) for o in generated_text]
+        #    generated_text = self.processor.batch_decode(
+        decoded_outputs = []
+        for i in range(inputs.input_ids.shape[0]):  # Loop over batch samples
+            input_length = inputs.input_ids.shape[1] 
+            generated_token_ids = output.sequences[i, input_length:].cpu()  # Skip input tokens
+            decoded_text = self.processor.tokenizer.decode(generated_token_ids.tolist(), skip_special_tokens=True)
+            decoded_outputs.append(decoded_text)
         logits = output.scores
-
-        return generated_text, logits
+        return decoded_outputs, logits
 
     def step(self, inputs, **kwargs):
         with torch.inference_mode():

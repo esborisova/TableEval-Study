@@ -86,38 +86,21 @@ class Evaluator:
             for i in tqdm(range(0, len(inputs), self.batch_size)):
                 outputs, logits = self.model(inputs[i : i + self.batch_size])
                 # generate tuple for each output and sample
-                if isinstance(task["doc_to_text"], str):
-                    task_results.extend(
-                        [
-                            {
-                                "prediction": outputs[j].removeprefix(inputs[i + j]),
-                                "reference": samples[i + j][task["doc_to_target"]],
-                                "input": inputs[i + j],
-                                "example": samples[i + j],
-                                "logits": [
-                                    logits_step[j].cpu().tolist()
-                                    for logits_step in logits
-                                ],
-                            }
-                            for j in range(0, len(outputs))
-                        ]
-                    )
-                else:
-                    task_results.extend(
-                        [
-                            {
-                                "prediction": outputs[j].removeprefix(inputs[i + j][1]),
-                                "reference": samples[i + j][task["doc_to_target"]],
-                                "input": inputs[i + j][1],
-                                "example": samples[i + j],
-                                "logits": [
-                                    logits_step[j].cpu().tolist()
-                                    for logits_step in logits
-                                ],
-                            }
-                            for j in range(0, len(outputs))
-                        ]
-                    )
+                task_results.extend(
+                    [
+                        {
+                            "prediction": outputs[j],
+                            "reference": samples[i + j][task["doc_to_target"]],
+                            "input": inputs[i + j],
+                            "example": samples[i + j],
+                            "logits": [
+                                logits_step[j].cpu().tolist()
+                                for logits_step in logits
+                            ],
+                        }
+                        for j in range(0, len(outputs))
+                    ]
+                )
 
             # calculation of the scores
             scores = {}

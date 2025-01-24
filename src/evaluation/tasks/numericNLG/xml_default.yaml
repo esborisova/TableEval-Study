@@ -1,0 +1,13 @@
+task_name: xml_numericnlg
+path: /netscratch/borisova/TableEval/data/numericNLG/numericnlg_updated_2025-01-23
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+instruction: ""
+doc_to_text: "Table: {table_xml}"
+doc_to_target: description
+metric_list:
+  - bleu
+  - rougeL
+  - meteor

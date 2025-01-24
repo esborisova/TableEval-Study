@@ -1,0 +1,13 @@
+task_name: dict_numericnlg
+path: /netscratch/borisova/TableEval/data/numericNLG/numericnlg_updated_2025-01-23
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+instruction: ""
+doc_to_text: "Table:{'table_caption': {table_name}: {caption}, 'table_row_headers': {row_headers}, 'table_column_headers': {column_headers}, 'table_content': {contents}}"
+doc_to_target: description
+metric_list:
+  - bleu
+  - rougeL
+  - meteor

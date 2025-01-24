@@ -177,7 +177,7 @@ def generate_string_prompt(samples, few_shot_samples, num_fewshot, task):
         few_shot_prompt = task["instruction"]
     else:
         few_shot_prompt = ""
-    if task.get("multi_model_data"):
+    if not task.get("multi_model_data"):
         # for text parsing
         return text_to_prompt(
             samples_with_input_text, text_samples, few_shot_prompt, num_fewshot

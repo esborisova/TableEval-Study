@@ -151,13 +151,17 @@ def accuracy(predictions, references):
 def f1(predictions, references):
     # Check if both lists have the same length
 
+    #convert to set since intersection method excepts this format
+    predictions_set = set(predictions)
+    references_set = set(references)
+    
     # Iterate through predictions and references
-    result_intersection = references.intersection(predictions)
+    result_intersection = references_set.intersection(predictions_set)
     intersec = len(result_intersection)
 
     # Calculate Precision and Recall
-    precision = intersec / len(references)
-    recall = intersec / len(predictions)
+    precision = intersec / len(predictions_set)
+    recall = intersec / len(references_set)
 
     # Calculate F1 Score
     if precision + recall == 0:

@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
 from ..utils.other import create_and_save_dataset
-from ..utils.xml_html_convertion import change_table_class
+from ..utils.xml_html_convertion import change_table_class, map_xml_html_tags
 
 
 def process_cell_attributes(cell, cell_elem):
@@ -98,6 +98,7 @@ def html_to_xml_table(
 ) -> str:
 
     soup = BeautifulSoup(html_table, "html.parser")
+    soup = map_xml_html_tags(soup, conversion_type="html_to_xml")
     table_wrap = create_pmc_table_wrap(table_id, label_text, caption_text)
     html_table_elem = soup.find("table")
 

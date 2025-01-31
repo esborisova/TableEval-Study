@@ -92,7 +92,14 @@ class Evaluator:
                         {
                             "prediction": outputs[j],
                             "reference": samples[i + j][task["doc_to_target"]],
-                            "input": inputs[i + j],
+                            "input": (
+                                inputs[i + j]
+                                if (
+                                    isinstance(inputs[i + j], str)
+                                    and not self.use_chat_template
+                                )
+                                else inputs[i + j][-1]
+                            ),
                             "example": samples[i + j],
                             "logits": [
                                 logits_step[j].cpu().tolist() for logits_step in logits

@@ -77,15 +77,17 @@ class HFModel(LanguageModel):
             ).to(self.device)
         else:
             # TODO:
-            inputs = [
+            input_prompts = [
                 self.processor.apply_chat_template(
                     prompt,
-                    tokenize=True,
+                    tokenize=False,
                     add_generation_prompt=True,
-                    return_tensors="pt",
-                ).to(self.device)
+                )
                 for prompt in prompts
             ]
+            inputs = self.processor(
+                input_prompts, truncation=True, padding=True, return_tensors="pt"
+            ).to(self.device)
         output = self.step(inputs=inputs, **kwargs)
 
         decoded_outputs = []

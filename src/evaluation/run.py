@@ -1,11 +1,11 @@
 import argparse
 from typing import Union
 import ast
-
+from datetime import datetime
 
 from evaluator import Evaluator
 from models import HFModel
-from utils import save_results
+from utils import generate_output_folder, dump_files
 
 
 def setup_parser() -> argparse.ArgumentParser:
@@ -125,6 +125,7 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         use_chat_template=args.use_chat_template,
     )
 
+    current_datetime = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
     # load evaluator
     eval = Evaluator(
         model=model,
@@ -133,19 +134,33 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         batch_size=args.batch_size,
         random_seed=args.seed,
         log_samples=args.log_samples,
+        log_logits=args.log_logits,
         use_chat_template=args.use_chat_template,
+        current_datetime=current_datetime,
+        output_path=args.output_path,
     )
 
     # evaluate
     results = eval.simple_eval()
 
-    # save results
-    save_results(
-        args.output_path,
-        results,
-        model_name=model.get_model_info(),
-        log_logits=args.log_logits,
-    )
+    for task in args.tasks.split(","):
+        scores_path, results_path, logits_path = generate_output_folder(
+            args.output_path,
+            task_name=task,
+            current_datetime=current_datetime,
+            log_logits=args.log_logits,
+        )
+
+        # save results
+        for task in args.tasks.split(","):
+            scores_folder, _, _ = generate_output_folder(
+                args.output_path,
+                args.model_name,
+                task,
+                current_datetime,
+                log_logits=False,
+            )
+            dump_files(scores_folder, results[task], "scores")
 
 
 if __name__ == "__main__":

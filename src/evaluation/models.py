@@ -92,9 +92,13 @@ class HFModel(LanguageModel):
 
         decoded_outputs = []
         for i in range(inputs.input_ids.shape[0]):  # Loop over batch samples
-            input_length = inputs.input_ids.shape[1] 
-            generated_token_ids = output.sequences[i, input_length:].cpu()  # Skip input tokens
-            decoded_text = self.processor.decode(generated_token_ids.tolist(), skip_special_tokens=True)
+            input_length = inputs.input_ids.shape[1]
+            generated_token_ids = output.sequences[
+                i, input_length:
+            ].cpu()  # Skip input tokens
+            decoded_text = self.processor.decode(
+                generated_token_ids.tolist(), skip_special_tokens=True
+            )
             decoded_outputs.append(decoded_text)
         logits = output.scores
         return decoded_outputs, logits
@@ -132,9 +136,13 @@ class HFModel(LanguageModel):
         #    generated_text = self.processor.batch_decode(
         decoded_outputs = []
         for i in range(inputs.input_ids.shape[0]):  # Loop over batch samples
-            input_length = inputs.input_ids.shape[1] 
-            generated_token_ids = output.sequences[i, input_length:].cpu()  # Skip input tokens
-            decoded_text = self.processor.tokenizer.decode(generated_token_ids.tolist(), skip_special_tokens=True)
+            input_length = inputs.input_ids.shape[1]
+            generated_token_ids = output.sequences[
+                i, input_length:
+            ].cpu()  # Skip input tokens
+            decoded_text = self.processor.tokenizer.decode(
+                generated_token_ids.tolist(), skip_special_tokens=True
+            )
             decoded_outputs.append(decoded_text)
         logits = output.scores
         return decoded_outputs, logits

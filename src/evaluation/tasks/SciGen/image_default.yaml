@@ -7,9 +7,10 @@ num_fewshot: 0
 instruction: ""
 doc_to_text: !function image_parser.parse
 doc_to_target: text
+multi_modal_data: True
 metric_list:
   - bleu
   - meteor
-  - moverS
+    #  - moverS
   - bertS
   - bleurt

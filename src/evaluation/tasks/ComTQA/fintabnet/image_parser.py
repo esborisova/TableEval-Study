@@ -2,7 +2,6 @@ from PIL import Image
 
 def parse(samples):
     inputs = []
-
     image_path = '/netscratch/borisova/TableEval/data/ComTQA_data/fintabnet/images'    
     for sample in samples:
         with Image.open(f'{image_path}/{sample["image_name"]}') as image:

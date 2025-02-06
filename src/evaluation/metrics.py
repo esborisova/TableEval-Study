@@ -1,6 +1,7 @@
 from typing import List, Dict, Union
 from evaluate import load
 import re
+from statistics import mean
 
 METRIC_REGISTRY = {}
 
@@ -130,7 +131,8 @@ def bertS(predictions, references):
     results = bertscore.compute(
         predictions=predictions, references=references, lang="en"
     )
-    return results
+
+    return {"f1": mean(results["f1"]), "precision": mean(results["precision"]), "recall": mean(results["recall"]),}
 
 
 @register("accuracy")

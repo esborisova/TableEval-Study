@@ -1,5 +1,4 @@
 from typing import List, Optional
-from datetime import datetime
 from datasets.packaged_modules import text
 from jinja2 import Template
 from datasets import Dataset, load_dataset, load_from_disk
@@ -21,10 +20,11 @@ def load_samples(path: str, split: str) -> Dataset:
     return dataset
 
 
-def save_results(output_path, results, model_name, log_logits: bool = False):
+def generate_output_folder(
+    output_path, model_name, task_name, current_datetime, log_logits: bool = False
+):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     model_generator, model_id = model_name.split("/")
-    current_datetime = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
 
     if not os.path.exists(f"{dir_path}/{output_path}"):
         os.makedirs(f"{dir_path}/{output_path}")
@@ -32,42 +32,63 @@ def save_results(output_path, results, model_name, log_logits: bool = False):
     if not os.path.exists(f"{dir_path}/{output_path}/{model_generator}"):
         os.makedirs(f"{dir_path}/{output_path}/{model_generator}")
 
-    for task_name, result in results.items():
+    results_name = f"{dir_path}/{output_path}/{model_generator}/results_{task_name}_{model_id}_{current_datetime}.json"
+    scores_name = f"{dir_path}/{output_path}/{model_generator}/scores_{task_name}_{model_id}_{current_datetime}.json"
+    if log_logits:
+        logits_name = f"{dir_path}/{output_path}/{model_generator}/logits_{task_name}_{model_id}_{current_datetime}.json"
+    else:
+        logits_name = None
+
+    return scores_name, results_name, logits_name
+
+
+def dump_files(output_path, result, space):
+    if space == "scores":
         with open(
-            f"{dir_path}/{output_path}/{model_generator}/scores_{task_name}_{model_id}_{current_datetime}.json",
-            "w+",
+            output_path,
+            "a+",
         ) as f:
             json.dump(
-                result["scores"],
+                result[space],
                 f,
             )  # indent=4
-        if "results" in result.keys():
-            if log_logits:
-                with open(
-                    f"{dir_path}/{output_path}/{model_generator}/logits_{task_name}_{model_id}_{current_datetime}.json",
-                    "w+",
-                ) as f:
-                    json.dump(
-                        [x["logits"] for x in result["results"]],
-                        f,
-                    )  # indent=4
+    elif space == "logits":
+        with open(
+            output_path,
+            "a+",
+        ) as f:
+            json.dump(
+                [x[space] for x in result],
+                f,
+            )  # indent=4
+    elif space == "results":
+        with open(
+            output_path,
+            "a+",
+        ) as f:
+            json.dump(
+                [
+                    {
+                        "prediction": x["prediction"],
+                        "reference": x["reference"],
+                        "input": x["input"],
+                        "example": x["example"],
+                    }
+                    for x in result
+                ],
+                f,
+            )  # indent=4
 
-            with open(
-                f"{dir_path}/{output_path}/{model_generator}/results_{task_name}_{model_id}_{current_datetime}.json",
-                "w+",
-            ) as f:
-                json.dump(
-                    [
-                        {
-                            "prediction": x["prediction"],
-                            "reference": x["reference"],
-                            "input": x["input"],
-                            "example": x["example"],
-                        }
-                        for x in result["results"]
-                    ],
-                    f,
-                )  # indent=4
+
+def save_results(results, scores_path, logits_path):
+
+    for result in results.values():
+        dump_files(scores_path, result, "scores")
+        if "results" in result.keys():
+            if logits_path:
+                dump_files(scores_path, result, "logits")
+
+            dump_files(scores_path, result, "results")
 
 
 def generate_prompt(

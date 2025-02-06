@@ -143,24 +143,17 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
     # evaluate
     results = eval.simple_eval()
 
-    for task in args.tasks.split(","):
-        scores_path, results_path, logits_path = generate_output_folder(
-            args.output_path,
-            task_name=task,
-            current_datetime=current_datetime,
-            log_logits=args.log_logits,
-        )
 
-        # save results
-        for task in args.tasks.split(","):
-            scores_folder, _, _ = generate_output_folder(
-                args.output_path,
-                args.model_name,
-                task,
-                current_datetime,
-                log_logits=False,
-            )
-            dump_files(scores_folder, results[task], "scores")
+    # save results
+    for task in args.tasks.split(","):
+        scores_folder, _, _ = generate_output_folder(
+            args.output_path,
+            args.model_name,
+            task,
+            current_datetime,
+            log_logits=False,
+        )
+        dump_files(scores_folder, results[task], "scores")
 
 
 if __name__ == "__main__":

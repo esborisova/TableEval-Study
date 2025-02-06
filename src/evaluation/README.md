@@ -29,16 +29,22 @@ Run the evaluation pipeline using the `run.py` script with customizable argument
 
 ### Script Arguments
 - **`--model_name`**: Specify the Huggingface model ID or the local path of the LLM to evaluate (e.g., `gpt-3`, `EleutherAI/pythia-160m`).
-- **`--model_args`**: Comma-separated arguments for the model (e.g., `pretrained=EleutherAI/pythia-160m,dtype=float32`).
 - **`--tasks`**: Comma-separated task names as defined in the YAML files (e.g., `task1,task2`).
+- **`--model_args`**: Comma-separated arguments for the model (e.g., `pretrained=EleutherAI/pythia-160m,dtype=float32`).
 - **`--num_fewshot`**: Number of few-shot examples to use for all tasks (default: task-specific value from the YAML file).
 - **`--batch_size`**: Batch size for evaluation.
 - **`--device`**: Device to run the evaluation (e.g., `cuda`, `cuda:0`, `cpu`).
-- **`--seed`**: Set the seed for reproducibility.
 - **`--output_path`**: Path to save the outputs (default: `./output`).
+- **`--seed`**: Set the seed for reproducibility.
 - **`--log_samples`**: If set to `True`, saves model predictions along with scores.
+- **`--log_logits`**: If set to `True`, saves logits.
+- **`--multi_modal or -mm`**: If set to `True`, runs multi-modal LLMs.
+- **`--image_special_token`**: Changing the special token for the multi_modal LLMs. The default is <image.
+- **`--use_chat_template`**: If set to `True`, runs multi-modal LLMs in chat formatted prompt. 
 
 ### Example Command
+For LLMs:
+
 ```bash
 python run.py \
     --model_name EleutherAI/pythia-160m \
@@ -49,7 +55,24 @@ python run.py \
     --device cuda:0 \
     --seed 42 \
     --output_path ./evaluation_results \
-    --log_samples True
+    --log_samples True \
+    --log_logits True \
+```
+
+For MLLMs:
+
+```bash
+python run.py \
+    --model_name google/paligemma-3b-mix-224 \
+    --image_comtqa_fin \
+    --num_fewshot 0 \
+    --batch_size 1 \
+    --device cuda:0 \
+    --seed 42 \
+    --output_path ./evaluation_results \
+    --log_samples True \
+    -mm \
+    --log_logits True \
 ```
 
 ---
@@ -79,12 +102,18 @@ num_fewshot: <Default Number of Few-Shots>  # Optional
 instruction: <Task Instruction>  # e.g., 'Describe the following table' (Optional)
 doc_to_text: <Prompt Template>  # e.g., "{{caption}} {{row_headers}} {{column_headers}}" (Jinja2 format)
 doc_to_target: <Target Column>  # The column containing the reference answer
+multi_modal_data: <True> # Optional, for running MLLMs
 metric_list:  # List of metrics for evaluation
   - <Metric1>
   - <Metric2>
 ```
 
+For MLLMs, a function for parsing images is required. An example is here: [image_parser.py](https://github.com/esborisova/Table-Understanding-Evaluation-Study/blob/evaluation_script/src/evaluation/tasks/ComTQA/fintabnet/image_parser.py)
+
+
 ### Example YAML
+For LLMs:
+
 ```yaml
 task_name: numericnlg_default
 path: kasnerz/numericnlg
@@ -100,6 +129,27 @@ metric_list:
   - rougeL 
   - meteor
   - PARENT
+```
+
+For MLLMs:
+
+```yaml
+task_name: image_comtqa_fin
+path: ComTQA_data/comtqa_fin
+test_split: test
+validation_split: validation
+train_split: train
+num_fewshot: 0
+instruction: ""
+doc_to_text: !function image_parser.parse
+doc_to_target: answer
+multi_modal_data: True
+metric_list:
+  - accuracy
+  - f1
+  - bleu
+  - rougeL
+  - meteor
 ```
 
 ---

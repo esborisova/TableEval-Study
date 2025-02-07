@@ -1,0 +1,15 @@
+task_name: xml_logic2text
+path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_filtered_merged_sent_updated_2025-01-24
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+instruction: ""
+doc_to_text: "Table: {{table_xml}}"
+doc_to_target: joined_ref
+metric_list:
+  - perplexity
+  - bleu
+  - rougeL
+  - meteor
+

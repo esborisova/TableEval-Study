@@ -1,0 +1,15 @@
+task_name: dict_comtqa_fin
+path: /netscratch/borisova/TableEval/data/ComTQA_data/comtqa_fin_updated_2025-01-23
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+instruction: ""
+doc_to_text: "Refer to the provided table and work through the question step by step. Table: {'table_headers': {{table_headers}}, 'table_rows': {{table_rows}}}\nQuestion: {{question}}}"
+doc_to_target: answer
+metric_list:
+  - accuracy
+  - f1
+  - bleu
+  - rougeL
+  - meteor

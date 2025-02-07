@@ -1,0 +1,14 @@
+task_name: latex_scigen
+path: /netscratch/borisova/TableEval/data/SciGen/scigen_merged_updated_2025-01-23
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+instruction: "You are an expert table-to-text system. You undestand structured tables and you can correcly operate with units and numerical values and describe them using natural text."
+doc_to_text: 'Provide a textual description of the following table: {{table_latex}}'
+doc_to_target: text
+metric_list:
+  - bleu
+  - meteor
+  - bertS
+  - bleurt

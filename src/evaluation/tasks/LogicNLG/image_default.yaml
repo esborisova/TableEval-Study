@@ -1,0 +1,14 @@
+task_name: image_logicnlg
+path: /netscratch/borisova/TableEval/data/LogicNLG/logicnlg_filtered_merged_ref_updated_2025-01-24
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+instruction: ""
+doc_to_text: !function image_parser.parse 
+doc_to_target: joined_ref
+metric_list:
+  - perplexity
+  - bleu
+  - rougeL 
+  - meteor

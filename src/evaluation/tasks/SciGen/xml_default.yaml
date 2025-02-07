@@ -1,0 +1,15 @@
+task_name: xml_scigen
+path: /netscratch/borisova/TableEval/data/SciGen/scigen_merged_updated_2025-01-23
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+instruction: ""
+doc_to_text: 'Provide a textual description of the following table: {{table_xml_cleaned}}'
+doc_to_target: text
+metric_list:
+  - bleu
+  - meteor
+  - moverS
+  - bertS
+  - bleurt

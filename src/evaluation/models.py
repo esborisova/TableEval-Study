@@ -151,6 +151,7 @@ class HFModel(LanguageModel):
         with torch.inference_mode():
             output = self.model.generate(
                 **inputs,
+                max_new_tokens=1024,
                 num_return_sequences=1,
                 output_scores=True,
                 return_dict_in_generate=True,

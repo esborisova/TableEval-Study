@@ -219,7 +219,7 @@ def bleu(predictions, references, b_type: str = ""):
     """
     from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 
-    if re.match(".\\d+", b_type):
+    if re.match("bleu\\d+", b_type):
         weights = [0, 0, 0, 0, 0]
         index = int(b_type[-1])
         weights[index] = 1

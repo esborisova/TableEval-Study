@@ -5,7 +5,7 @@ validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
-doc_to_text: "Refer to the provided table and work through the question step by step. Table: {{table_xml}}\nQuestion: {{question}}}"
+doc_to_text: 'Refer to the provided table and answer the question. Question: {{question}}. Table: {{table_xml}}.'
 doc_to_target: answer
 metric_list:
   - accuracy

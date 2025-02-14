@@ -26,7 +26,7 @@ class Metrics:
         self.metric_name = metric_name
 
         if metric_name:
-            if "bleu" in metric_name:
+            if "bleu" in metric_name and metric_name != "bleurt":
                 metric_name = "bleu"
             if "rouge" in metric_name:
                 metric_name = "rouge"
@@ -53,7 +53,7 @@ class Metrics:
             self.predictions.extend(prediction)
 
     def compute(self) -> Dict:
-        if ("rouge" or "bleu") in self.metric_name:
+        if "rouge" in self.metric_name or "bleu" in self.metric_name and self.metric_name != "bleurt":
             return self.function(self.predictions, self.references, self.metric_name)
         if "perplexity" in self.metric_name:
             return self.function(self.predictions, self.model_id)
@@ -66,7 +66,7 @@ class Metrics:
     def metric_type(self, new_metric: str):
         self.metric_name = new_metric
         if new_metric:
-            if "bleu" in new_metric:
+            if "bleu" in new_metric and new_metric != "bleurt":
                 new_metric = "bleu"
             if "rouge" in new_metric:
                 new_metric = "rouge"
@@ -86,7 +86,7 @@ def meteor(predictions, references):
             reference.split(), prediction.split()
         )
         m_score.append(score)
-    return {"meteor": sum(m_score) / len(m_score)}
+    return sum(m_score) / len(m_score)
 
 
 @register("moverS")
@@ -95,7 +95,8 @@ def moverS(predictions, references):
     from moverscore import get_idf_dict, word_mover_score
     Recommend to use this version (DistilBERT) for evaluation, if the speed is your concern.
     """
-    from moverscore_v2 import get_idf_dict, word_mover_score
+    from moverscore_v2 import get_idf_dict, word_mover_score 
+    import numpy as np
 
     idf_dict_hyp = get_idf_dict(predictions)  # idf_dict_hyp = defaultdict(lambda: 1.)
     idf_dict_ref = get_idf_dict(references)  # idf_dict_ref = defaultdict(lambda: 1.)
@@ -110,19 +111,24 @@ def moverS(predictions, references):
         remove_subwords=True,
     )
 
-    return score
+    avg_score = np.mean(score)
+
+    return avg_score
 
 
 @register("bleurt")
 def bleurt(predictions, references):
     from bleurt import score
-    
-    checkpoint = "bleurt/test_checkpoint"
+    import numpy as np
+
+    checkpoint = "/usr/local/lib/python3.10/dist-packages/bleurt/test_checkpoint"
 
     scorer = score.BleurtScorer(checkpoint)
     scores = scorer.score(references=references, candidates=predictions)
-    assert isinstance(scores, list) and len(scores) == 1
-    return scores
+
+    assert isinstance(scores, list) and len(scores) ==  len(predictions)
+    avg_score = np.mean(scores)
+    return avg_score
 
 
 @register("bertS")
@@ -218,19 +224,20 @@ def bleu(predictions, references, b_type: str = ""):
     Higher is better
     """
     from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+    
+    bleu_weights = {
+            "bleu1": (1, 0, 0, 0),
+            "bleu2": (0.5, 0.5, 0, 0),
+            "bleu3": (0.33, 0.33, 0.33, 0),
+            "bleu4": (0.25, 0.25, 0.25, 0.25)
+            }
 
-    if re.match(".\\d+", b_type):
-        weights = [0, 0, 0, 0, 0]
-        index = int(b_type[-1])
-        weights[index] = 1
-        weights = tuple(weights)
+    b_type = b_type.lower()
 
-    else:
-        # default bleu is 4-gram
-        weights = (0, 0, 0, 1)
+    weights = bleu_weights.get(b_type, (0.25, 0.25, 0.25, 0.25))
         
     smoothing_function = SmoothingFunction().method1
-    
+
     bleu_score = []
     for pred, ref in zip(predictions, references):
         bleu_score.append(sentence_bleu(ref.split(), pred.split(), weights=weights, smoothing_function=smoothing_function))

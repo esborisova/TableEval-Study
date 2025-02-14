@@ -143,7 +143,7 @@ class Evaluator:
 
             # calculation of the scores
             scores = {}
-            metric_calc = Metrics()
+            metric_calc = Metrics(model_id=self.model.get_model_info())
             # load all results
             metric_calc.add(
                 prediction=[x["prediction"] for x in task_results],

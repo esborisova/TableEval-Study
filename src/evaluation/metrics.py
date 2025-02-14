@@ -86,7 +86,7 @@ def meteor(predictions, references):
             reference.split(), prediction.split()
         )
         m_score.append(score)
-    return {"meteor": sum(m_score) / len(m_score)}
+    return sum(m_score) / len(m_score)
 
 
 @register("moverS")
@@ -234,10 +234,7 @@ def bleu(predictions, references, b_type: str = ""):
 
     b_type = b_type.lower()
 
-    if b_type == "bleu":
-        weights = (0.25, 0.25, 0.25, 0.25)
-    else:
-        weights = bleu_weights.get(b_type)
+    weights = bleu_weights.get(b_type, (0.25, 0.25, 0.25, 0.25))
         
     smoothing_function = SmoothingFunction().method1
 

@@ -53,7 +53,7 @@ class Metrics:
             self.predictions.extend(prediction)
 
     def compute(self) -> Dict:
-        if ("rouge" or "bleu") in self.metric_name:
+        if "rouge" in self.metric_name or "bleu" in self.metric_name:
             return self.function(self.predictions, self.references, self.metric_name)
         if "perplexity" in self.metric_name:
             return self.function(self.predictions, self.model_id)
@@ -218,19 +218,23 @@ def bleu(predictions, references, b_type: str = ""):
     Higher is better
     """
     from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+    
+    bleu_weights = {
+            "bleu1": (1, 0, 0, 0),
+            "bleu2": (0.5, 0.5, 0, 0),
+            "bleu3": (0.33, 0.33, 0.33, 0),
+            "bleu4": (0.25, 0.25, 0.25, 0.25)
+            }
 
-    if re.match("bleu\\d+", b_type):
-        weights = [0, 0, 0, 0, 0]
-        index = int(b_type[-1])
-        weights[index] = 1
-        weights = tuple(weights)
+    b_type = b_type.lower()
 
+    if b_type == "bleu":
+        weights = (0.25, 0.25, 0.25, 0.25)
     else:
-        # default bleu is 4-gram
-        weights = (0, 0, 0, 1)
+        weights = bleu_weights.get(b_type)
         
     smoothing_function = SmoothingFunction().method1
-    
+
     bleu_score = []
     for pred, ref in zip(predictions, references):
         bleu_score.append(sentence_bleu(ref.split(), pred.split(), weights=weights, smoothing_function=smoothing_function))

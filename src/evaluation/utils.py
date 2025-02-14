@@ -51,7 +51,8 @@ def dump_files(output_path, result, space):
             json.dump(
                 result[space],
                 f,
-                indent=4)
+                indent=4 
+                )
     elif space == "logits":
         with open(
             output_path,
@@ -60,7 +61,8 @@ def dump_files(output_path, result, space):
             json.dump(
                 [x[space] for x in result],
                 f,
-                indent=4)
+            indent=4
+            )
     elif space == "results":
         with open(
             output_path,

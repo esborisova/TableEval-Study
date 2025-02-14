@@ -1,7 +1,9 @@
+"""Script for copying the fintabnet pdfs containing tables used in ComTQA dataset"""
 import pandas as pd
 import shutil
 from datasets import load_dataset
 import os
+
 
 def main():
     fintabnet_doc_path = "/netscratch/borisova/eval_study/data/fintab/fintabnet/FinTabNet_1.0.0_cell_test.jsonl"
@@ -18,15 +20,13 @@ def main():
         table_id = str(fintabnet_annotations["table_id"][index])
         if table_id in table_ids:
             filename = fintabnet_annotations["filename"][index]
-            source_file = os.path.join(
-                pdfs_rootdir, filename
-            )
+            source_file = os.path.join(pdfs_rootdir, filename)
             if os.path.exists(source_file):
                 relative_path = fintabnet_annotations["filename"][index]
                 dest_file_path = os.path.join(pdfs_dest_dir, relative_path)
                 os.makedirs(os.path.dirname(dest_file_path), exist_ok=True)
                 shutil.copy2(source_file, dest_file_path)
-                
+
+
 if __name__ == "__main__":
     main()
-

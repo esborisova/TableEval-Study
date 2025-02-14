@@ -1,11 +1,16 @@
-from datasets import Dataset, DatasetDict, load_dataset
+"""Pipeline for adding PMC tables to ComTQA dataset based on tables titles."""
+from datasets import load_dataset
 import pandas as pd
 import re
+from datetime import datetime
+from ..utils.other import create_and_save_dataset
 
 
 def main():
     comtqa = load_dataset("ByteDance/ComTQA")
-    tables_df = pd.read_csv("../../data/pubmed/pubmed_tables.csv")
+    tables_df = pd.read_csv(
+        "../../data/ComTQA_data/pubmed/utils/pubmed_tables_updated_2014-12-01.csv"
+    )
 
     tables_df["cleaned_table_title"] = tables_df["table_title"].apply(
         lambda x: x.lower().replace(" ", "")
@@ -32,12 +37,11 @@ def main():
             comtqa["id"][index] = None
 
     merged_df = pd.merge(comtqa, tables_df, how="left")
-    merged_df.to_csv("../../data/pubmed/comtqa_df.csv", index=False)
-
-    df_reset = merged_df.reset_index(drop=True)
-    hf_dataset = Dataset.from_pandas(df_reset)
-    hf_dataset_dict = DatasetDict({"train": hf_dataset})
-    hf_dataset_dict.save_to_disk("../../data/comtqa")
+    date = datetime.now().strftime("%Y-%m-%d")
+    merged_df.to_csv(
+        f"../../data/ComTQA_data/pubmed/utils/comtqa_df_updated_{date}.csv", index=False
+    )
+    create_and_save_dataset(merged_df, "train", "../../data/ComTQA_data/comtqa_updated")
 
 
 if __name__ == "__main__":

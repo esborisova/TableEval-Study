@@ -2,7 +2,9 @@ import ast
 import pandas as pd
 import os
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import CountVectorizer
 from other import read_json
+import numpy as np
 
 
 def clean_headers(row) -> list:
@@ -28,13 +30,14 @@ def clean_content(row) -> list:
 
 def join_table_content(row) -> str:
     header_str = " ".join(row["clean_headers"]) if row["clean_headers"] else ""
-    content_str = " ".join(row["clean_content"]) if row["clean_content"] else ""
+    content_str = " ".join(row["clean_rows"]) if row["clean_rows"] else ""
+    subheader_str = " ".join(row["clean_subheaders"]) if row["clean_subheaders"] else ""
 
     table_title = row["table_title"] if pd.notna(row["table_title"]) else ""
     table_caption = row["table_caption"] if pd.notna(row["table_caption"]) else ""
     table_footnote = row["table_footnote"] if pd.notna(row["table_footnote"]) else ""
 
-    return f"{table_title} {table_caption} {header_str} {content_str} {table_footnote}".lower()
+    return f"{table_title} {table_caption} {header_str} {subheader_str} {content_str} {table_footnote}".lower()
 
 
 def compute_cosine_similarity(vectorizer, text1: str, text2: str) -> float:
@@ -61,10 +64,16 @@ def calculate_similarity_for_row(row, jsons_rootdir: str, vectorizer):
 
 
 def prepare_tables(
-    df: pd.DataFrame, header: str, content: str, merged_content: bool = False
+    df: pd.DataFrame,
+    header: str,
+    subheader: str,
+    content: str,
+    merged_content: bool = False,
 ) -> pd.DataFrame:
     df["clean_headers"] = df[header].apply(clean_headers)
-    df["clean_content"] = df[content].apply(clean_content)
+    df["clean_subheaders"] = df[subheader].apply(clean_content)
+    df["clean_rows"] = df[content].apply(clean_content)
+
     if merged_content is True:
         df["merged_content"] = df.apply(join_table_content, axis=1)
     return df
@@ -110,3 +119,19 @@ def substitute_table(
                 else:
                     df.at[indx, col] = best_table[col]
     return df
+
+
+def preprocess_table(df):
+    return " ".join(df.astype(str).fillna("").values.flatten())
+
+
+def compute_tables_similarity(gold_table, extracted_tables):
+    gold_string = preprocess_table(gold_table)
+    extracted_strings = [preprocess_table(table) for table in extracted_tables]
+
+    vectorizer = CountVectorizer().fit([gold_string] + extracted_strings)
+    vectors = vectorizer.transform([gold_string] + extracted_strings)
+
+    similarities = cosine_similarity(vectors[0:1], vectors[1:]).flatten()
+    best_match_index = np.argmax(similarities)
+    return extracted_tables[best_match_index], similarities[best_match_index]

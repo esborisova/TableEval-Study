@@ -34,7 +34,7 @@ def get_license_venue_info(url: str) -> Tuple[Optional[str], Optional[str]]:
         return license, venue
     soup = BeautifulSoup(response, "html.parser")
     license_divs = soup.find_all("div", class_="abs-license")
-    
+
     venue = "arxiv"
     if license_divs:
         licence_url = license_divs[0].find("a")["href"]

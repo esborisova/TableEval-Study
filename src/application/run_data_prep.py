@@ -1,3 +1,5 @@
+"""Script for running pipeline which finds and dowloads papers in SciGen and numericNLG to 
+further extract table images from those."""
 import datasets
 from datasets import load_dataset
 import os

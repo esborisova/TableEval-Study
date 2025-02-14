@@ -1,0 +1,65 @@
+{
+    "img_ids_cl_html": [
+      "1710.10380v3-Table4-1.png",
+      "1904.02338v2-Table5-1.png",
+      "1809.05157v2-Table1-1.png",
+      "1908.08528v1-Table3-1.png"
+    ],
+    
+    "img_ids_other_html": [
+      "1909.05379v2-Table3-1.png",
+      "1909.05379v2-Table4-1.png",
+      "2002.02618v1-Table7-1.png",
+      "1812.06707v1-Table2-1.png",
+      "1912.03820v3-Table4-1.png",
+      "2003.06729v1-Table2-1.png",
+      "1810.00319v6-Table1-1.png",
+      "1810.00319v6-Table4-1.png",
+      "1810.00319v6-Table5-1.png",
+      "1912.10080v1-TableIII-1.png",
+      "1809.08410v1-TableI-1.png",
+      "1909.05125v1-Table1-1.png",
+      "1912.04216v1-Table1-1.png"
+    ],
+    
+    "img_ids_cl_xml": [
+      "1805.11465v1-Table2-1.png",
+      "1809.05157v2-Table1-1.png",
+      "1908.08528v1-Table3-1.png",
+      "1908.08528v1-Table2-1.png",
+      "1810.03541v1-Table4-1.png",
+      "1810.03541v1-Table6-1.png",
+      "1904.02338v2-Table4-1.png",
+      "1904.02338v2-Table5-1.png",
+      "1810.02229v1-Table1-1.png",
+      "1810.02229v1-Table2-1.png"
+    ],
+    
+    "img_ids_other_xml": [
+      "1912.03820v3-Table4-1.png",
+      "2003.06729v1-Table2-1.png",
+      "1912.05452-TableIV-1.png",
+      "1909.05379v2-Table3-1.png",
+      "1909.05379v2-Table4-1.png",
+      "1810.00319v6-Table1-1.png",
+      "1810.00319v6-Table5-1.png",
+      "1912.10080v1-TableIII-1.png",
+      "1809.08410v1-TableI-1.png",
+      "2002.02618v1-Table7-1.png",
+      "1909.05125v1-Table1-1.png",
+      "1904.11157v1-Table2-1.png",
+      "1904.11157v1-Table1-1.png",
+      "1807.11622v4-Table5-1.png",
+      "1910.02551v3-Table3-1.png",
+      "1911.03299v2-TableIII-1.png",
+      "1912.04216v1-Table1-1.png",
+      "1912.10107v1-Table4-1.png",
+      "1912.10107v1-Table5-1.png",
+      "1912.10107v1-Table7-1.png",
+      "1912.10107v1-Table8-1.png",
+      "1912.10107v1-Table9-1.png",
+      "1812.02984v1-Table1-1.png",
+      "1908.04955v1-TableI-1.png"
+    ]
+  }
+  

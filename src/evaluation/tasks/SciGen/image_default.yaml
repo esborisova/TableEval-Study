@@ -1,16 +1,24 @@
 task_name: image_scigen
-path: /netscratch/borisova/TableEval/data/SciGen/scigen_merged_updated_2025-01-23
+path: /netscratch/borisova/TableEval/data/SciGen/scigen_merged_updated_2025-02-13
 test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
 doc_to_text: !function image_parser.parse
-doc_to_target: text
+doc_to_target: text_cleaned
 multi_modal_data: True
 metric_list:
-  - bleu
-  - meteor
-    #  - moverS
+  # - sacrebleu
   - bertS
   - bleurt
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - meteor
+  - moverS
+  - rougeL
+  - rouge1
+  - rouge2
+  - rouge3

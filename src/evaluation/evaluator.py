@@ -6,6 +6,7 @@ from metrics import Metrics
 from utils import load_samples, generate_prompt, generate_output_folder, dump_files
 import random
 import torch
+import gc
 import numpy
 
 TableResults = Dict[str, str]
@@ -48,7 +49,10 @@ class Evaluator:
         numpy.random.seed(random_seed)
         torch.manual_seed(random_seed)
 
-    def simple_eval(self) -> Dict:
+    def simple_eval(self, task_name="") -> Dict:
+        if task_name:
+            self.tasks_list = self.register.get_task(task_name)
+
         results = {}
         for task in self.tasks_list:
 
@@ -161,5 +165,11 @@ class Evaluator:
         return results
 
     def reset(self):
-        # TODO: clean up
-        pass
+        gc.collect()  # Collect garbage
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()  # Free unused cached memory
+            torch.cuda.ipc_collect()  # Collect internal shared memory (for multiprocessing)
+
+        # Optional: Reset PyTorch’s CUDNN state
+        # torch.backends.cudnn.benchmark = False
+        # torch.backends.cudnn.enabled = False

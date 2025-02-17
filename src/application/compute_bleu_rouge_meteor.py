@@ -1,3 +1,4 @@
+"""Script for computing BLEU, METEOR, and Rouge scores between gold latex tables in SciGen and Gemini generated."""
 import pandas as pd
 from nltk.translate.bleu_score import SmoothingFunction
 from rouge_score import rouge_scorer
@@ -8,7 +9,6 @@ from ..utils.text_gen_metrics import (
     compute_rouge_scores,
     create_rouge_df,
     calculate_meteor_scores,
-    compute_average_score,
 )
 
 
@@ -58,7 +58,9 @@ def main():
         }
     )
 
-    bleu_average = bleu_scores_df[["text_bleu_scores", "image_bleu_scores", "image_text_bleu_scores"]].mean()
+    bleu_average = bleu_scores_df[
+        ["text_bleu_scores", "image_bleu_scores", "image_text_bleu_scores"]
+    ].mean()
     print("Average blue scores:", bleu_average)
     bleu_scores_df.to_csv("../../data/formats_generation/latex_bleu_scores.csv")
 

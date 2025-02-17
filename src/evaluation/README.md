@@ -30,7 +30,7 @@ Run the evaluation pipeline using the `run.py` script with customizable argument
 ### Script Arguments
 - **`--model_name`**: Specify the Huggingface model ID or the local path of the LLM to evaluate (e.g., `gpt-3`, `EleutherAI/pythia-160m`).
 - **`--tasks`**: Comma-separated task names as defined in the YAML files (e.g., `task1,task2`).
-- **`--model_args`**: Comma-separated arguments for the model (e.g., `pretrained=EleutherAI/pythia-160m,dtype=float32`).
+- **`--model_args`**: String with dict containing arguments for the model (e.g., '{"load_in_8bit": True, "use_cache": True}').
 - **`--num_fewshot`**: Number of few-shot examples to use for all tasks (default: task-specific value from the YAML file).
 - **`--batch_size`**: Batch size for evaluation.
 - **`--device`**: Device to run the evaluation (e.g., `cuda`, `cuda:0`, `cpu`).

@@ -6,7 +6,6 @@ import pandas as pd
 import logging
 from typing import Tuple, Optional
 
-
 class DataPrep:
     def __init__(
         self, data: Tuple[str, dict], save_directory: str, log_level=logging.INFO

@@ -1,3 +1,6 @@
+"""This script extracts tables by converting the pdf to image first 
+and then croping the table based on annotatios of bonding boxes."""
+
 import os
 from PyPDF2 import PdfReader
 import copy
@@ -7,6 +10,7 @@ from datasets import Dataset, DatasetDict, load_from_disk
 from datetime import datetime
 from PIL import ImageDraw
 import copy
+from ..utils.other import create_and_save_dataset
 
 
 def main():
@@ -52,7 +56,7 @@ def main():
                         [bbox[0], bbox[1], bbox[2], bbox[3]], outline="red", width=5
                     )
 
-                    img_file_name = f"{row['filename'].replace('/', '_').split('.pdf')[0]}{str(row['table_id'])}.png"
+                    img_file_name = f"{row['filename'].replace('/', '_').split('.pdf')[0]}_{str(row['table_id'])}.png"
                     image_save_dir = os.path.join(save_dir, img_file_name)
                     bbox_annot_save_dir = os.path.join(
                         save_dir_img_with_bbox, img_file_name
@@ -84,10 +88,7 @@ def main():
     )
     merged_df = merged_df.drop(columns=["image_name_df2", "image_name_df1"])
 
-    hf_dataset = Dataset.from_pandas(merged_df.reset_index(drop=True))
-    hf_dataset_dict = DatasetDict({"train": hf_dataset})
-    date = datetime.now().strftime("%Y-%m-%d")
-    hf_dataset_dict.save_to_disk(f"../../../data/comtqa_updated_{date}")
+    create_and_save_dataset(merged_df, "train", "../../data/comtqa_updated")
 
 
 if __name__ == "__main__":

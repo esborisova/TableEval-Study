@@ -1,3 +1,4 @@
+"""Pipeline for collecting images metadata (id, name, etc.) in SciGen and numericNLC datasets."""
 import datasets
 from datasets import load_dataset
 from ..utils.prepare_data import load_scigen_dataset

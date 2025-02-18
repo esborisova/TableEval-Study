@@ -48,21 +48,13 @@ def dump_files(output_path, result, space):
             output_path,
             "a+",
         ) as f:
-            json.dump(
-                result[space],
-                f,
-                indent=4 
-                )
+            json.dump(result[space], f, indent=4)
     elif space == "logits":
         with open(
             output_path,
             "a+",
         ) as f:
-            json.dump(
-                [x[space] for x in result],
-                f,
-            indent=4
-            )
+            json.dump([x[space] for x in result], f, indent=4)
     elif space == "results":
         with open(
             output_path,
@@ -79,7 +71,8 @@ def dump_files(output_path, result, space):
                     for x in result
                 ],
                 f,
-                indent=4)
+                indent=4,
+            )
 
 
 def save_results(results, scores_path, logits_path):
@@ -99,6 +92,9 @@ def generate_prompt(
     """There are two options to generate the prompt. Either as a single string
     or using the chat template structure of a list with meta data. For more
     information please check https://huggingface.co/docs/transformers/chat_templating"""
+    if task.get("ignore_columns"):
+        drop_nones(samples, task["ignore_columns"].split(","))
+
     if prompt_template:
         return generate_template_prompt(
             samples,
@@ -113,6 +109,10 @@ def generate_prompt(
             num_fewshot,
             task,
         )
+
+
+def drop_nones(samples, column_names):
+    return [s for s in samples if all(s.get(c) is not None for c in column_names)]
 
 
 def generate_template_prompt(samples, few_shot_samples, num_fewshot, task):
@@ -245,5 +245,6 @@ def text_gen(template, samples: List, target: str = "") -> List[str]:
         t = Template(template)
     prompts = []
     for sample in samples:
+        # TODO: first.
         prompts.append(t.render(sample))
     return prompts

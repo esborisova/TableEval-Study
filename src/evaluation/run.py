@@ -140,12 +140,11 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         output_path=args.output_path,
     )
 
-    # evaluate
-    results = eval.simple_eval()
-
-
     # save results
     for task in args.tasks.split(","):
+        # evaluate
+        results = eval.simple_eval(task)
+
         scores_folder, _, _ = generate_output_folder(
             args.output_path,
             args.model_name,
@@ -154,6 +153,8 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
             log_logits=False,
         )
         dump_files(scores_folder, results[task], "scores")
+
+        eval.reset()
 
 
 if __name__ == "__main__":

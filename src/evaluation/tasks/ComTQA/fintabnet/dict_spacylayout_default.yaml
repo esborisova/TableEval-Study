@@ -5,7 +5,7 @@ validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
-doc_to_text: "Refer to the provided table and work through the question step by step. Table: {'table_headers': {{table_headers_spacylayout}}, 'table_rows': {{table_rows_spacylayout}}}\nQuestion: {{question}}}"
+doc_to_text: 'Refer to the provided table and answer the question. Question: {{question}}. Table: {"table headers": {{table_headers_spacylayout}}, "table rows": {{table_rows_spacylayout}} }.'
 doc_to_target: answer
 metric_list:
   - accuracy

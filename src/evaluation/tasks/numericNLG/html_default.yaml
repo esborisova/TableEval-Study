@@ -5,7 +5,7 @@ validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
-doc_to_text: "Table: {table_html_clean}"
+doc_to_text: 'You are an expert in the table-to-text generation task. Describe the given table focusing on the insights and trends revealed by the results. The summary should be factual and well-written. Do not introduce new information or speculate. Table: {{table_html_clean}}.'
 doc_to_target: description
 metric_list:
   - bleu

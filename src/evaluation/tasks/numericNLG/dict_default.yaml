@@ -5,7 +5,7 @@ validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
-doc_to_text: "Table:{'table_caption': {table_name}: {caption}, 'table_row_headers': {row_headers}, 'table_column_headers': {column_headers}, 'table_content': {contents}}"
+doc_to_text: 'You are an expert in the table-to-text generation task. Describe the given table focusing on the insights and trends revealed by the results. The summary should be factual and well-written. Do not introduce new information or speculate. Table: {"table caption": {{caption}}, "table row headers": {{row_header}}, "table column headers": {{column_headers}}, "contents": {{contents}}}.'
 doc_to_target: description
 metric_list:
   - bleu

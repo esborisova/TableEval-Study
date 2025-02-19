@@ -5,10 +5,10 @@ validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
-doc_to_text: "Table: {'table_header': {{table_header}}, 'table_content': {{table_cont}}}"
-doc_to_target: joined_ref
+doc_to_text: 'Generate a one sentence statement based on the table and logical form. Logical form: {{logic_str}}. Table title: {{title}}. Table: {"table_header": {{table_header}}, "table_content": {{table_cont}}} }.'
+doc_to_target: sent
 metric_list:
   - bleu
-  - perplexity
-  - rougeL
-  - meteor
+  - rouge1
+  - rogue2
+  - rogueL

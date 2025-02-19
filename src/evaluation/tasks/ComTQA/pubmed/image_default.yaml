@@ -13,9 +13,8 @@ metric_list:
   - f1
   - bertS
   - bleurt
-  - moverS
+    # - moverS
     #- sacrebleu
-    #- bleu
   - bleu1
   - bleu2
   - bleu3

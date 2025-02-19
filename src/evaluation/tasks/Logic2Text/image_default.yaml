@@ -1,14 +1,22 @@
 task_name: image_logic2text
-path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_filtered_merged_sent_updated_2025-01-24
+path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_filtered_updated_2025-01-28
 test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
 doc_to_text: !function image_parser.parse
-doc_to_target: joined_ref
+doc_to_target: sent
+multi_modal_data: True
 metric_list:
-  - perplexity
-  - bleu
+  - bleurt
+  - bertS 
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - rouge1
+  - rouge2 
+  - rouge3
   - rougeL
   - meteor

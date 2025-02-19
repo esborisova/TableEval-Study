@@ -7,10 +7,20 @@ num_fewshot: 0
 instruction: ""
 doc_to_text: !function image_parser.parse
 doc_to_target: answer
-multi_model_data: True
+multi_modal_data: True
 metric_list:
   - accuracy
   - f1
-  - bleu
+  - bertS
+  - bleurt
+    # - moverS
+    #- sacrebleu
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
   - rougeL
+  - rouge1
+  - rouge2
+  - rouge3
   - meteor

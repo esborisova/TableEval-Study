@@ -20,7 +20,7 @@
 |  SciGen                  |   1035             |   1035            |    928        |    985        |       961     |
 |  ComTQA (FinTabNet)      |   659              |                   |               |               |               |
 |  LogicNLG                |   223              |   223             |     223       |    223        |       223     |
-|  Logic2Text              |   91               |   91              |     91        |    91         |       91      |
+|  Logic2Text              |   91               |    91             |     91        |    91         |       91      |
 |  **Total**               |   **3075**         |                   |               |               |               |
 
 **Number of unique instances per format and dataset.

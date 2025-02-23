@@ -28,9 +28,17 @@ def clean_column_names(cols):
     return cleaned_cols
 
 
+def fix_auto_generated_headers(df: pd.DataFrame) -> pd.DataFrame:
+    if list(df.columns) == list(range(len(df.columns))):
+        df.columns = df.iloc[0]
+        df = df[1:].reset_index(drop=True)
+    return df
+
+
 def html_to_df(html: str) -> pd.DataFrame:
     html_df = pd.read_html(html)
     html_df = html_df[0]
+    html_df = fix_auto_generated_headers(html_df)
     html_df.columns = clean_column_names(html_df.columns)
     return html_df
 

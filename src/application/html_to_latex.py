@@ -1,4 +1,4 @@
-"""Pipeline for converting tables HTML into LaTeX in numericNLG and PMC subset of ComTQA"""
+"""Pipeline for converting tables HTML into LaTeX in numericNLG, Logic2Text, LogicNLG, and PMC subset of ComTQA"""
 
 from datasets import load_from_disk
 from ..utils.other import read_json, create_and_save_dataset
@@ -10,12 +10,20 @@ def main():
     comtqa = comtqa["train"].to_pandas()
     pmc_subset = comtqa[comtqa["dataset"] == "PubTab1M"]
 
-    numericnlg = load_from_disk(
-        "../../data/numericNLG/numericnlg_test_2024_12_17.hf"
-    )
+    numericnlg = load_from_disk("../../data/numericNLG/numericnlg_test_2024_12_17.hf")
     numericnlg = numericnlg.to_pandas()
     numericnlg = numericnlg.rename(columns={"table_latex": "table_latex_gemini"})
     numericnlg = numericnlg.drop(columns=["table_latex_source"])
+
+    logic2text = load_from_disk(
+        "../../data/Logic2Text/logic2text_filtered_updated_2025-01-28"
+    )
+    logic2text = logic2text["test"].to_pandas()
+
+    logicnlg = load_from_disk(
+        "../../data/LogicNLG/logicnlg_filtered_updated_2025-01-28"
+    )
+    logicnlg = logicnlg["test"].to_pandas()
 
     replacements_path = "../utils/latex_symbols.json"
     replacements = read_json(replacements_path)
@@ -66,6 +74,30 @@ def main():
     create_and_save_dataset(
         numericnlg, "test", "../../data/numericNLG/numericnlg_updated"
     )
+
+    tables_latex_logic2text = convert_html_to_latex_tables(
+        logic2text,
+        "table_html",
+        html_replacements,
+        tex_replacements,
+        all_replacements,
+        caption_column="title",
+    )
+    logic2text["table_latex"] = tables_latex_logic2text
+    create_and_save_dataset(
+        logic2text, "test", "../../data/Logic2Text/logic2text_updated"
+    )
+
+    tables_latex_logicnlg = convert_html_to_latex_tables(
+        logicnlg,
+        "table_html",
+        html_replacements,
+        tex_replacements,
+        all_replacements,
+        caption_column="title",
+    )
+    logicnlg["table_latex"] = tables_latex_logicnlg
+    create_and_save_dataset(logicnlg, "test", "../../data/LogicNLG/logicnlg_updated")
 
 
 if __name__ == "__main__":

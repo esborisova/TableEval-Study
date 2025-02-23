@@ -184,7 +184,7 @@ This repository supports a variety of metrics for evaluating predictions against
 | `bleu4`      | BLEU-4                    | Focuses on 4-gram overlap (quadgrams) in BLEU calculations, commonly used in translation tasks.                                                       |
 | `bleu5`      | BLEU-5                    | Extends BLEU evaluation to 5-gram overlaps, providing more detailed scoring.                                                                          |
 | `parent`     | PARENT                    | A metric designed for data-to-text generation, evaluating faithfulness and precision against multiple references.                                      |
-|`sacrebleu'   |SacreBLEU|                 | Provides hassle-free computation of shareable, comparable, and reproducible BLEU scores. Expects detokenized outputs, applying its own metric-internal preprocessing, and produces the same values as WMT.|
+|`sacrebleu`   |SacreBLEU                  | Provides hassle-free computation of shareable, comparable, and reproducible BLEU scores. Expects detokenized outputs, applying its own metric-internal preprocessing, and produces the same values as WMT.|
 
 
 ## Outputs

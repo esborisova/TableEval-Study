@@ -1,5 +1,5 @@
 task_name: dict_logicnlg
-path: /netscratch/borisova/TableEval/data/LogicNLG/logicnlg_filtered_merged_ref_updated_2025-01-24
+path: /netscratch/borisova/TableEval/data/LogicNLG/logicnlg_updated_2025-02-23
 test_split: test
 validation_split: validation
 train_split: test

@@ -1,13 +1,12 @@
-task_name: image_logic2text
+task_name: latex_logic2text
 path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_updated_2025-02-23
 test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
-doc_to_text: !function image_parser.parse
+doc_to_text: 'Generate a one sentence statement based on the table and logical form. Logical form: {{logic_str}}. Table title: {{title}}. Table: {{table_latex}}.'
 doc_to_target: sent
-multi_modal_data: True
 metric_list:
   - bleurt
   - bertS 
@@ -15,8 +14,8 @@ metric_list:
   - bleu2
   - bleu3
   - bleu4
-  - rouge1
-  - rouge2 
-  - rouge3
-  - rougeL
   - meteor
+  - rougeL
+  - rouge1
+  - rouge2
+  - rouge4

@@ -1,4 +1,5 @@
-"""Pipeline for creating tex files with tables and compiling them for numericNLG PMC subset in ComTQA"""
+"""Pipeline for creating tex files with tables and compiling them for numericNLG, 
+Logic2Text, LogicNLG, and PMC subset in ComTQA"""
 
 from datasets import load_from_disk
 from ..utils.html_latex_convertion import (
@@ -8,42 +9,63 @@ from ..utils.html_latex_convertion import (
 
 
 def main():
-    root_dir_pmc = "../../data/ComTQA_data/pubmed/latex_files/"
-    root_dir_numericnlg = "../../data/numericNLG/latex_files/"
+    datasets = {
+        "pmc": {
+            "root_dir": "../../data/ComTQA_data/pubmed/latex_files/",
+            "output_dir": "../../data/ComTQA_data/pubmed/latex_files/compilied_files/",
+            "error_log_file": "../../data/ComTQA_data/pubmed/latex_files/compilied_files/logs/error_log.txt",
+            "dataset_path": "../../data/ComTQA_data/comtqa_updated_2024-12-25",
+            "split": "train",
+            "filter_col": "dataset",
+            "filter_val": "PubTab1M",
+            "id_col": "id",
+            "latex_col": "table_latex",
+        },
+        "numericnlg": {
+            "root_dir": "../../data/numericNLG/latex_files/",
+            "output_dir": "../../data/numericNLG/latex_files/compilied_files/",
+            "error_log_file": "../../data/numericNLG/latex_files/compilied_files/logs/error_log.txt",
+            "dataset_path": "../../data/numericNLG/numericnlg_updated_2024-12-25",
+            "split": "test",
+            "id_col": "table_id_paper",
+            "latex_col": "table_latex",
+        },
+        "logic2text": {
+            "root_dir": "../../data/Logic2Text/tex/",
+            "output_dir": "../../data/Logic2Text/tex/compiled_files/",
+            "error_log_file": "../../data/Logic2Text/tex/compiled_files/logs/error_log.txt",
+            "dataset_path": "../../data/Logic2Text/logic2text_filtered_updated_2025-02-23",
+            "split": "test",
+            "id_col": "table_id",
+            "latex_col": "table_latex",
+        },
+        "logicnlg": {
+            "root_dir": "../../../data/LogicNLG/tex/",
+            "output_dir": "../../../data/LogicNLG/tex/compiled_files/",
+            "error_log_file": "../../data/LogicNLG/tex/compiled/logs/error_log.txt",
+            "dataset_path": "../../data/LogicNLG/logicnlg_updated_2025-02-23",
+            "split": "test",
+            "id_col": "table_id",
+            "latex_col": "table_latex",
+        },
+    }
 
-    output_dir_pmc = "../../data/ComTQA_data/pubmed/latex_files/compilied_files/"
-    output_dir_numericnlg = "../../data/numericNLG/latex_files/compilied_files/"
+    for _, config in datasets.items():
+        dataset = load_from_disk(config["dataset_path"])
+        df = dataset[config["split"].lower()].to_pandas()
 
-    error_log_file_pmc = (
-        "../../data/ComTQA_data/pubmed/latex_files/compilied_files/logs/error_log.txt"
-    )
-    error_log_file_numericnlg = (
-        "../../data/numericNLG/latex_files/compilied_files/logs/error_log.txt"
-    )
+        if "filter_col" in config and "filter_val" in config:
+            df = df[df[config["filter_col"]] == config["filter_val"]]
 
-    comtqa = load_from_disk("../../data/ComTQA_data/comtqa_updated_2024-12-25")
-    comtqa = comtqa["train"].to_pandas()
-    pmc_subset = comtqa[comtqa["dataset"] == "PubTab1M"]
+        process_and_save_table_tex(
+            df, config["id_col"], config["latex_col"], config["root_dir"]
+        )
 
-    numericnlg = load_from_disk("../../data/numericNLG/numericnlg_updated_2024-12-25")
-    numericnlg = numericnlg["test"].to_pandas()
-
-    process_and_save_table_tex(pmc_subset, "id", "table_latex", root_dir_pmc)
-    process_and_save_table_tex(
-        numericnlg, "table_id_paper", "table_latex", root_dir_numericnlg
-    )
-
-    compile_tex_files_in_dir(
-        tex_dir=root_dir_pmc,
-        output_dir=output_dir_pmc,
-        error_log_file=error_log_file_pmc,
-    )
-
-    compile_tex_files_in_dir(
-        tex_dir=root_dir_numericnlg,
-        output_dir=output_dir_numericnlg,
-        error_log_file=error_log_file_numericnlg,
-    )
+        compile_tex_files_in_dir(
+            tex_dir=config["root_dir"],
+            output_dir=config["output_dir"],
+            error_log_file=config["error_log_file"],
+        )
 
 
 if __name__ == "__main__":

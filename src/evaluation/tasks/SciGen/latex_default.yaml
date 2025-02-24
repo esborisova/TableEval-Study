@@ -1,12 +1,12 @@
 task_name: latex_scigen
-path: /netscratch/borisova/TableEval/data/SciGen/scigen_merged_updated_2025-01-23
+path: /netscratch/borisova/TableEval/data/SciGen/scigen_merged_updated_2025-02-13
 test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
-instruction: "You are an expert table-to-text system. You undestand structured tables and you can correcly operate with units and numerical values and describe them using natural text."
-doc_to_text: 'Provide a textual description of the following table: {{table_latex}}'
-doc_to_target: text
+instruction: ""
+doc_to_text: 'Your task is to generate textual description for the given table. The summary must describe the most important findings reported in table by reasoning over its content. The text should be coherent. Table: {{table_latex}}.'
+doc_to_target: text_cleaned
 metric_list:
   - bleu
   - meteor

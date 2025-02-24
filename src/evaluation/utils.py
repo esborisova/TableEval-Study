@@ -93,7 +93,7 @@ def generate_prompt(
     or using the chat template structure of a list with meta data. For more
     information please check https://huggingface.co/docs/transformers/chat_templating"""
     if task.get("ignore_columns"):
-        drop_nones(samples, task["ignore_columns"].split(","))
+        samples = drop_nones(samples, task["ignore_columns"].split(","))
 
     if prompt_template:
         return generate_template_prompt(

@@ -26,7 +26,7 @@ class Metrics:
         self.metric_name = metric_name
 
         if metric_name:
-            if "bleu" in metric_name and metric_name != "bleurt":
+            if "bleu" in metric_name and metric_name not in {"bleurt", "sacrebleu"}:
                 metric_name = "bleu"
             if "rouge" in metric_name:
                 metric_name = "rouge"
@@ -53,7 +53,7 @@ class Metrics:
             self.predictions.extend(prediction)
 
     def compute(self) -> Dict:
-        if "rouge" in self.metric_name or "bleu" in self.metric_name and self.metric_name != "bleurt":
+        if "rouge" in self.metric_name or ("bleu" in self.metric_name and self.metric_name not in {"bleurt", "sacrebleu"}):
             return self.function(self.predictions, self.references, self.metric_name)
         if "perplexity" in self.metric_name:
             return self.function(self.predictions, self.model_id)
@@ -66,7 +66,7 @@ class Metrics:
     def metric_type(self, new_metric: str):
         self.metric_name = new_metric
         if new_metric:
-            if "bleu" in new_metric and new_metric != "bleurt":
+            if "bleu" in new_metric and new_metric not in {"bleurt", "sacrebleu"}:
                 new_metric = "bleu"
             if "rouge" in new_metric:
                 new_metric = "rouge"
@@ -242,3 +242,29 @@ def bleu(predictions, references, b_type: str = ""):
     for pred, ref in zip(predictions, references):
         bleu_score.append(sentence_bleu(ref.split(), pred.split(), weights=weights, smoothing_function=smoothing_function))
     return sum(bleu_score) / len(bleu_score)
+
+
+@register("sacrebleu")
+def sacrebleu (predictions, references):
+    """SacreBLEU provides hassle-free computation of shareable, 
+    comparable, and reproducible BLEU scores.
+    Source: https://github.com/mjpost/sacrebleu
+    """
+    from sacrebleu.metrics import BLEU
+   
+    bleu = BLEU()
+    score = bleu.corpus_score(predictions, references)
+
+    score_dict = {
+            "score": score.score,  
+            "precisions": score.precisions,
+            "bp": score.bp, 
+            "ratio": score.ratio,
+            "sys_len": score.sys_len,  
+            "ref_len": score.ref_len,
+        }
+
+
+    return score_dict
+
+

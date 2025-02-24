@@ -10,6 +10,7 @@ doc_to_target: ref
 multi_modal_data: True
 metric_list:
   #- perplexity
+  - sacrebleu
   - bleurt
   - bertS
   - bleu1

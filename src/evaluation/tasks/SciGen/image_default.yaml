@@ -17,7 +17,7 @@ metric_list:
   - bleu3
   - bleu4
   - meteor
-  - moverS
+    # - moverS
   - rougeL
   - rouge1
   - rouge2

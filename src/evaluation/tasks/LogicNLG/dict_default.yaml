@@ -5,8 +5,20 @@ validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
-doc_to_text: 'Based on a given table, fill in the entity masked by [ENT] in the following sentence: {{template}}. Output the sentence with filled in masked entities. Table: {"title": {{title}}, "table column names": {{table_column_names}}, "table content values": {{table_content_values}}}'
+doc_to_text: 'Based on a given table, fill in the entity masked by [ENT] in the following sentence: {{template}}. Output the sentence with filled in masked entities. Table: {"title": {{title}}, "table_column_names": {{table_column_names}}, "table_content_values": {{table_content_values}}}'
 doc_to_target: ref
 metric_list:
-  - perplexity
-  - bleu
+  #- perplexity
+  #- sacrebleu
+  #- moverS
+  - bleurt
+  - bertS 
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - meteor
+  - rougeL
+  - rouge1
+  - rouge2
+  - rouge4

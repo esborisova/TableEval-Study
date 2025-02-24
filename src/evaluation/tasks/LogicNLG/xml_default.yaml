@@ -1,14 +1,12 @@
 task_name: xml_logicnlg
-path: /netscratch/borisova/TableEval/data/LogicNLG/logicnlg_filtered_merged_ref_updated_2025-01-24
+path: /netscratch/borisova/TableEval/data/LogicNLG/logicnlg_updated_2025-02-23
 test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
-doc_to_text: "Table: {{table_xml}}"
-doc_to_target: joined_ref
+doc_to_text:  'Based on a given table, fill in the entity masked by [ENT] in the following sentence: {{template}}. Output the sentence with filled in masked entities. Table title: {{title}}. Table: {{table_xml}}'
+doc_to_target: ref
 metric_list:
   - perplexity
   - bleu
-  - rougeL
-  - meteor

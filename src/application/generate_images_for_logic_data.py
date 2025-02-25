@@ -192,12 +192,12 @@ def generate_html_from_dataframe(df, output_file):
             }
             th, td {
                 border: 1px solid black;
-                padding: 8px;
+                padding: 4px;
                 text-align: center;
             }
             img {
                 max-width: 500px;   /* Adjust image width */
-                max-height: 500px;  /* Adjust image height */
+                max-height: 600px;  /* Adjust image height */
             }
         </style>
     </head>
@@ -205,8 +205,7 @@ def generate_html_from_dataframe(df, output_file):
         <table>
             <thead>
                 <tr>
-                    <th>Filename</th>
-                    <th>Topic / Similarity</th>
+                    <th>Filename / Topic / Similarity</th>
                     <th>Original Content</th>
                     <th>Matched Table</th>
                     <th>Image</th>
@@ -216,11 +215,16 @@ def generate_html_from_dataframe(df, output_file):
     """
 
     seen_table_ids = set()
+    seen_table_ids_list = []
+    added_to_html_table_ids = []
     # Iterate through DataFrame rows
     for _, row in tqdm(df.iterrows(), total=len(df), desc="Generating HTML Explorer"):
         table_id = row["table_id"]
         if table_id not in seen_table_ids:
             seen_table_ids.add(table_id)
+            seen_table_ids_list.append(table_id)
+
+            #if len(seen_table_ids_list) <= 277:
 
             image_path = f"../../data/{dataset_name}_table_images/{row['table_id']}.png"
 
@@ -232,14 +236,14 @@ def generate_html_from_dataframe(df, output_file):
 
             html_content += f"""
             <tr>
-                <td>{row['table_id']}</td>
-                <td><h2>{row[topic_column]}</h2><br>{row['matched_table_similarity']}</td>
+                <td>{row['table_id']}<br>><h2>{row[topic_column]}</h2><br>{row['matched_table_similarity']}</td>
                 <td><b>{row[header_column]}</b><br>{table_body}</td>
                 <td>{row['matched_table_html']}</td>
                 <td><img src="{image_path}" alt="Image"></td>
             </tr>
             """
-
+            added_to_html_table_ids.append(table_id)
+    ids_for_csv = "\n".join(seen_table_ids_list)
     # Close HTML structure
     html_content += """
             </tbody>
@@ -252,7 +256,7 @@ def generate_html_from_dataframe(df, output_file):
     with open(output_file, "w", encoding="utf-8") as file:
         file.write(html_content)
 
-dataset_name = "logic2text"  # "logic2text" / "logicnlg"
+dataset_name = "logicnlg"  # "logic2text" / "logicnlg"
 dataset = load_from_disk(f"../../data/{dataset_name}").to_pandas()
 dataset.loc[dataset["matched_table_similarity"] < 0.90,["matched_table_html"]] = None
 filtered_dataset = dataset[dataset["matched_table_html"].notna()]

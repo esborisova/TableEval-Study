@@ -6,6 +6,8 @@ import os
 import json
 import random
 import copy
+import h5py
+import numpy as np
 
 
 def load_samples(path: str, split: str) -> Dataset:
@@ -16,7 +18,7 @@ def load_samples(path: str, split: str) -> Dataset:
         dataset = dataset[split]
 
     else:
-        dataset = load_dataset(path, split=f"{split}")
+        dataset = load_dataset(path, split=f"{split}[0:2]")
     return dataset
 
 
@@ -35,7 +37,7 @@ def generate_output_folder(
     results_name = f"{dir_path}/{output_path}/{model_generator}/results_{task_name}_{model_id}_{current_datetime}.json"
     scores_name = f"{dir_path}/{output_path}/{model_generator}/scores_{task_name}_{model_id}_{current_datetime}.json"
     if log_logits:
-        logits_name = f"{dir_path}/{output_path}/{model_generator}/logits_{task_name}_{model_id}_{current_datetime}.json"
+        logits_name = f"{dir_path}/{output_path}/{model_generator}/logits_{task_name}_{model_id}_{current_datetime}.hdf5"
     else:
         logits_name = None
 
@@ -54,7 +56,8 @@ def dump_files(output_path, result, space):
             output_path,
             "a+",
         ) as f:
-            json.dump([x[space] for x in result], f, indent=4)
+            for sample in result:
+                append_to_hdf5(output_path, space, sample)
     elif space == "results":
         with open(
             output_path,
@@ -68,10 +71,29 @@ def dump_files(output_path, result, space):
                         "input": x["input"],
                         "example": x["example"],
                     }
-                    for x in result
+                    for x in result["sample_logs"]
                 ],
                 f,
                 indent=4,
+            )
+
+
+def append_to_hdf5(file_name, dataset_name, new_data):
+    with h5py.File(file_name, "a") as hdf5_file:
+        if dataset_name in hdf5_file:
+            # Open existing dataset
+            dataset = hdf5_file[dataset_name]
+            old_size = dataset.shape[0]
+            new_size = old_size + new_data.shape[0]
+            # Resize dataset to accommodate new data
+            dataset.resize((new_size,) + dataset.shape[1:])
+            # Append new data
+            dataset[old_size:new_size] = new_data
+        else:
+            # Create dataset with unlimited maxshape
+            maxshape = (None,) + new_data.shape[1:]
+            hdf5_file.create_dataset(
+                dataset_name, data=new_data, maxshape=maxshape, compression="gzip"
             )
 
 
@@ -92,7 +114,7 @@ def generate_prompt(
     """There are two options to generate the prompt. Either as a single string
     or using the chat template structure of a list with meta data. For more
     information please check https://huggingface.co/docs/transformers/chat_templating"""
-    if task.get("ignore_columns"):
+    if "ignore_columns" in task:
         samples = drop_nones(samples, task["ignore_columns"].split(","))
 
     if prompt_template:
@@ -136,7 +158,7 @@ def generate_template_prompt(samples, few_shot_samples, num_fewshot, task):
         )
 
         for few_shot_example, sample in zip(few_shot_text_samples, few_shot_examples):
-            if not task.get("multi_modal_data"):
+            if "multi_modal_data" not in task:
                 init_message = text_to_template(
                     init_message, few_shot_example, sample, task["doc_to_target"]
                 )
@@ -149,7 +171,7 @@ def generate_template_prompt(samples, few_shot_samples, num_fewshot, task):
 
     for input in samples_with_input_text:
         message = copy.deepcopy(init_message)
-        if not task.get("multi_modal_data"):
+        if "multi_modal_data" not in task:
             outputs.append(text_to_template(message, input))
         else:
             outputs.append([input[0], mm_to_template(message, input[1])])
@@ -200,7 +222,7 @@ def generate_string_prompt(samples, few_shot_samples, num_fewshot, task):
         few_shot_prompt = task["instruction"]
     else:
         few_shot_prompt = ""
-    if not task.get("multi_modal_data"):
+    if "multi_modal_data" not in task:
         # for text parsing
         return text_to_prompt(
             samples_with_input_text, text_samples, few_shot_prompt, num_fewshot

@@ -78,7 +78,7 @@ class Evaluator:
             else:
                 num_fewshot = self.num_fewshot
 
-            samples, few_shot_samples = self.load_samples(task, num_fewshot)
+            samples, few_shot_samples = self.load_all_samples(task, num_fewshot)
 
             inputs = generate_prompt(
                 samples, few_shot_samples, num_fewshot, task, self.use_chat_template
@@ -176,7 +176,7 @@ class Evaluator:
                 for j in range(0, len(outputs))
             ]
 
-    def load_samples(self, task, num_fewshot):
+    def load_all_samples(self, task, num_fewshot):
         # load the evaluation and few_shot samples
         if task["test_split"]:
             samples = load_samples(task["path"], task["test_split"])

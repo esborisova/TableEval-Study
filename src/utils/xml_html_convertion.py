@@ -6,11 +6,12 @@ from thefuzz import fuzz
 import os
 import pandas as pd
 import re
+from typing import List
+from tidylib import tidy_document
 from other import find_file, read_html
 
 
 def map_xml_html_tags(soup, conversion_type="html_to_xml"):
-
     tag_replacements = {
         "html_to_xml": {
             "strong": "bold",
@@ -21,18 +22,25 @@ def map_xml_html_tags(soup, conversion_type="html_to_xml"):
             "bold": "strong",
             "italic": "em",
             "break": "br",
+            "xref": "a",
         },
     }
 
     replacements = tag_replacements[conversion_type]
 
-    for html_tag, xml_tag in replacements.items():
-        for tag in soup.find_all(html_tag):
-            if html_tag == "br" or xml_tag == "break":
-                new_tag = soup.new_tag(xml_tag)
+    for xml_tag, html_tag in replacements.items():
+        for tag in soup.find_all(xml_tag):
+            if xml_tag == "xref":
+                ref_id = tag.get("rid")
+                if ref_id:
+                    new_tag = soup.new_tag(html_tag, href=f"#ref-{ref_id}")
+                    new_tag.string = tag.get_text(strip=True)
+                    tag.replace_with(new_tag)
+            elif html_tag == "br" or xml_tag == "break":
+                new_tag = soup.new_tag(html_tag)
                 tag.replace_with(new_tag)
             else:
-                tag.name = xml_tag
+                tag.name = html_tag
     return soup
 
 
@@ -56,6 +64,10 @@ def pmc_tables_to_html(xml_input: str, meta: bool = True) -> str:
     soup = BeautifulSoup(xml_input, "xml")
     soup = map_xml_html_tags(soup, "xml_to_html")
 
+    for table in soup.find_all("table", {"frame": True, "rules": True}):
+        frame = table.get("frame", "")
+        rules = table.get("rules", "")
+
     table = soup.find("table")
     caption_html = ""
 
@@ -66,19 +78,30 @@ def pmc_tables_to_html(xml_input: str, meta: bool = True) -> str:
             if p_tag:
                 p_tag.unwrap()
             caption_html = (
-                f"<caption>{soup.find('label').get_text(strip=True)}: {caption_tag.get_text(strip=True)}</caption>"
+                f"<caption>\n  {soup.find('label').get_text(strip=True)}: {caption_tag.get_text(strip=True)}\n</caption>"
                 if soup.find("label")
-                else f"<caption>{caption_tag.get_text(strip=True)}</caption>"
+                else f"<caption>\n{caption_tag.get_text(strip=True)}\n</caption>"
             )
 
-        html_table = f'<table border="1" class="table">\n{caption_html}\n{table.prettify().strip()}'
+        html_table = f'<table border="1" class="table" frame="{frame}" rules="{rules}">\n{caption_html}\n{table.prettify().strip()}'
 
         footnotes = extract_footnotes(soup)
         if footnotes:
             html_table = add_footnotes_to_html_table(html_table, footnotes)
     else:
-        html_table = f'<table border="1" class="table">\n{table.prettify().strip()}'
+        html_table = f'<table border="1" class="table" frame="{frame}" rules="{rules}">\n{table.prettify().strip()}'
+
     return html_table
+
+
+def validate_html(html_files: List[str]):
+    validated_html = []
+    for html in html_files:
+        doc, err = tidy_document(html, options={"numeric-entities": 1})
+        validated_html.append(doc)
+        if err:
+            print(err)
+    return validated_html
 
 
 def create_pmc_table_wrap(
@@ -153,7 +176,7 @@ def html_to_xml_table(
     )
 
 
-def preprocess_target_caption(caption, format="html") -> str:
+def preprocess_target_caption(caption: str, format="html") -> str:
     if format == "html":
         return caption.get_text(strip=True).lower()
     else:
@@ -187,7 +210,7 @@ def extract_captions(file_path: str, format: str):
     return captions
 
 
-def extract_table(caption, format):
+def extract_table(caption: str, format: str):
     if format == "html":
         parent_table = str(caption.find_parent("figure").find("table"))
     else:
@@ -282,3 +305,34 @@ def change_table_class(html: str, new_class="table") -> str:
         table.attrs["class"] = [new_class]
     cleaned_html = str(soup).strip()
     return cleaned_html
+
+
+def remove_html_indicator(html_files: List[str]) -> List[str]:
+    clean_html = [
+        re.sub(r"<!DOCTYPE[^>]*>", "", html, flags=re.IGNORECASE) for html in html_files
+    ]
+    clean_html = [
+        re.sub(r"</?html[^>]*>", "", html, flags=re.IGNORECASE) for html in clean_html
+    ]
+    clean_html = [re.sub(r"^\s*\n\s*\n", "", html, count=1) for html in clean_html]
+    return clean_html
+
+
+def remove_empty_tags(htmls: List[str]) -> List[str]:
+    clean_html = [
+        re.sub(r"</?head[^>]*>", "", html, flags=re.IGNORECASE) for html in htmls
+    ]
+    clean_html = [
+        re.sub(r"</?title[^>]*>", "", html, flags=re.IGNORECASE) for html in clean_html
+    ]
+    clean_html = [
+        re.sub(r"</?body[^>]*>", "", html, flags=re.IGNORECASE) for html in clean_html
+    ]
+    clean_html = [re.sub(r"^\s*\n\s*\n", "", html, count=1) for html in clean_html]
+    return clean_html
+
+
+def prettify_html(html: str) -> str:
+    soup = BeautifulSoup(html, "html.parser")
+    formatted_html = soup.prettify()
+    return formatted_html

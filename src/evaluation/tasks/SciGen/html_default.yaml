@@ -1,5 +1,5 @@
 task_name: html_scigen
-path: /netscratch/borisova/TableEval/data/SciGen/scigen_merged_updated_2025-02-13
+path: /netscratch/borisova/TableEval/data/SciGen/scigen_updated_2025-02-28
 test_split: test
 validation_split: validation
 train_split: test

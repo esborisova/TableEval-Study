@@ -4,6 +4,7 @@ from datasets import Dataset, load_from_disk, save_to_disk
 import re
 import argparse
 from ..utils.other import create_and_save_dataset
+from ..utils.xml_html_convertion import prettify_html, validate_html
 
 
 def clean_latexml_html(html_content):
@@ -14,20 +15,23 @@ def clean_latexml_html(html_content):
 
     for tag in soup.find_all():
         if tag.name not in allowed_tags:
-            tag.unwrap()  
+            tag.unwrap()
 
     for tag in soup.find_all(allowed_tags):
-        tag.attrs = {k: v for k, v in tag.attrs.items() if k in {"colspan", "rowspan", "align"}}
+        tag.attrs = {
+            k: v for k, v in tag.attrs.items() if k in {"colspan", "rowspan", "align"}
+        }
 
     return str(soup.prettify())
+
 
 def clean_latexml_xml(xml_content):
     """Automatically cleans LaTeXML-generated XML tables by removing unnecessary tags while keeping captions and titles."""
 
     soup = BeautifulSoup(xml_content, "xml")
-    
+
     allowed_tags = {"table", "tbody", "tr", "th", "td", "caption", "title"}
-    
+
     # remove toccaption tag, which includes the same as the caption tag
     toccaption = soup.find("toccaption")
     if toccaption:
@@ -36,60 +40,78 @@ def clean_latexml_xml(xml_content):
     caption = soup.find("caption")
 
     if caption:
-        caption_text = ' '.join([tag.string for tag in caption.find_all(text=True)])  # Extract all text content inside <caption>
-        caption.clear()  
+        caption_text = " ".join(
+            [tag.string for tag in caption.find_all(text=True)]
+        )  # Extract all text content inside <caption>
+        caption.clear()
         caption.append(caption_text)
-          
+
     for tag in soup.find_all():
         if tag.name not in allowed_tags:
             tag.unwrap()
-    
+
     for tag in soup.find_all(allowed_tags):
-        tag.attrs = {k: v for k, v in tag.attrs.items() if k in {"colspan", "rowspan", "align"}}
-    
+        tag.attrs = {
+            k: v for k, v in tag.attrs.items() if k in {"colspan", "rowspan", "align"}
+        }
+
     # remove comments <!-- -->
     comments = soup.find_all(string=lambda text: isinstance(text, Comment))
     for comment in comments:
         comment.extract()
 
     # remove XML declaration if exists
-    cleaned_xml = "\n".join(line for line in str(soup.prettify()).split("\n") if not line.startswith('<?xml'))
+    cleaned_xml = "\n".join(
+        line
+        for line in str(soup.prettify()).split("\n")
+        if not line.startswith("<?xml")
+    )
 
     return cleaned_xml
 
-def main():
-  
-  parser = argparse.ArgumentParser()
-  parser.add_argument("--data_path", type=str, help="Path for the SciGen dataset")
-  parser.add_argument("--output_path", type=str, help="Path for the saving the resulting dataset")
-  args = parser.parse_args()
 
-  data_path = args.data_path
-  output_path = args.output_path
-  
-  sicgen_data = load_from_disk(data_path)
-  
-  cleaned_html_tables = []
-  cleaned_xml_tables = []
-  
-  for item in sicgen_other:
-    if item['table_html'] != None:
-      cleaned_html_tables.append(clean_latexml_html(item['table_html']))
-    else:
-      cleaned_html_tables.append(None)
-    
-    if item['table_xml'] != None:
-      cleaned_xml_tables.append(clean_latexml_xml(item['table_xml']))
-    else:
-      cleaned_xml_tables.append(None)
-      
-  sicgen_data = sicgen_data.to_pandas()
-  
-  sicgen_data['table_html_cleaned'] = cleaned_html_tables
-  sicgen_data['table_xml_cleaned'] = cleaned_xml_tables
-  
-  # Save as HF Dataset
-  create_and_save_dataset(sicgen_data, "test", output_path)
+def main():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data_path", type=str, help="Path for the SciGen dataset")
+    parser.add_argument(
+        "--output_path", type=str, help="Path for the saving the resulting dataset"
+    )
+    args = parser.parse_args()
+
+    data_path = args.data_path
+    output_path = args.output_path
+
+    scigen_data = load_from_disk(data_path)
+
+    cleaned_html_tables = []
+    cleaned_xml_tables = []
+
+    for item in scigen_data:
+        if item["table_html"] != None:
+            cleaned_html_tables.append(clean_latexml_html(item["table_html"]))
+        else:
+            cleaned_html_tables.append(None)
+
+        if item["table_xml"] != None:
+            cleaned_xml_tables.append(clean_latexml_xml(item["table_xml"]))
+        else:
+            cleaned_xml_tables.append(None)
+
+    scigen_data = scigen_data.to_pandas()
+
+    cleaned_html_tables = [
+        prettify_html(html) if html is not None else html
+        for html in cleaned_html_tables
+    ]
+
+    validate_html(cleaned_html_tables)
+
+    scigen_data["table_html_cleaned"] = cleaned_html_tables
+    scigen_data["table_xml_cleaned"] = cleaned_xml_tables
+
+    # Save as HF Dataset
+    create_and_save_dataset(scigen_data, "test", output_path)
 
 
 if __name__ == "__main__":

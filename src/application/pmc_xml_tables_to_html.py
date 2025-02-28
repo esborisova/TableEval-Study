@@ -1,6 +1,14 @@
 """Converting PMC tables XML into HTML format."""
+
 from datasets import load_from_disk
-from ..utils.xml_html_convertion import pmc_tables_to_html
+import re
+from ..utils.xml_html_convertion import (
+    pmc_tables_to_html,
+    validate_html,
+    remove_html_indicator,
+    remove_empty_tags,
+    prettify_html,
+)
 from ..utils.other import create_and_save_dataset
 
 
@@ -14,13 +22,47 @@ def main():
 
     pmc_html = [pmc_tables_to_html(table) for table in pmc_xml]
     pmc_html_no_meta = [pmc_tables_to_html(table) for table in pmc_xml_no_meta]
-    
-    pmc_subset["table_html"] = pmc_html
-    pmc_subset["table_html_no_meta"] = pmc_html_no_meta
+
+    # remove second table (by-product from the original xml)
+    cleaned_html = [
+        re.sub(r'<table\s+frame="[^"]*"\s+rules="[^"]*">', "", html)
+        for html in pmc_html
+    ]
+    cleaned_html = [re.sub(r"\n\s*\n", "\n", html) for html in cleaned_html]
+    cleaned_html_no_meta = [
+        re.sub(r'<table\s+frame="[^"]*"\s+rules="[^"]*">', "", html)
+        for html in pmc_html_no_meta
+    ]
+    cleaned_html_no_meta = [
+        re.sub(r"\n\s*\n", "\n", html) for html in cleaned_html_no_meta
+    ]
+
+    validated_html = validate_html(cleaned_html)
+    validated_html_no_meta = validate_html(cleaned_html_no_meta)
+
+    validated_html = remove_html_indicator(validated_html)
+    validated_html_no_meta = remove_html_indicator(validated_html_no_meta)
+
+    validated_html = remove_empty_tags(validated_html)
+    validated_html_no_meta = remove_empty_tags(validated_html_no_meta)
+
+    pretty_html = [prettify_html(html) for html in validated_html]
+    pretty_html_no_meta = [prettify_html(html) for html in validated_html_no_meta]
+
+    pmc_subset["table_html"] = pretty_html
+    pmc_subset["table_html_no_meta"] = pretty_html_no_meta
 
     merged_df = comtqa_df.merge(
         pmc_subset[
-            ["id", "table_html", "table_html_no_meta", "table_title", "image_name", "question", "answer"]
+            [
+                "id",
+                "table_html",
+                "table_html_no_meta",
+                "table_title",
+                "image_name",
+                "question",
+                "answer",
+            ]
         ],
         on=["id", "image_name", "table_title", "question", "answer"],
         how="left",
@@ -31,8 +73,7 @@ def main():
     )
     merged_df = merged_df.drop(columns=["table_html_pmc"])
 
-    create_and_save_dataset(merged_df, "train", "../../data/ComTQA_data/comtqa_updated")
-
+    create_and_save_dataset(merged_df, "test", "../../data/ComTQA_data/comtqa_updated")
 
 
 if __name__ == "__main__":

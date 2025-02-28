@@ -141,36 +141,13 @@ def main():
         data["table_html"] = data["matched_table_html"].apply(change_table_class)
 
         if "LogicNLG" in path:
-            # save intermediate results
-            create_and_save_dataset(
-                data, "test", "../../data/LogicNLG/logicnlg_with_xml_updated"
-            )
-
-            annotation = "ref"
-            merged_annotation = f"joined_{annotation}"
-            save_path = "../../data/LogicNLG/logicnlg_filtered_merged_ref_updated"
+            save_path = "../../data/LogicNLG/logicnlg_filtered_updated"
         else:
-            # save intermediate results
-            create_and_save_dataset(
-                data, "test", "../../data/Logic2Text/logic2text_with_xml_updated"
-            )
-
-            annotation = "sent"
-            merged_annotation = f"joined_{annotation}"
-            save_path = "../../data/Logic2Text/logic2text_filtered_merged_sent_updated"
+            save_path = "../../data/Logic2Text/logic2text_filtered_updated"
 
         # keep only fully matched tables
         data = data[data["issue"] == "none"]
-
-        # merge individual statements
-        data[annotation] = data[annotation].astype(str).str.strip()
-        data[annotation] = data[annotation].apply(
-            lambda x: x + "." if not x.endswith(".") else x
-        )
-        data[merged_annotation] = data[annotation]
-        agg_rules = define_agg_rules(data, annotation, merged_annotation)
-        data_merged = data.groupby("table_id", as_index=False).agg(agg_rules)
-        create_and_save_dataset(data_merged, "test", save_path)
+        create_and_save_dataset(data, "test", save_path)
 
 
 if __name__ == "__main__":

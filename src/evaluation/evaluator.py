@@ -25,6 +25,7 @@ class Evaluator:
         use_chat_template: bool = False,
         current_datetime: str = "",
         output_path: str = "",
+        save_columns: List = [],
     ) -> None:
         """
         Instantiate and evaluate a model on a list of tasks.
@@ -45,19 +46,26 @@ class Evaluator:
         self.current_datetime = current_datetime
         self.output_path = output_path
         self.log_logits = log_logits
+        self.save_columns = save_columns
         random.seed(random_seed)
         numpy.random.seed(random_seed)
         torch.manual_seed(random_seed)
 
     def simple_eval(self, task_name="") -> Dict:
+        results = {}
+
         if task_name:
             self.tasks_list = self.register.get_task(task_name)
 
-        results = {}
         for task in self.tasks_list:
+            if "save_columns" in task:
+                save_columns = task["save_columns"].split(",")
+            else:
+                save_columns = self.save_columns
 
+            task_results = []
             # get safe files for score, logits and results
-            scores_folder, results_folder, logits_folder = generate_output_folder(
+            _, _, logits_folder = generate_output_folder(
                 self.output_path,
                 model_name=self.model.get_model_info(),
                 task_name=task["task_name"],
@@ -69,82 +77,28 @@ class Evaluator:
                 num_fewshot = max(int(task["num_fewshot"]), self.num_fewshot)
             else:
                 num_fewshot = self.num_fewshot
-            task_results = []
-            # load the evaluation and few_shot samples
-            if task["test_split"]:
-                samples = load_samples(task["path"], task["test_split"])
-                if num_fewshot > 0:
-                    if task["validation_split"]:
-                        few_shot_samples = load_samples(
-                            task["path"], task["validation_split"]
-                        )
-                    elif task["train_split"]:
-                        few_shot_samples = load_samples(
-                            task["path"], task["train_split"]
-                        )
-                    else:
-                        few_shot_samples = None
-                else:
-                    few_shot_samples = None
-            else:
-                samples = load_samples(task["path"], task["validation_split"])
-                if num_fewshot > 0:
-                    if task["train_split"]:
-                        few_shot_samples = load_samples(
-                            task["path"], task["train_split"]
-                        )
-                    else:
-                        few_shot_samples = None
-                else:
-                    few_shot_samples = None
-            # generate the input prompts
+
+            samples, few_shot_samples = self.load_all_samples(task, num_fewshot)
+
             inputs = generate_prompt(
                 samples, few_shot_samples, num_fewshot, task, self.use_chat_template
             )
-
             # run all samples
             for i in tqdm(range(0, len(inputs), self.batch_size)):
                 outputs, logits = self.model(inputs[i : i + self.batch_size])
 
-                # generate tuple for each output and sample
-                if self.log_logits:
-                    lgt = [
-                        {
-                            "logits": [
-                                logits_step[j].cpu().tolist() for logits_step in logits
-                            ],
-                        }
-                        for j in range(0, len(outputs))
-                    ]
-                    dump_files(logits_folder, lgt, "logits")
-                if self.log_samples:
-                    saved_results = [
-                        {
-                            "prediction": outputs[j],
-                            "reference": samples[i + j][task["doc_to_target"]],
-                            "input": (
-                                inputs[i + j]
-                                if (
-                                    isinstance(inputs[i + j], str)
-                                    and not self.use_chat_template
-                                )
-                                else inputs[i + j][-1]
-                            ),
-                            "example": samples[i + j],
-                        }
-                        for j in range(0, len(outputs))
-                    ]
-                    dump_files(results_folder, saved_results, "results")
                 task_results.extend(
-                    [
-                        {
-                            "prediction": outputs[j],
-                            "reference": samples[i + j][task["doc_to_target"]],
-                        }
-                        for j in range(0, len(outputs))
-                    ]
+                    self.log_results(
+                        outputs,
+                        logits,
+                        samples,
+                        inputs,
+                        i,
+                        task,
+                        logits_folder,
+                        save_columns,
+                    )
                 )
-
             # calculation of the scores
             scores = {}
             metric_calc = Metrics(model_id=self.model.get_model_info())
@@ -161,6 +115,7 @@ class Evaluator:
             # save results
             results[task["task_name"]] = {
                 "scores": scores,
+                "sample_logs": task_results if self.log_samples else None,
             }
         return results
 
@@ -173,3 +128,77 @@ class Evaluator:
         # Optional: Reset PyTorch’s CUDNN state
         # torch.backends.cudnn.benchmark = False
         # torch.backends.cudnn.enabled = False
+
+    def log_results(
+        self,
+        outputs,
+        logits,
+        samples,
+        inputs,
+        current_index,
+        task,
+        logits_folder,
+        save_columns,
+    ):
+
+        # generate tuple for each output and sample
+        if self.log_logits:
+            dump_files(
+                logits_folder, [logits_step.cpu() for logits_step in logits], "logits"
+            )
+        if self.log_samples:
+            return [
+                {
+                    "prediction": outputs[j],
+                    "reference": samples[current_index + j][task["doc_to_target"]],
+                    "input": (
+                        inputs[current_index + j]
+                        if (
+                            isinstance(inputs[current_index + j], str)
+                            and not self.use_chat_template
+                        )
+                        else inputs[current_index + j][-1]
+                    ),
+                    "example": (
+                        {x: samples[current_index + j][x] for x in save_columns}
+                        if save_columns
+                        else samples[current_index + j]
+                    ),
+                }
+                for j in range(0, len(outputs))
+            ]
+        else:
+            return [
+                {
+                    "prediction": outputs[j],
+                    "reference": samples[current_index + j][task["doc_to_target"]],
+                }
+                for j in range(0, len(outputs))
+            ]
+
+    def load_all_samples(self, task, num_fewshot):
+        # load the evaluation and few_shot samples
+        if task["test_split"]:
+            samples = load_samples(task["path"], task["test_split"])
+            if num_fewshot > 0:
+                if task["validation_split"]:
+                    few_shot_samples = load_samples(
+                        task["path"], task["validation_split"]
+                    )
+                elif task["train_split"]:
+                    few_shot_samples = load_samples(task["path"], task["train_split"])
+                else:
+                    few_shot_samples = None
+            else:
+                few_shot_samples = None
+        else:
+            samples = load_samples(task["path"], task["validation_split"])
+            if num_fewshot > 0:
+                if task["train_split"]:
+                    few_shot_samples = load_samples(task["path"], task["train_split"])
+                else:
+                    few_shot_samples = None
+            else:
+                few_shot_samples = None
+        # generate the input prompts
+        return samples, few_shot_samples

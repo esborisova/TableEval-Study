@@ -104,6 +104,8 @@ instruction: <Task Instruction>  # e.g., 'Describe the following table' (Optiona
 doc_to_text: <Prompt Template>  # e.g., "{{caption}} {{row_headers}} {{column_headers}}" (Jinja2 format)
 doc_to_target: <Target Column>  # The column containing the reference answer
 multi_modal_data: <True> # Optional, for running MLLMs
+ignore_columns: Comma-separated column names that should be considered when filtering Nones (e.g., `table_id,paper_id`). If not initialized no columns are considered
+save_columns: Comma-separated column names that should be considered when logging the samples (e.g., `table_id,paper_id`). If not initialized all columns are considered
 metric_list:  # List of metrics for evaluation
   - <Metric1>
   - <Metric2>

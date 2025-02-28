@@ -10,6 +10,14 @@ doc_to_target: answer
 metric_list:
   - accuracy
   - f1
-  - bleu
+  - bertS
+  - bleurt
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
   - rougeL
+  - rouge1
+  - rouge2
+  - rouge3  
   - meteor

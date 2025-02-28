@@ -1,5 +1,5 @@
 task_name: latex_comtqa_pmc
-path: /netscratch/borisova/TableEval/data/ComTQA_data/comtqa_pmc_updated_2025-01-23
+path: /netscratch/borisova/TableEval/data/ComTQA_data/comtqa_pmc_updated_2025-02-28
 test_split: test
 validation_split: validation
 train_split: test
@@ -8,8 +8,17 @@ instruction: ""
 doc_to_text: 'Refer to the provided table and answer the question. Question: {{question}}. Table: {{table_latex}}.' 
 doc_to_target: answer
 metric_list:
-  - accuracy
-  - f1
-  - bleu
-  - rougeL
+  #- perplexity
+  #- sacrebleu
+  #- moverS
+  - bleurt
+  - bertS
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
   - meteor
+  - rougeL
+  - rouge1
+  - rouge2
+  - rouge4

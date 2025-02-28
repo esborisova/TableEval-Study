@@ -9,7 +9,7 @@ doc_to_text:  'Based on a given table, fill in the entity masked by [ENT] in the
 doc_to_target: ref
 metric_list:
   #- perplexity
-  #- sacrebleu
+  # - sacrebleu
   #- moverS
   - bleurt
   - bertS 

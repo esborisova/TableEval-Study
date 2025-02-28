@@ -8,6 +8,17 @@ instruction: ""
 doc_to_text: 'You are an expert in the table-to-text generation task. Describe the given table focusing on the insights and trends revealed by the results. The summary should be factual and well-written. Do not introduce new information or speculate. Table: {{table_latex}}.'
 doc_to_target: description
 metric_list:
-  - bleu
-  - rougeL
+  #- perplexity
+  #- sacrebleu
+  #- moverS
+  - bleurt
+  - bertS
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
   - meteor
+  - rougeL
+  - rouge1
+  - rouge2
+  - rouge4

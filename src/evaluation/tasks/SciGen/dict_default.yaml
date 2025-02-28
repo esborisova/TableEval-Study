@@ -5,10 +5,20 @@ validation_split: validation
 train_split: test
 num_fewshot: 0
 instruction: ""
-doc_to_text: 'Your task is to generate textual description for the given table. The summary must describe the most important findings reported in table by reasoning over its content. The text should be coherent. Table: {"table_caption": {{table_caption}},  "table_column_names": {{table_column_names}}, "table_content_values": {{table_content_values}} }.'
+doc_to_text: 'Your task is to generate textual description for the given table. The summary must describe the most important findings reported in table by reasoning over its content. The text should be coherent. Table: {"table_caption": {{table_caption}},  "table_column_names": {{table_column_names}}, "table_content_values": {{table_content_values}}}.'
 doc_to_target: text_cleaned
 metric_list:
-  - bleu
-  - meteor
-  - bertS
+    #- perplexity
+  #- sacrebleu
+  #- moverS
   - bleurt
+  - bertS
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - meteor
+  - rougeL
+  - rouge1
+  - rouge2
+  - rouge4

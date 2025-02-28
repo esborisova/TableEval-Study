@@ -8,5 +8,17 @@ instruction: ""
 doc_to_text:  'Based on a given table, fill in the entity masked by [ENT] in the following sentence: {{template}}. Output the sentence with filled in masked entities. Table title: {{title}}. Table: {{table_xml}}'
 doc_to_target: ref
 metric_list:
-  - perplexity
-  - bleu
+  #- perplexity
+  #- sacrebleu
+  #- moverS
+  - bleurt
+  - bertS 
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - meteor
+  - rougeL
+  - rouge1
+  - rouge2
+  - rouge4

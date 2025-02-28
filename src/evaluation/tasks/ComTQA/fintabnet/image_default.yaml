@@ -9,6 +9,7 @@ doc_to_text: !function image_parser.parse
 doc_to_target: answer
 multi_modal_data: True
 metric_list:
+  - sacrebleu
   - accuracy
   - f1
   - bertS

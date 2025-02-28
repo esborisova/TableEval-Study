@@ -4,12 +4,21 @@ test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
+ignore_columns: table_xml_spacylayout
 instruction: ""
 doc_to_text: 'Refer to the provided table and answer the question. Question: {{question}}. Table: {{table_xml_spacylayout}}.'
 doc_to_target: answer
 metric_list:
   - accuracy
   - f1
-  - bleu
+  - bertS
+  - bleurt
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
   - rougeL
+  - rouge1
+  - rouge2
+  - rouge3
   - meteor

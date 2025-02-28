@@ -8,8 +8,18 @@ instruction: ""
 doc_to_text: 'Generate a one sentence statement based on the table and logical form. Logical form: {{logic_str}}. Table title: {{title}}. Table: {{table_xml}}.'
 doc_to_target: sent
 metric_list:
-  - bleu
+  #- perplexity
+  #- sacrebleu
+  #- moverS
+  - bleurt
+  - bertS 
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - meteor
+  - rougeL
   - rouge1
-  - rogue2
-  - rogueL
+  - rouge2
+  - rouge4
 

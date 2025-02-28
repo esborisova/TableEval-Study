@@ -117,14 +117,6 @@ def html_to_xml_table(
     )
 
 
-def define_agg_rules(df: pd.DataFrame, annotation: str, merged_annotation: str):
-    aggregation_rules = {
-        col: "first" for col in df.columns if col not in [annotation, "table_id"]
-    }
-    aggregation_rules[merged_annotation] = " ".join
-    return aggregation_rules
-
-
 def main():
     data_paths = [
         "../../data/LogicNLG/logicnlg_updated_2025-01-22",

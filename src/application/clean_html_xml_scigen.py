@@ -105,10 +105,12 @@ def main():
         for html in cleaned_html_tables
     ]
 
-    validate_html(cleaned_html_tables)
-
     scigen_data["table_html_cleaned"] = cleaned_html_tables
     scigen_data["table_xml_cleaned"] = cleaned_xml_tables
+
+    validated_html = validate_html(
+        scigen_data, "table_html_cleaned", "image_id", "scigen_html_val"
+    )
 
     # Save as HF Dataset
     create_and_save_dataset(scigen_data, "test", output_path)

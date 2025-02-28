@@ -36,9 +36,11 @@ def main():
     cleaned_html_no_meta = [
         re.sub(r"\n\s*\n", "\n", html) for html in cleaned_html_no_meta
     ]
+    pmc_subset["table_html"] = cleaned_html
+    pmc_subset["table_html_no_meta"] = cleaned_html_no_meta
 
-    validated_html = validate_html(cleaned_html)
-    validated_html_no_meta = validate_html(cleaned_html_no_meta)
+    validated_html = validate_html(pmc_subset, "table_html",  "id", "pmc_html_val")
+    validated_html_no_meta = validate_html(pmc_subset, "table_html_no_meta", "id", "pmc_html_no_meta_val")
 
     validated_html = remove_html_indicator(validated_html)
     validated_html_no_meta = remove_html_indicator(validated_html_no_meta)

@@ -6,6 +6,8 @@ from thefuzz import fuzz
 import os
 import pandas as pd
 import re
+import logging
+from datetime import datetime
 from typing import List
 from tidylib import tidy_document
 from other import find_file, read_html
@@ -94,13 +96,28 @@ def pmc_tables_to_html(xml_input: str, meta: bool = True) -> str:
     return html_table
 
 
-def validate_html(html_files: List[str]):
+def validate_html(
+    df: pd.DataFrame, html_column: str, table_id_column: str, log_filename: str
+):
+
+    log_filename = f"{log_filename}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+    logging.basicConfig(
+        filename=log_filename,
+        level=logging.ERROR,
+        format="%(asctime)s - ID: %(message)s",
+    )
     validated_html = []
-    for html in html_files:
+
+    for _, row in df.iterrows():
+        html = row[html_column]
+        instance_id = row[table_id_column]
+
         doc, err = tidy_document(html, options={"numeric-entities": 1})
         validated_html.append(doc)
+
         if err:
-            print(err)
+            log_message = f"{instance_id} - {err}"
+            logging.error(log_message)
     return validated_html
 
 

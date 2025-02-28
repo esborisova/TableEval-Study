@@ -18,7 +18,7 @@ def load_samples(path: str, split: str) -> Dataset:
         dataset = dataset[split]
 
     else:
-        dataset = load_dataset(path, split=f"{split}[0:2]")
+        dataset = load_dataset(path, split=f"{split}")
     return dataset
 
 

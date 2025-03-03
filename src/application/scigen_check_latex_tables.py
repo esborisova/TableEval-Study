@@ -30,7 +30,7 @@ def get_gold_reconstruced(table_column_names, table_content_values):
 
   return table_reconstructed
 
- def remove_latex_commands(table_content):
+def remove_latex_commands(table_content):
     """
     Cleans LaTeX table content by:
     - Removing LaTeX commands related to tables while keeping table content.

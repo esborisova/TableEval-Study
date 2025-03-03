@@ -1,7 +1,9 @@
 """Script for constructing table html in fintabnet subset based on annotations"""
+
 import pandas as pd
 from datasets import load_from_disk
 from ..utils.other import create_and_save_dataset
+from ..utils.xml_html_convertion import prettify_html, validate_html
 
 
 def main():
@@ -31,6 +33,17 @@ def main():
     ds_df = ds_df.merge(table_html_df[["table_id", "html"]], on="table_id", how="left")
     ds_df.rename(columns={"html": "table_html"}, inplace=True)
     ds_df = ds_df.reset_index(drop=True)
+
+    # prettify and validate HTML
+    list_of_html = ds_df["table_html"].tolist()
+    pretty_html = [
+        prettify_html(html) if html is not None else html for html in list_of_html
+    ]
+    ds_df["table_html"] = pretty_html
+    validated_html = validate_html(
+        ds_df, "table_html", "table_id", "fin_val_html_source"
+    )
+
     create_and_save_dataset(ds_df, "train", "../../data/comtqa_updated")
 
 

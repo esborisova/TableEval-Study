@@ -1,11 +1,14 @@
 """Pipeline for matching the tables exctracted using spaCy layout from fintabnet pdfs with the gold tables and 
 obtaing headers, rows, and html."""
+
 import pandas as pd
 import numpy as np
 import pickle
 from datasets import load_from_disk
 from ..utils.other import create_and_save_dataset
 from ..utils.table_similarity import compute_tables_similarity
+from ..utils.html_latex_convertion import fix_auto_generated_headers
+from ..utils.xml_html_convertion import change_table_class, prettify_html, validate_html
 
 
 def main():
@@ -15,6 +18,10 @@ def main():
 
     with open("../../data/ComTQA_data/other/spacylayout_output.pkl", "rb") as f:
         data = pickle.load(f)
+
+    data["matched_table_spacylayout"] = data["matched_table_spacylayout"].apply(
+        lambda x: fix_auto_generated_headers(x) if x is not None else x
+    )
 
     matched_ids = set()
     matched_tables = []
@@ -41,11 +48,15 @@ def main():
 
                     table_headers = most_similar_table.columns.values.tolist()
                     table_headers = [
-                        str(item)
-                        if not isinstance(item, str)
-                        else item
-                        if not isinstance(item, float) or not np.isnan(item)
-                        else ""
+                        (
+                            str(item)
+                            if not isinstance(item, str)
+                            else (
+                                item
+                                if not isinstance(item, float) or not np.isnan(item)
+                                else ""
+                            )
+                        )
                         for item in table_headers
                     ]
 
@@ -91,7 +102,38 @@ def main():
         how="left",
     )
 
+    # assign none to tables which either incorrectly extracted or no cell values were extracted
+    tables_to_exclude = [
+        "TMO_2011_page_104_38704.png",
+        "TMO_2011_page_104_38705.png",
+        "ZBRA_2004_page_63_456.png",
+    ]
+    columns_to_update = [
+        "table_headers_spacylayout",
+        "table_rows_spacylayout",
+        "table_html_spacylayout",
+    ]
+    merged_df.loc[
+        merged_df["image_name"].isin(tables_to_exclude), columns_to_update
+    ] = None
+
+    # remove format indicator
+    merged_df["table_html_spacylayout"] = merged_df["table_html_spacylayout"].apply(
+        lambda x: change_table_class(x) if x is not None else x
+    )
+
+    # prettify html
+    merged_df["table_html_spacylayout"] = merged_df["table_html_spacylayout"].apply(
+        lambda x: prettify_html(x) if x is not None else x
+    )
+
+    # validate html
+    validated_html = validate_html(
+        merged_df, "table_html_spacylayout", "table_id", "fin_val_html_spacylayout"
+    )
+
     create_and_save_dataset(merged_df, "train", "../../data/ComTQA_data/comtqa_updated")
+
 
 if __name__ == "__main__":
     main()

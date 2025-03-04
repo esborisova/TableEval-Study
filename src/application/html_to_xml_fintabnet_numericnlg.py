@@ -30,12 +30,16 @@ def main():
 
     fintabnet_html_source = fintabnet_df["table_html"].tolist()
     fintabnet_xml_source = [html_to_xml_table(html) for html in fintabnet_html_source]
+    fintabnet_xml_source = [prettify_xml(xml) for xml in fintabnet_xml_source]
     fintabnet_df["table_xml"] = fintabnet_xml_source
 
     fintabnet_html_spacy = fintabnet_df["table_html_spacylayout"].tolist()
     fintabnet_xml_spacy = [
         html_to_xml_table(html) if html is not None else html
         for html in fintabnet_html_spacy
+    ]
+    fintabnet_xml_spacy = [
+        prettify_xml(xml) if xml is not None else xml for xml in fintabnet_xml_spacy
     ]
     fintabnet_df["table_xml_spacylayout"] = fintabnet_xml_spacy
 

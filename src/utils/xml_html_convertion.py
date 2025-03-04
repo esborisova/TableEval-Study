@@ -155,11 +155,14 @@ def create_xml_table(xml_parent, html_table):
     tbody = SubElement(pmc_table, "tbody")
 
     rows = html_table.find_all("tr")
+    header_row_processed = False
+
     for tr in rows:
-        if tr.find("th"):
-            process_html_table_row(tr, thead, row_type="th")
+        if not header_row_processed and tr.find("th"):
+            process_html_table_row(tr, thead)
+            header_row_processed = True
         else:
-            process_html_table_row(tr, tbody, row_type="td")
+            process_html_table_row(tr, tbody)
 
 
 def html_to_xml_table(

@@ -1,7 +1,9 @@
 """Pipeline for convering tables HTML in numericNLG and 
 fintabnet subset of comtqa into XML"""
+
 import ast
-from ..utils.xml_html_convertion import html_to_xml_table
+from datasets import load_from_disk
+from ..utils.xml_html_convertion import html_to_xml_table, prettify_xml
 from ..utils.other import create_and_save_dataset
 
 
@@ -16,9 +18,14 @@ def main():
     columns_to_apply = ["row_headers", "column_headers", "contents"]
     for column in columns_to_apply:
         numericnlg_df[column] = numericnlg_df[column].apply(ast.literal_eval)
-    
-    numericnlg_xml = [html_to_xml_table(row.table_html_clean, row.table_id, row.table_name, row.caption)
-    for row in numericnlg_df.itertuples(index=False)]
+
+    numericnlg_xml = [
+        html_to_xml_table(
+            row.table_html_clean, row.table_id, row.table_name, row.caption
+        )
+        for row in numericnlg_df.itertuples(index=False)
+    ]
+    numericnlg_xml = [prettify_xml(xml) for xml in numericnlg_xml]
     numericnlg_df["table_xml"] = numericnlg_xml
 
     fintabnet_html_source = fintabnet_df["table_html"].tolist()
@@ -53,8 +60,10 @@ def main():
     )
     merged_df = merged_df.drop(columns=["table_xml_fintab"])
 
-    create_and_save_dataset(merged_df, "train",  "../../data/ComTQA_data/comtqa_updated")
-    create_and_save_dataset(numericnlg_df, "test", "../../data/numericNLG/numericnlg_updated")
+    create_and_save_dataset(merged_df, "train", "../../data/ComTQA_data/comtqa_updated")
+    create_and_save_dataset(
+        numericnlg_df, "test", "../../data/numericNLG/numericnlg_updated"
+    )
 
 
 if __name__ == "__main__":

@@ -10,16 +10,12 @@ import logging
 from datetime import datetime
 from typing import List
 from tidylib import tidy_document
+from lxml import html
 from other import find_file, read_html
 
 
-def map_xml_html_tags(soup, conversion_type="html_to_xml"):
+def map_xml_html_tags(soup):
     tag_replacements = {
-        "html_to_xml": {
-            "strong": "bold",
-            "em": "italic",
-            "br": "break",
-        },
         "xml_to_html": {
             "bold": "strong",
             "italic": "em",
@@ -28,7 +24,7 @@ def map_xml_html_tags(soup, conversion_type="html_to_xml"):
         },
     }
 
-    replacements = tag_replacements[conversion_type]
+    replacements = tag_replacements["xml_to_html"]
 
     for xml_tag, html_tag in replacements.items():
         for tag in soup.find_all(xml_tag):
@@ -64,7 +60,7 @@ def add_footnotes_to_html_table(html_table: str, footnotes):
 
 def pmc_tables_to_html(xml_input: str, meta: bool = True) -> str:
     soup = BeautifulSoup(xml_input, "xml")
-    soup = map_xml_html_tags(soup, "xml_to_html")
+    soup = map_xml_html_tags(soup)
 
     for table in soup.find_all("table", {"frame": True, "rules": True}):
         frame = table.get("frame", "")
@@ -175,7 +171,6 @@ def html_to_xml_table(
 
     soup = BeautifulSoup(html_table, "html.parser")
 
-    soup = map_xml_html_tags(soup, conversion_type="html_to_xml")
     table_wrap = create_pmc_table_wrap(table_id, label_text, caption_text)
     html_table_elem = soup.find("table")
     if html_table_elem:
@@ -353,3 +348,9 @@ def prettify_html(html: str) -> str:
     soup = BeautifulSoup(html, "html.parser")
     formatted_html = soup.prettify()
     return formatted_html
+
+
+def prettify_xml(xml: str) -> str:
+    tree = html.fromstring(xml)
+    pretty_xml = html.tostring(tree, pretty_print=True).decode()
+    return pretty_xml

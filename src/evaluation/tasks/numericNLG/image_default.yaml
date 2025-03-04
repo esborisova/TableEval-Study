@@ -1,5 +1,5 @@
 task_name: image_numericnlg
-path: /netscratch/borisova/TableEval/data/numericNLG/numericnlg_updated_2025-02-28
+path: /netscratch/borisova/TableEval/data/numericNLG/numericnlg_updated_2025-03-04
 test_split: test
 validation_split: validation
 train_split: test

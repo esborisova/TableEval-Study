@@ -9,6 +9,7 @@ from ..utils.html_latex_convertion import (
 
 
 def main():
+
     datasets = {
         "pmc": {
             "root_dir": "../../data/ComTQA_data/pubmed/latex_files/",
@@ -20,6 +21,28 @@ def main():
             "filter_val": "PubTab1M",
             "id_col": "id",
             "latex_col": "table_latex",
+        },
+        "fintabnet_source": {
+            "filter_col": "dataset",
+            "filter_val": "FinTabNet",
+            "id_col": "table_id",
+            "root_dir": "../../../data/ComTQA_data/fintabnet/latex_files/",
+            "output_dir": "../../../data/ComTQA_data/fintabnet/latex_files/compilied_files/",
+            "error_log_file": "../../../data/ComTQA_data/fintabnet/latex_files/compilied_files/logs/error_log.txt",
+            "dataset_path": "../../data/ComTQA_data/comtqa_updated_2024-12-25",
+            "split": "train",
+            "latex_col": "table_latex",
+        },
+        "fintabnet_spacylayout": {
+            "filter_col": "dataset",
+            "filter_val": "FinTabNet",
+            "id_col": "table_id",
+            "root_dir": "../../../data/ComTQA_data/fintabnet/latex_files_spacylayout/",
+            "output_dir": "../../../data/ComTQA_data/fintabnet/latex_files_spacylayout/compilied_files/",
+            "error_log_file": "../../../data/ComTQA_data/fintabnet/latex_files_spacylayout/compilied_files/logs/error_log.txt",
+            "dataset_path": "../../data/ComTQA_data/comtqa_updated_2024-12-25",
+            "split": "train",
+            "latex_col": "table_latex_spacylayout",
         },
         "numericnlg": {
             "root_dir": "../../data/numericNLG/latex_files/",

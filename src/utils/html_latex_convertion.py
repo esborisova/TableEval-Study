@@ -32,6 +32,7 @@ def fix_auto_generated_headers(df: pd.DataFrame) -> pd.DataFrame:
     if list(df.columns) == list(range(len(df.columns))):
         df.columns = df.iloc[0]
         df = df[1:].reset_index(drop=True)
+    df.columns = ["" if pd.isna(col) or col == '' else col for col in df.columns]
     return df
 
 
@@ -104,32 +105,33 @@ def convert_html_to_latex_tables(
 
     tables_latex = []
     for _, row in df.iterrows():
+        if row[html_column] is not None:
 
-        preprocessed_html = replace_with_latex_symbols(
-            row[html_column], html_replacements
-        )
-        html_df = html_to_df(preprocessed_html)
-        table_latex = html_to_latex(html_df)
-        table_latex = replace_with_latex_symbols(table_latex, tex_replacements)
-        table_latex = clean_latex_string(table_latex)
+            preprocessed_html = replace_with_latex_symbols(
+                row[html_column], html_replacements
+            )
+            html_df = html_to_df(preprocessed_html)
+            table_latex = html_to_latex(html_df)
+            table_latex = replace_with_latex_symbols(table_latex, tex_replacements)
+            table_latex = clean_latex_string(table_latex)
 
-        table_title = row.get(title_column, None) if title_column else None
+            table_title = row.get(title_column, None) if title_column else None
 
-        table_caption = row.get(caption_column, None) if caption_column else None
-        if table_caption is not None:
-            table_caption = replace_with_latex_symbols(table_caption, all_replacements)
+            table_caption = row.get(caption_column, None) if caption_column else None
+            if table_caption is not None:
+                table_caption = replace_with_latex_symbols(table_caption, all_replacements)
 
-        table_footnote = row.get(footnote_column, None) if footnote_column else None
-        if table_footnote is not None:
-            table_footnote = replace_with_latex_symbols(
-                table_footnote, all_replacements
+            table_footnote = row.get(footnote_column, None) if footnote_column else None
+            if table_footnote is not None:
+                table_footnote = replace_with_latex_symbols(
+                    table_footnote, all_replacements
+                )
+
+            table_tex_with_meta = add_meta_table_tex(
+                table_latex, table_title, table_caption, table_footnote
             )
 
-        table_tex_with_meta = add_meta_table_tex(
-            table_latex, table_title, table_caption, table_footnote
-        )
-
-        tables_latex.append(table_tex_with_meta)
+            tables_latex.append(table_tex_with_meta)
 
     return tables_latex
 
@@ -150,8 +152,9 @@ def process_and_save_table_tex(
     for _, row in df.iterrows():
         filename = row[id_col] + ".tex"
         file_path = os.path.join(root_dir, filename)
-        table_latex = generate_latex_content(row[table_latex_col])
-        save_table_to_file(file_path, table_latex)
+        if row[table_latex_col] is not None:
+            table_latex = generate_latex_content(row[table_latex_col])
+            save_table_to_file(file_path, table_latex)
 
 
 def compile_tex_file(file_path, output_dir, error_log_file):

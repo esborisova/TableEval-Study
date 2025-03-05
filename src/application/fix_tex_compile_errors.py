@@ -1,6 +1,7 @@
 """Script for fixing remaining latex compile errors in numericNLG, Logic2Text, LogicNLG, and ComTQA PMC subset instances"""
 
 import pandas as pd
+import re
 from datasets import load_from_disk
 from ..utils.other import create_and_save_dataset
 
@@ -65,6 +66,61 @@ def main():
     )
     replace_latex_symbols_df(logicnlg_df, "table_latex", logicnlg_condition, "$", r"\$")
     create_and_save_dataset(logicnlg_df, "test", "../../data/LogicNLG/logicnlg_updated")
+
+    fintabnet = load_from_disk("../../data/ComTQA_data/comtqa_fin_updated_2025-03-04")
+    fintabnet = fintabnet["test"].to_pandas()
+    log_files = {
+        "spacylayout": "../../data/ComTQA_data/fintabnet/latex_files_spacylayout/compilied_files/logs/error_log.txt",
+        "source": "../../data/ComTQA_data/fintabnet/latex_files/compilied_files/logs/error_log.txt",
+    }
+
+    files_to_fix = {
+        key: [
+            file.split(".")[0]
+            for file in re.findall(r"File: .*?/([^/]+\.tex)", open(path).read())
+        ]
+        for key, path in log_files.items()
+    }
+
+    files_to_fix_spacy = files_to_fix["spacylayout"]
+    files_to_fix_source = files_to_fix["latex"]
+
+    column_id_map = {
+        "table_latex": files_to_fix_source,
+        "table_latex_spacylayout": files_to_fix_spacy,
+    }
+
+    for col, id_list in column_id_map.items():
+        fintabnet[col] = fintabnet.apply(
+            lambda row: (
+                re.sub(r"(?<!\\)\$", r"\\$", row[col])
+                if isinstance(row[col], str) and row["table_id"] in id_list
+                else row[col]
+            ),
+            axis=1,
+        )
+
+    fintabnet["table_latex_spacylayout"] = fintabnet.apply(
+        lambda row: (
+            row["table_latex_spacylayout"].replace(r"\cdot", r"$\cdot$")
+            if row["table_id"] == "90513"
+            else row["table_latex_spacylayout"]
+        ),
+        axis=1,
+    )
+
+    fintabnet["table_latex_spacylayout"] = fintabnet.apply(
+        lambda row: (
+            row["table_latex_spacylayout"].replace(r"�", r"…")
+            if row["table_id"] == "69285"
+            else row["table_latex_spacylayout"]
+        ),
+        axis=1,
+    )
+
+    create_and_save_dataset(
+        fintabnet, "test", "../../data/ComTQA_data/comtqa_fin_updated"
+    )
 
 
 if __name__ == "__main__":

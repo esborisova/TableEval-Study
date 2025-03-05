@@ -1,5 +1,5 @@
 task_name: image_logic2text
-path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_updated_2025-02-23
+path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_updated_2025-03-05
 test_split: test
 validation_split: validation
 train_split: test

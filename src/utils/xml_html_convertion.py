@@ -131,19 +131,59 @@ def create_pmc_table_wrap(
     return table_wrap
 
 
-def process_html_table_row(row, parent_elem, row_type="td"):
+def process_cell_attributes(cell, cell_elem):
+    colspan = cell.get("colspan", None)
+    rowspan = cell.get("rowspan", None)
 
+    if colspan:
+        cell_elem.set("colspan", colspan)
+    if rowspan:
+        cell_elem.set("rowspan", rowspan)
+
+
+def extract_visible_text(cell):
+    visible_text = ""
+    for child in cell.children:
+        if child.name == "span" and child.get("style") == "display:none":
+            continue
+        visible_text += child.get_text(strip=True)
+    return visible_text
+
+
+def process_special_cell_children(cell, cell_elem):
+    for child in cell.contents:
+        if child.name == "span" and "legend-color" in child.get("class", []):
+            color_elem = SubElement(cell_elem, "color-box")
+            style = child.get("style", "")
+            color_style = next(
+                (s for s in style.split(";") if "background-color" in s), None
+            )
+            if color_style:
+                color = color_style.split(":")[1].strip()
+                color_elem.set("background-color", color)
+            color_elem.text = " "
+
+        elif child.name == "a":
+            link_href = child.get("href", "")
+            link_elem = SubElement(cell_elem, "link", href=link_href)
+            link_elem.text = child.get_text(strip=True)
+
+
+def process_html_table_row(row, parent_elem):
     tr_elem = SubElement(parent_elem, "tr")
 
-    for cell in row.find_all(row_type):
-        cell_elem = SubElement(tr_elem, row_type, align="left")
-        cell_text = cell.get_text(strip=True)
+    for cell in row.find_all(["td", "th"]):
+        cell_elem = SubElement(tr_elem, cell.name, align="left")
+        process_cell_attributes(cell, cell_elem)
 
-        cell_elem.text = cell_text if cell_text else " "
+        if cell.find("style"):
+            continue
 
-        for child in cell.contents:
-            if child.name == "br":
-                SubElement(cell_elem, "break")
+        visible_text = extract_visible_text(cell)
+        if visible_text:
+            cell_elem.text = visible_text
+
+        process_special_cell_children(cell, cell_elem)
 
     return tr_elem
 

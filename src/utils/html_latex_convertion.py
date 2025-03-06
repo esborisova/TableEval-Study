@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import os
 import subprocess
+from bs4 import BeautifulSoup
 from typing import Dict, List
 from ..utils.other import create_dir, save_table_to_file
 
@@ -30,15 +31,20 @@ def clean_column_names(cols):
 
 def fix_auto_generated_headers(df: pd.DataFrame) -> pd.DataFrame:
     if list(df.columns) == list(range(len(df.columns))):
-        df.columns = df.iloc[0]
-        df = df[1:].reset_index(drop=True)
-    df.columns = ["" if pd.isna(col) or col == '' else col for col in df.columns]
+        df.columns = [""] * len(df.columns)
     return df
 
 
+def remove_footnote_row(html: str):
+    soup = BeautifulSoup(html, "html.parser")
+    for tfoot in soup.find_all("tfoot"):
+        tfoot.extract()
+    return soup
+
+
 def html_to_df(html: str) -> pd.DataFrame:
-    html_df = pd.read_html(html)
-    html_df = html_df[0]
+    soup = remove_footnote_row(html)
+    html_df = pd.read_html(str(soup))[0]
     html_df = fix_auto_generated_headers(html_df)
     html_df.columns = clean_column_names(html_df.columns)
     return html_df
@@ -119,7 +125,9 @@ def convert_html_to_latex_tables(
 
             table_caption = row.get(caption_column, None) if caption_column else None
             if table_caption is not None:
-                table_caption = replace_with_latex_symbols(table_caption, all_replacements)
+                table_caption = replace_with_latex_symbols(
+                    table_caption, all_replacements
+                )
 
             table_footnote = row.get(footnote_column, None) if footnote_column else None
             if table_footnote is not None:

@@ -9,6 +9,7 @@ def main():
     comtqa = load_from_disk("../../data/ComTQA_data/comtqa_updated_2024-12-06")
     comtqa = comtqa["train"].to_pandas()
     pmc_subset = comtqa[comtqa["dataset"] == "PubTab1M"]
+    fin_subset = comtqa[comtqa["dataset"] == "FinTabNet"]
 
     numericnlg = load_from_disk("../../data/numericNLG/numericnlg_test_2024_12_17.hf")
     numericnlg = numericnlg.to_pandas()
@@ -44,12 +45,36 @@ def main():
         footnote_column="table_footnote",
     )
     pmc_subset["table_latex"] = tables_latex_pmc
-
     merged_df = comtqa.merge(
         pmc_subset[["id", "image_name", "table_latex"]],
         on=["id", "image_name"],
         how="left",
     )
+
+    tables_latex_fin_source = convert_html_to_latex_tables(
+        fin_subset,
+        html_column="table_html",
+        html_replacements=html_replacements,
+        tex_replacements=tex_replacements,
+        all_replacements=all_replacements,
+    )
+    fin_subset["table_latex"] = tables_latex_fin_source
+
+    tables_latex_fin_spacy = convert_html_to_latex_tables(
+        fin_subset,
+        html_column="table_html_spacylayout",
+        html_replacements=html_replacements,
+        tex_replacements=tex_replacements,
+        all_replacements=all_replacements,
+    )
+    fin_subset["table_latex_spacylayout"] = tables_latex_fin_spacy
+
+    merged_df = comtqa.merge(
+        fin_subset[["id", "image_name", "table_latex", "table_latex_spacylayout"]],
+        on=["id", "image_name"],
+        how="left",
+    )
+
     create_and_save_dataset(merged_df, "train", "../../data/ComTQA_data/comtqa_updated")
 
     tex_replacements_copy = (

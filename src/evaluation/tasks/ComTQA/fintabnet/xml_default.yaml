@@ -1,5 +1,5 @@
 task_name: xml_comtqa_fin
-path: /netscratch/borisova/TableEval/data/ComTQA_data/comtqa_fin_updated_2025-03-05
+path: /netscratch/borisova/TableEval/data/ComTQA_data/comtqa_fin_updated_2025-03-06
 test_split: test
 validation_split: validation
 train_split: test

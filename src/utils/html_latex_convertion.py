@@ -220,3 +220,17 @@ def compile_tex_files_in_dir(tex_dir, output_dir, error_log_file):
                 print(f"Error in {file_name}, logging error...")
 
     print(f"Compilation completed. Errors logged in {error_log_file}")
+
+
+def escape_non_math_dollar(latex_text: str):
+    """
+    Escapes dollar signs ($) only if they are not part of math mode in LaTeX.
+    """
+    math_mode_regex = re.compile(r"\$(.*?)\$")
+    math_matches = math_mode_regex.findall(latex_text)
+    temp_placeholder = "\uFFFF"
+    temp_latex = math_mode_regex.sub(temp_placeholder, latex_text)
+    temp_latex = temp_latex.replace("$", r"\$")
+    for math_content in math_matches:
+        temp_latex = temp_latex.replace(temp_placeholder, f"${math_content}$", 1)
+    return temp_latex

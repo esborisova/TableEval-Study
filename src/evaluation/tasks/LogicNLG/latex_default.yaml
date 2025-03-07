@@ -1,18 +1,19 @@
 task_name: latex_logicnlg
-path: /netscratch/borisova/TableEval/data/LogicNLG/logicnlg_updated_2025-03-06
+path: /netscratch/borisova/TableEval/data/LogicNLG/logicnlg_updated_2025-03-07
 test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
+save_columns: instance_id,image_name,filename,table_id,topic,title
 instruction: ""
 doc_to_text:  'Based on a given table, fill in the entity masked by [ENT] in the following sentence: {{template}}. Output the sentence with filled in masked entities. Table title: {{title}}. Table: {{table_latex}}'
 doc_to_target: ref
 metric_list:
   #- perplexity
-  # - sacrebleu
-  #- moverS
+  - sacrebleu
+  - moverS
   - bleurt
-  - bertS 
+  - bertS
   - bleu1
   - bleu2
   - bleu3

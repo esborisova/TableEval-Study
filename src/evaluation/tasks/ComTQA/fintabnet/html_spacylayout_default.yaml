@@ -1,16 +1,20 @@
 task_name: html_spacy_comtqa_fin
-path: /netscratch/borisova/TableEval/data/ComTQA_data/comtqa_fin_updated_2025-03-06
+path: /netscratch/borisova/TableEval/data/ComTQA_data/comtqa_fin_updated_2025-03-07
 test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
+save_columns: instance_id,table_id,image_name
 ignore_columns: table_html_clean_spacylayout
 instruction: ""
 doc_to_text: 'Refer to the provided table and answer the question. Question: {{question}}. Table: {{table_html_clean_spacylayout}}.'
 doc_to_target: answer
 metric_list:
+  #- perplexity
   - accuracy
   - f1
+  - sacrebleu
+  - moverS
   - bertS
   - bleurt
   - bleu1
@@ -20,5 +24,5 @@ metric_list:
   - rougeL
   - rouge1
   - rouge2
-  - rouge3  
+  - rouge3
   - meteor

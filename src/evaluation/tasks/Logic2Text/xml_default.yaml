@@ -1,18 +1,19 @@
 task_name: xml_logic2text
-path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_updated_2025-03-06
+path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_updated_2025-03-07
 test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
+save_columns: instance_id,image_name,filename,table_id,topic,title
 instruction: ""
 doc_to_text: 'Generate a one sentence statement based on the table and logical form. Logical form: {{logic_str}}. Table title: {{title}}. Table: {{table_xml}}.'
 doc_to_target: sent
 metric_list:
   #- perplexity
-  #- sacrebleu
-  #- moverS
+  - sacrebleu
+  - moverS
   - bleurt
-  - bertS 
+  - bertS
   - bleu1
   - bleu2
   - bleu3
@@ -22,4 +23,3 @@ metric_list:
   - rouge1
   - rouge2
   - rouge4
-

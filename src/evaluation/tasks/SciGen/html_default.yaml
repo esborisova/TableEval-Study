@@ -4,14 +4,15 @@ test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
+save_columns: instance_id,image_id,paper_id
 ignore_columns: table_html_cleaned
 instruction: ""
 doc_to_text: 'Your task is to generate textual description for the given table. The summary must describe the most important findings reported in table by reasoning over its content. The text should be coherent. Table: {{table_html_cleaned}}'
 doc_to_target: text_cleaned
 metric_list:
   #- perplexity
-  #- sacrebleu
-  #- moverS
+  - sacrebleu
+  - moverS
   - bleurt
   - bertS
   - bleu1

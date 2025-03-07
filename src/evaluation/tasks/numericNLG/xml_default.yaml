@@ -1,16 +1,17 @@
 task_name: xml_numericnlg
-path: /netscratch/borisova/TableEval/data/numericNLG/numericnlg_updated_2025-03-06
+path: /netscratch/borisova/TableEval/data/numericNLG/numericnlg_updated_2025-03-07
 test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
+save_columns: instance_id,table_id_paper,table_id,paper_id,image_id
 instruction: ""
 doc_to_text: 'You are an expert in the table-to-text generation task. Describe the given table focusing on the insights and trends revealed by the results. The summary should be factual and well-written. Do not introduce new information or speculate. Table: {{table_xml}}.'
 doc_to_target: description
 metric_list:
   #- perplexity
-  #- sacrebleu
-  #- moverS
+  - sacrebleu
+  - moverS
   - bleurt
   - bertS
   - bleu1

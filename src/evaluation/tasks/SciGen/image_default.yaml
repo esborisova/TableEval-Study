@@ -4,21 +4,23 @@ test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
+save_columns: instance_id,image_id,paper_id
 instruction: ""
 doc_to_text: !function image_parser.parse
 doc_to_target: text_cleaned
 multi_modal_data: True
 metric_list:
-  # - sacrebleu
-  - bertS
+  #- perplexity
+  - sacrebleu
+  - moverS
   - bleurt
+  - bertS
   - bleu1
   - bleu2
   - bleu3
   - bleu4
   - meteor
-    # - moverS
   - rougeL
   - rouge1
   - rouge2
-  - rouge3
+  - rouge4

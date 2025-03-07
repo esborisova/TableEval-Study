@@ -26,11 +26,21 @@ def clean_latexml_html(html_content):
 
 
 def clean_latexml_xml(xml_content):
+
     """Automatically cleans LaTeXML-generated XML tables by removing unnecessary tags while keeping captions and titles."""
 
     soup = BeautifulSoup(xml_content, "xml")
 
-    allowed_tags = {"table", "tbody", "tr", "th", "td", "caption", "title"}
+    # extract content inside the first <tag>
+    tag = soup.find('tag')
+    if tag:
+        tag_content = tag.string
+
+    #remove <tag> including its content
+    for tag in soup.find_all('tag'):
+      tag.decompose()
+
+    allowed_tags = {"tabular", "table", "thead", "tfoot", "tbody", "tr", "th", "td", "caption", "title"}
 
     # remove toccaption tag, which includes the same as the caption tag
     toccaption = soup.find("toccaption")
@@ -44,6 +54,8 @@ def clean_latexml_xml(xml_content):
             [tag.string for tag in caption.find_all(text=True)]
         )  # Extract all text content inside <caption>
         caption.clear()
+        # add the tag_conent inside <caption>
+        caption.append(tag_content)
         caption.append(caption_text)
 
     for tag in soup.find_all():
@@ -52,7 +64,7 @@ def clean_latexml_xml(xml_content):
 
     for tag in soup.find_all(allowed_tags):
         tag.attrs = {
-            k: v for k, v in tag.attrs.items() if k in {"colspan", "rowspan", "align"}
+            k: v for k, v in tag.attrs.items() if k in {"colspan", "rowspan", "align", "thead"}
         }
 
     # remove comments <!-- -->
@@ -60,7 +72,7 @@ def clean_latexml_xml(xml_content):
     for comment in comments:
         comment.extract()
 
-    # remove XML declaration if exists
+    # remove XML declaration if it exists
     cleaned_xml = "\n".join(
         line
         for line in str(soup.prettify()).split("\n")
@@ -68,7 +80,6 @@ def clean_latexml_xml(xml_content):
     )
 
     return cleaned_xml
-
 
 def main():
 

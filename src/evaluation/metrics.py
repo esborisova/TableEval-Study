@@ -53,7 +53,10 @@ class Metrics:
             self.predictions.extend(prediction)
 
     def compute(self) -> Dict:
-        if "rouge" in self.metric_name or ("bleu" in self.metric_name and self.metric_name not in {"bleurt", "sacrebleu"}):
+        if "rouge" in self.metric_name or (
+            "bleu" in self.metric_name
+            and self.metric_name not in {"bleurt", "sacrebleu"}
+        ):
             return self.function(self.predictions, self.references, self.metric_name)
         if "perplexity" in self.metric_name:
             return self.function(self.predictions, self.model_id)
@@ -74,11 +77,28 @@ class Metrics:
         else:
             self.function = None
 
+    def perplexity(self, model, data):
+        import torch
+
+        eval_loss = 0
+        with torch.no_grad():
+            for sample in data:
+                inputs = sample["input_ids"]
+
+                outputs = model(input_ids=inputs, labels=inputs)
+                loss = outputs.loss
+                eval_loss += loss.item()
+
+        avg_eval_loss = eval_loss / len(data)
+        ppl = 2**avg_eval_loss
+        return ppl
+
 
 @register("meteor")
 def meteor(predictions, references):
     """Return the mean of the meteor_score for each prediction and reference pair."""
     import nltk
+
     m_score = []
     nltk.download("wordnet")
     for prediction, reference in zip(predictions, references):
@@ -95,7 +115,7 @@ def moverS(predictions, references):
     from moverscore import get_idf_dict, word_mover_score
     Recommend to use this version (DistilBERT) for evaluation, if the speed is your concern.
     """
-    from moverscore_v2 import get_idf_dict, word_mover_score 
+    from moverscore_v2 import get_idf_dict, word_mover_score
     import numpy as np
 
     idf_dict_hyp = get_idf_dict(predictions)  # idf_dict_hyp = defaultdict(lambda: 1.)
@@ -126,7 +146,7 @@ def bleurt(predictions, references):
     scorer = score.BleurtScorer(checkpoint)
     scores = scorer.score(references=references, candidates=predictions)
 
-    assert isinstance(scores, list) and len(scores) ==  len(predictions)
+    assert isinstance(scores, list) and len(scores) == len(predictions)
     avg_score = np.mean(scores)
     return avg_score
 
@@ -138,7 +158,11 @@ def bertS(predictions, references):
         predictions=predictions, references=references, lang="en"
     )
 
-    return {"f1": mean(results["f1"]), "precision": mean(results["precision"]), "recall": mean(results["recall"]),}
+    return {
+        "f1": mean(results["f1"]),
+        "precision": mean(results["precision"]),
+        "recall": mean(results["recall"]),
+    }
 
 
 @register("accuracy")
@@ -159,10 +183,10 @@ def accuracy(predictions, references):
 def f1(predictions, references):
     # Check if both lists have the same length
 
-    #convert to set since intersection method excepts this format
+    # convert to set since intersection method excepts this format
     predictions_set = set(predictions)
     references_set = set(references)
-    
+
     # Iterate through predictions and references
     result_intersection = references_set.intersection(predictions_set)
     intersec = len(result_intersection)
@@ -180,8 +204,8 @@ def f1(predictions, references):
     return {"f1": f1_score, "precision": precision, "recall": recall}
 
 
-@register("perplexity")
-def perplexity(predictions, model_id):
+@register("old_perplexity")
+def old_perplexity(predictions, model_id):
     perplexity = load("perplexity", module_type="metric")
     results = perplexity.compute(predictions=predictions, model_id=model_id)
     return results
@@ -194,7 +218,7 @@ def rouge(predictions, references, r_type: str = ""):
     file. More information read on https://thepythoncode.com/article/calculate-rouge-score-in-python
     """
     from rouge_score import rouge_scorer
-    
+
     precision = []
     recall = []
     f1 = []
@@ -224,47 +248,51 @@ def bleu(predictions, references, b_type: str = ""):
     Higher is better
     """
     from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
-    
+
     bleu_weights = {
-            "bleu1": (1, 0, 0, 0),
-            "bleu2": (0.5, 0.5, 0, 0),
-            "bleu3": (0.33, 0.33, 0.33, 0),
-            "bleu4": (0.25, 0.25, 0.25, 0.25)
-            }
+        "bleu1": (1, 0, 0, 0),
+        "bleu2": (0.5, 0.5, 0, 0),
+        "bleu3": (0.33, 0.33, 0.33, 0),
+        "bleu4": (0.25, 0.25, 0.25, 0.25),
+    }
 
     b_type = b_type.lower()
 
     weights = bleu_weights.get(b_type, (0.25, 0.25, 0.25, 0.25))
-        
+
     smoothing_function = SmoothingFunction().method1
 
     bleu_score = []
     for pred, ref in zip(predictions, references):
-        bleu_score.append(sentence_bleu(ref.split(), pred.split(), weights=weights, smoothing_function=smoothing_function))
+        bleu_score.append(
+            sentence_bleu(
+                ref.split(),
+                pred.split(),
+                weights=weights,
+                smoothing_function=smoothing_function,
+            )
+        )
     return sum(bleu_score) / len(bleu_score)
 
 
 @register("sacrebleu")
-def sacrebleu (predictions, references):
-    """SacreBLEU provides hassle-free computation of shareable, 
+def sacrebleu(predictions, references):
+    """SacreBLEU provides hassle-free computation of shareable,
     comparable, and reproducible BLEU scores.
     Source: https://github.com/mjpost/sacrebleu
     """
     from sacrebleu.metrics import BLEU
-   
+
     bleu = BLEU()
     score = bleu.corpus_score(predictions, references)
 
     score_dict = {
-            "score": score.score,  
-            "precisions": score.precisions,
-            "bp": score.bp, 
-            "ratio": score.ratio,
-            "sys_len": score.sys_len,  
-            "ref_len": score.ref_len,
-        }
-
+        "score": score.score,
+        "precisions": score.precisions,
+        "bp": score.bp,
+        "ratio": score.ratio,
+        "sys_len": score.sys_len,
+        "ref_len": score.ref_len,
+    }
 
     return score_dict
-
-

@@ -89,7 +89,7 @@ class Evaluator:
             results = self.get_scores(task_results, task)
             if "perplexity" in task["metric_list"]:
                 results[task["task_name"]]["scores"]["perplexity"] = (
-                    self.mm_calc_perplexity(samples, inputs, task)
+                    self.calc_perplexity(samples, inputs, task)
                 )
 
         return results
@@ -123,36 +123,31 @@ class Evaluator:
         pp_model = self.model.load_model()
         pp_model.eval()
         loss = 0
-        for input, sample in zip(inputs, samples):
-            input_id = self.model.generate_inputs(input)["input_ids"]
-            label = self.model.generate_inputs(sample[task["doc_to_target"]])[
-                "input_ids"
-            ]
-            concat_input = torch.cat((input_id, label), axis=1)
+        for input_text, sample in zip(inputs, samples):
+            # Handle multimodal input (text + image)
+            if "multi_modal_data" in task:
+                inputs_processed = self.model.generate_inputs(
+                    [input_text],
+                )["input_ids"].cpu()
+                labels_processed = self.model.processor.tokenizer(
+                    [sample[task["doc_to_target"]]], return_tensors="pt"
+                )["input_ids"]
+            else:
+                inputs_processed = self.model.generate_inputs(
+                    input_text,
+                )["input_ids"]
+                labels_processed = self.model.generate_inputs(
+                    sample[task["doc_to_target"]],
+                )["input_ids"]
+            concat_input = torch.cat(
+                (inputs_processed, labels_processed),
+                dim=1,
+            ).to(self.model.device)
             with torch.no_grad():
                 outputs = pp_model(
                     input_ids=concat_input,
                     labels=concat_input,
                 )
-            loss += outputs.loss
-        avg_loss = loss / len(samples)
-        return math.exp(avg_loss)
-
-    def mm_calc_perplexity(self, samples, inputs, task, model_name:str = "google/paligemma-3b-mix-224"):
-        pp_model = self.model.load_model()
-        pp_model.eval()
-        loss = 0
-        processor = AutoProcessor.from_pretrained(model_name)  # Example multimodal processor
-        for input_text, sample in zip(inputs, samples):
-            label_text = sample[task["doc_to_target"]]
-            # Handle multimodal input (text + image)
-            inputs_processed = self.model.generate_inputs([input_text])["input_ids"].cpu()
-            labels_processed = processor.tokenizer([sample[task["doc_to_target"]]], return_tensors="pt")[
-                "input_ids"
-            ]
-            concat_input = torch.cat((inputs_processed, labels_processed), dim=1).to('cuda')
-            with torch.no_grad():
-                outputs = pp_model(input_ids=concat_input, labels=concat_input)
             loss += outputs.loss.cpu()
         avg_loss = loss / len(samples)
         return math.exp(avg_loss)

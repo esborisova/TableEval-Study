@@ -4,10 +4,12 @@ from models import LanguageModel
 from tasks import TaskManager
 from metrics import Metrics
 from utils import load_samples, generate_prompt, generate_output_folder, dump_files
+from transformers import AutoProcessor
 import random
 import torch
 import gc
 import numpy
+import math
 
 TableResults = Dict[str, str]
 
@@ -52,31 +54,14 @@ class Evaluator:
         torch.manual_seed(random_seed)
 
     def simple_eval(self, task_name="") -> Dict:
-        results = {}
 
         if task_name:
             self.tasks_list = self.register.get_task(task_name)
 
         for task in self.tasks_list:
-            if "save_columns" in task:
-                save_columns = task["save_columns"].split(",")
-            else:
-                save_columns = self.save_columns
-
             task_results = []
-            # get safe files for score, logits and results
-            _, _, logits_folder = generate_output_folder(
-                self.output_path,
-                model_name=self.model.get_model_info(),
-                task_name=task["task_name"],
-                current_datetime=self.current_datetime,
-                log_logits=self.log_logits,
-            )
 
-            if "num_fewshot" in task.keys():
-                num_fewshot = max(int(task["num_fewshot"]), self.num_fewshot)
-            else:
-                num_fewshot = self.num_fewshot
+            save_columns, num_fewshot, logits_folder = self.init_task(task)
 
             samples, few_shot_samples = self.load_all_samples(task, num_fewshot)
 
@@ -85,7 +70,9 @@ class Evaluator:
             )
             # run all samples
             for i in tqdm(range(0, len(inputs), self.batch_size)):
-                outputs, logits = self.model(inputs[i : i + self.batch_size])
+                outputs, logits = self.model(
+                    inputs[i : i + self.batch_size],
+                )
 
                 task_results.extend(
                     self.log_results(
@@ -99,25 +86,95 @@ class Evaluator:
                         save_columns,
                     )
                 )
-            # calculation of the scores
-            scores = {}
-            metric_calc = Metrics(model_id=self.model.get_model_info())
-            # load all results
-            metric_calc.add(
-                prediction=[x["prediction"] for x in task_results],
-                reference=[x["reference"] for x in task_results],
-            )
-            # calculate the scores for the task and each metric
-            for metric in task["metric_list"]:
-                metric_calc.metric_type(metric)
-                scores[metric] = metric_calc.compute()
+            results = self.get_scores(task_results, task)
+            if "perplexity" in task["metric_list"]:
+                results[task["task_name"]]["scores"]["perplexity"] = (
+                    self.calc_perplexity(samples, inputs, task)
+                )
 
-            # save results
-            results[task["task_name"]] = {
-                "scores": scores,
-                "sample_logs": task_results if self.log_samples else None,
-            }
         return results
+
+    def get_scores(self, task_results, task):
+        """calculate the scores for all metrics for the given task"""
+        results = {}
+        # calculation of the scores
+        scores = {}
+        metric_calc = Metrics(model_id=self.model.get_model_info())
+        # load all results
+        metric_calc.add(
+            prediction=[x["prediction"] for x in task_results],
+            reference=[x["reference"] for x in task_results],
+        )
+        # calculate the scores for the task and each metric
+        for metric in task["metric_list"]:
+            if "perplexity" == metric:
+                continue
+            metric_calc.metric_type(metric)
+            scores[metric] = metric_calc.compute()
+
+        # save results
+        results[task["task_name"]] = {
+            "scores": scores,
+            "sample_logs": task_results if self.log_samples else None,
+        }
+        return results
+
+    def calc_perplexity(self, samples, inputs, task):
+        pp_model = self.model.load_model()
+        pp_model.eval()
+        loss = 0
+        for input_text, sample in zip(inputs, samples):
+            # Handle multimodal input (text + image)
+            if "multi_modal_data" in task:
+                inputs_processed = self.model.generate_inputs(
+                    [input_text],
+                )["input_ids"].cpu()
+                labels_processed = self.model.processor.tokenizer(
+                    [sample[task["doc_to_target"]]], return_tensors="pt"
+                )["input_ids"]
+            else:
+                inputs_processed = self.model.generate_inputs(
+                    input_text,
+                )["input_ids"]
+                labels_processed = self.model.generate_inputs(
+                    sample[task["doc_to_target"]],
+                )["input_ids"]
+            concat_input = torch.cat(
+                (inputs_processed, labels_processed),
+                dim=1,
+            ).to(self.model.device)
+            with torch.no_grad():
+                outputs = pp_model(
+                    input_ids=concat_input,
+                    labels=concat_input,
+                )
+            loss += outputs.loss.cpu()
+        avg_loss = loss / len(samples)
+        return math.exp(avg_loss)
+
+    def init_task(self, task):
+        # get save_columns
+        if "save_columns" in task:
+            save_columns = task["save_columns"].split(",")
+        else:
+            save_columns = self.save_columns
+
+        # get safe files for score, logits and results
+        _, _, logits_folder = generate_output_folder(
+            self.output_path,
+            model_name=self.model.get_model_info(),
+            task_name=task["task_name"],
+            current_datetime=self.current_datetime,
+            log_logits=self.log_logits,
+        )
+
+        # get number of few-shot examples
+        if "num_fewshot" in task.keys():
+            num_fewshot = max(int(task["num_fewshot"]), self.num_fewshot)
+        else:
+            num_fewshot = self.num_fewshot
+
+        return save_columns, num_fewshot, logits_folder
 
     def reset(self):
         gc.collect()  # Collect garbage

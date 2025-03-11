@@ -34,3 +34,4 @@ sacrebleu
 moverscore
 pyemd
 git+https://github.com/google-research/bleurt.git
+git+https://github.com/inseq-team/inseq.git

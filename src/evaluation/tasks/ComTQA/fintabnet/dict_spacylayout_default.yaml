@@ -15,6 +15,7 @@ metric_list:
   - f1
   - sacrebleu
   - moverS
+  - meteor
   - bertS
   - bleurt
   - bleu1
@@ -22,8 +23,8 @@ metric_list:
   - bleu3
   - bleu4
   - rougeL
+  - rougeLsum
   - rouge1
   - rouge2
   - rouge3
-  - meteor
-
+  - rouge4

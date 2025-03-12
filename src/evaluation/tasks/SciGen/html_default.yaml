@@ -7,7 +7,7 @@ num_fewshot: 0
 save_columns: instance_id,image_id,paper_id
 ignore_columns: table_html_cleaned
 instruction: ""
-doc_to_text: 'You are an expert in the table-to-text generation task. Describe the given table focusing on the most important findings reported by reasoning over its content. The text must be coherent. Table: {{table_html_cleaned}}'
+doc_to_text: 'Describe the given table focusing on the most important findings reported by reasoning over its content. The summary must be factual, coherent, and well-written. Do not introduce new information or speculate. Table: {{table_html_cleaned}}'
 doc_to_target: text_cleaned
 metric_list:
   #- perplexity

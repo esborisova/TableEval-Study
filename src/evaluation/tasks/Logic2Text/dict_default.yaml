@@ -6,7 +6,7 @@ train_split: test
 num_fewshot: 0
 save_columns: instance_id,image_name,filename,table_id,topic,title
 instruction: ""
-doc_to_text: 'Generate a one sentence statement based on the table and logical form. Logical form: {{logic_str}}. Table title: {{title}}. Table: {"table_header": {{table_header}}, "table_content": {{table_cont}}}}.'
+doc_to_text: 'Generate a one sentence statement based on the table and logical form. Logical form: {{logic_str}}. Table: {"table_title": {{title}}, "table_header": {{table_header}}, "table_content": {{table_cont}}}.'
 doc_to_target: sent
 metric_list:
   #- perplexity

@@ -5,9 +5,9 @@ validation_split: validation
 train_split: test
 num_fewshot: 0
 save_columns: instance_id,table_id,image_name
-ignore_columns: table_html_clean_spacylayout
+ignore_columns: table_html_spacylayout
 instruction: ""
-doc_to_text: 'Refer to the provided table and answer the question. Question: {{question}}. Table: {{table_html_clean_spacylayout}}.'
+doc_to_text: 'Refer to the provided table and answer the question. Question: {{question}}. Table: {{table_html_spacylayout}}.'
 doc_to_target: answer
 metric_list:
   #- perplexity

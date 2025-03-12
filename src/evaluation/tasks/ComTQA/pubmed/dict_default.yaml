@@ -6,7 +6,7 @@ train_split: test
 num_fewshot: 0
 save_columns: instance_id,id,image_name
 instruction: ""
-doc_to_text: 'Refer to the provided table and answer the question. Question: {{question}}. Table title: {{table_title}}. Table: {"table_caption": {{table_caption}}, "table_headers": {{table_headers}}, "table_subheaders": {{table_subheaders}}, "table_rows": {{table_rows}}, "table_footnote": {{table_footnote}}}.'
+doc_to_text: 'Refer to the provided table and answer the question. Question: {{question}}. Table: {"table_title": {{table_title}}, "table_caption": {{table_caption}}, "table_headers": {{table_headers}}, "table_subheaders": {{table_subheaders}}, "table_rows": {{table_rows}}, "table_footnote": {{table_footnote}}}.'
 doc_to_target: answer
 metric_list:
   #- perplexity

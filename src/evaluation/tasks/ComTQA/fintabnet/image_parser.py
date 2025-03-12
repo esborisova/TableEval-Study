@@ -10,6 +10,6 @@ def parse(samples):
             #  new_width = max(image.width, min_size)
             # new_height = max(image.height, min_size)
             # image = image.resize((new_width, new_height))
-            inputs.append([image.copy(), f'Refer to the provided table and answer the question.\nQuestion: {sample["question"]}'])
+            inputs.append([image.copy(), f'Refer to the provided table and answer the question. Question: {sample["question"]}'])
 
     return inputs

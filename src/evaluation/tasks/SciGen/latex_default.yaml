@@ -7,7 +7,7 @@ num_fewshot: 0
 save_columns: instance_id,image_id,paper_id
 ignore_columns: table_latex
 instruction: ""
-doc_to_text: 'Your task is to generate textual description for the given table. The summary must describe the most important findings reported in table by reasoning over its content. The text should be coherent. Table: {{table_latex}}.'
+doc_to_text: 'You are an expert in the table-to-text generation task. Describe the given table focusing on the most important findings reported by reasoning over its content. The text must be coherent. Table: {{table_latex}}.'
 doc_to_target: text_cleaned
 metric_list:
   #- perplexity

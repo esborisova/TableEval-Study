@@ -86,6 +86,7 @@ class Evaluator:
                         save_columns,
                     )
                 )
+            self.reset()
             results = self.get_scores(task_results, task)
             if "perplexity" in task["metric_list"]:
                 results[task["task_name"]]["scores"]["perplexity"] = (

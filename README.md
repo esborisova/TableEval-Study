@@ -19,8 +19,8 @@
 |  numericNLG              |   135              |   135             |    135        |    135        |       135     |             
 |  SciGen                  |   1035             |   1035            |    928        |    985        |       961     |
 |  ComTQA (FinTabNet)      |   659              |                   |               |               |               |
-|  LogicNLG                |   223              |   223             |     223       |    223        |       223     |
-|  Logic2Text              |   91               |    91             |     91        |    91         |       91      |
+|  LogicNLG                |   184              |  184              |     184       |    184        |       184     |
+|  Logic2Text              |   72               |    72             |     72        |    72         |       72      |
 |  **Total**               |   **3075**         |                   |               |               |               |
 
 **Number of unique instances per format and dataset.

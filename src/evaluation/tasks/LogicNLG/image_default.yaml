@@ -4,7 +4,7 @@ test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
-save_columns: instance_id,image_name,filename,table_id,topic,title
+save_columns: instance_id,image_name,filename,table_id,title
 instruction: ""
 doc_to_text: !function image_parser.parse 
 doc_to_target: ref

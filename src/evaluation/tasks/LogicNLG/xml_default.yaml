@@ -4,7 +4,7 @@ test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
-save_columns: instance_id,image_name,filename,table_id,topic,title
+save_columns: instance_id,image_name,filename,table_id,title
 instruction: ""
 doc_to_text:  'Based on a given table, fill in the entities masked by [ENT] in the following sentence: {{template}}. Output the sentence with filled in masked entities. Table title: {{title}}. Table: {{table_xml}}'
 doc_to_target: ref

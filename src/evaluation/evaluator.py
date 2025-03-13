@@ -86,6 +86,7 @@ class Evaluator:
                         save_columns,
                     )
                 )
+            self.reset(delete_model=True)
             results = self.get_scores(task_results, task)
             if "perplexity" in task["metric_list"]:
                 results[task["task_name"]]["scores"]["perplexity"] = (
@@ -176,11 +177,13 @@ class Evaluator:
 
         return save_columns, num_fewshot, logits_folder
 
-    def reset(self):
+    def reset(self, delete_model:bool = False):
         gc.collect()  # Collect garbage
         if torch.cuda.is_available():
             torch.cuda.empty_cache()  # Free unused cached memory
             torch.cuda.ipc_collect()  # Collect internal shared memory (for multiprocessing)
+        if delete_model:
+            del self.model.model
 
         # Optional: Reset PyTorch’s CUDNN state
         # torch.backends.cudnn.benchmark = False

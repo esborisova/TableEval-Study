@@ -1,5 +1,5 @@
 task_name: latex_logic2text
-path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_updated_2025-03-07
+path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_updated_2025-03-13
 test_split: test
 validation_split: validation
 train_split: test

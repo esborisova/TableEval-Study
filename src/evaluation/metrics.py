@@ -284,7 +284,7 @@ def sacrebleu(predictions, references):
     from sacrebleu.metrics import BLEU
 
     bleu = BLEU()
-    score = bleu.corpus_score(predictions, references)
+    score = bleu.corpus_score(predictions, [references])
 
     score_dict = {
         "score": score.score,

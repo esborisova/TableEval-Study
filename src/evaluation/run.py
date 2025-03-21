@@ -97,6 +97,12 @@ def setup_parser() -> argparse.ArgumentParser:
         help="Changing the special token for the multi_modal LLMs. The default is <image>",
     )
     parser.add_argument(
+        "--task_path",
+        type=str,
+        default="./",
+        help="Path to task YAML files.",
+    )
+    parser.add_argument(
         "--use_chat_template",
         action="store_true",
         help="if running multi modal LLMs. default: False",
@@ -138,6 +144,7 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         use_chat_template=args.use_chat_template,
         current_datetime=current_datetime,
         output_path=args.output_path,
+        task_path=args.task_path,
     )
 
     # save results

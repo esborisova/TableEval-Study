@@ -28,6 +28,7 @@ class Evaluator:
         current_datetime: str = "",
         output_path: str = "",
         save_columns: List = [],
+        task_path: str = "./",
     ) -> None:
         """
         Instantiate and evaluate a model on a list of tasks.
@@ -37,8 +38,9 @@ class Evaluator:
         :param num_fewshot: int Number of examples in few-shot context
         :param batch_size: int or str, optional Batch size for model
         :param random_seed: int Random seed for python's random module. If set to None, the seed will not be set.
+        :param task_path: str Path to task YAML files.
         """
-        self.register = TaskManager()
+        self.register = TaskManager(task_path=task_path)
         self.tasks_list = self.register.get_task(tasks)
         self.num_fewshot = int(num_fewshot)
         self.batch_size = int(batch_size)

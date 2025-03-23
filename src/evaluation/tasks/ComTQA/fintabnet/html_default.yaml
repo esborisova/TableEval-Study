@@ -1,5 +1,5 @@
 task_name: html_comtqa_fin
-path: /netscratch/borisova/TableEval/data/ComTQA_data/comtqa_fin_updated_2025-03-07
+path: /netscratch/borisova/TableEval/data/ComTQA_data/comtqa_fin_updated_2025-03-13
 test_split: test
 validation_split: validation
 train_split: test
@@ -14,6 +14,7 @@ metric_list:
   - f1
   - sacrebleu
   - moverS
+  - meteor
   - bertS
   - bleurt
   - bleu1
@@ -21,7 +22,8 @@ metric_list:
   - bleu3
   - bleu4
   - rougeL
+  - rougeLsum
   - rouge1
   - rouge2
   - rouge3
-  - meteor
+  - rouge4

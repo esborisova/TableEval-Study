@@ -1,5 +1,5 @@
 task_name: image_logic2text
-path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_updated_2025-03-07
+path: /netscratch/borisova/TableEval/data/Logic2Text/logic2text_updated_2025-03-13
 test_split: test
 validation_split: validation
 train_split: test
@@ -13,14 +13,16 @@ metric_list:
   #- perplexity
   - sacrebleu
   - moverS
-  - bleurt
+  - meteor
   - bertS
+  - bleurt
   - bleu1
   - bleu2
   - bleu3
   - bleu4
-  - meteor
   - rougeL
+  - rougeLsum
   - rouge1
   - rouge2
+  - rouge3
   - rouge4

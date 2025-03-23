@@ -266,7 +266,7 @@ def bleu(predictions, references, b_type: str = ""):
     for pred, ref in zip(predictions, references):
         bleu_score.append(
             sentence_bleu(
-                ref.split(),
+                [ref.split()],
                 pred.split(),
                 weights=weights,
                 smoothing_function=smoothing_function,
@@ -284,7 +284,7 @@ def sacrebleu(predictions, references):
     from sacrebleu.metrics import BLEU
 
     bleu = BLEU()
-    score = bleu.corpus_score(predictions, references)
+    score = bleu.corpus_score(predictions, [references])
 
     score_dict = {
         "score": score.score,

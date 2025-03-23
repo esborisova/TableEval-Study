@@ -13,14 +13,16 @@ metric_list:
 #- perplexity
   - sacrebleu
   - moverS
-  - bleurt
+  - meteor
   - bertS
+  - bleurt
   - bleu1
   - bleu2
   - bleu3
   - bleu4
-  - meteor
   - rougeL
+  - rougeLsum
   - rouge1
   - rouge2
+  - rouge3
   - rouge4

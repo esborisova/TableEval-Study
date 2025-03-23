@@ -12,5 +12,5 @@ def parse(samples):
             file_path = f'{cl_image_path}/{sample["image_id"]}'
         with Image.open(file_path) as image:
             image = image.convert("RGB")
-            inputs.append([image.copy(), f'Your task is to generate a textual description for the given table. The summary must describe the most important findings reported in the table by reasoning over its content. The text should be coherent.\nTable caption: {sample["table_caption"]}'])
+            inputs.append([image.copy(), f'Describe the given table focusing on the most important findings reported by reasoning over its content. The summary must be factual, coherent, and well-written. Do not introduce new information or speculate. Table caption: {sample["table_caption"]}'])
     return  inputs

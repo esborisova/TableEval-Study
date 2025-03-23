@@ -7,5 +7,5 @@ def parse(samples):
         with Image.open(f'{image_path}/{sample["image_name"]}') as image:
             image = image.convert("RGB")
     
-            inputs.append([image.copy(), f'Generate a one sentence statement based on the table and logical form.\nLogical form: {sample["logic_str"]}\nTable title: {sample["title"]}'])
+            inputs.append([image.copy(), f'Generate a one sentence statement based on the table and logical form. Logical form: {sample["logic_str"]}. Table title: {sample["title"]}'])
     return  inputs

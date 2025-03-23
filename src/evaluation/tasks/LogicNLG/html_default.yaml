@@ -1,25 +1,27 @@
 task_name: html_logicnlg
-path: /netscratch/borisova/TableEval/data/LogicNLG/logicnlg_updated_2025-03-07
+path: /netscratch/borisova/TableEval/data/LogicNLG/logicnlg_updated_2025-03-13
 test_split: test
 validation_split: validation
 train_split: test
 num_fewshot: 0
-save_columns: instance_id,image_name,filename,table_id,topic,title
+save_columns: instance_id,image_name,filename,table_id,title
 instruction: ""
-doc_to_text: 'Based on a given table, fill in the entity masked by [ENT] in the following sentence: {{template}}. Output the sentence with filled in masked entities. Table title: {{title}}. Table: {{table_html}}'
+doc_to_text: 'Based on a given table, fill in the entities masked by [ENT] in the following sentence: {{template}}. Output the sentence with filled in masked entities. Table title: {{title}}. Table: {{table_html}}'
 doc_to_target: ref
 metric_list:
   #- perplexity
   - sacrebleu
   - moverS
-  - bleurt
+  - meteor
   - bertS
+  - bleurt
   - bleu1
   - bleu2
   - bleu3
   - bleu4
-  - meteor
   - rougeL
+  - rougeLsum
   - rouge1
   - rouge2
+  - rouge3
   - rouge4

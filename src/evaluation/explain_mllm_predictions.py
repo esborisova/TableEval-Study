@@ -1,3 +1,4 @@
+import argparse
 import copy
 import math
 import numpy as np
@@ -21,19 +22,25 @@ def compute_mm_score(text_length, shap_values):
 
 
 if __name__ == "__main__":
-    predictions_file = ("../../predictions/qwen/"
-                        "results_image_comtqa_pmc_Qwen2.5-VL-3B-Instruct_2025-02-27_09_30_40.json")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input_file", type=str, required=True,
+                        help="The input file with predictions to process.")
+    parser.add_argument("--image_path", type=str, default="../../data/ComTQA_data/pubmed/images/png")
+    parser.add_argument("--model_id", type=str, default="google/paligemma-3b-mix-224",
+                        help="The model to use.")
+    parser.add_argument("--output_dir", type=str, default="../../explanations")
+    args = parser.parse_args()
 
+    predictions_file = args.input_file
     df = pd.read_json(predictions_file)
-    df["parsed_image"] = parse(df["example"].tolist(), image_path='../../data/ComTQA_data/pubmed/images/png')
+    df["parsed_image"] = parse(df["example"].tolist(), image_path=args.image_path)
     print(df.head())
 
     random.seed(1520)
 
-    model_name = "google/paligemma-3b-mix-224" # "Qwen/Qwen2.5-VL-3B-Instruct"
+    model_name = args.model_id
 
     model = HFModel(
-        #model_name="google/paligemma-3b-mix-224",
         model_name=model_name,
         model_args={},
         multi_modal=True,
@@ -211,11 +218,10 @@ if __name__ == "__main__":
         df.loc[i, "shap_values"] = shap_values.values.tolist()  # convert numpy array to list
         df.loc[i, "mm_score"] = mm_score
 
-    df.to_json("shap_results.json", orient="records")
-    df.to_csv("shap_results.csv", index=False)
+    df.to_json(f"{args.output_dir}/mm-shap_results_{model_name.replace('/', '_')}.json", orient="records")
+    df.to_csv(f"{args.output_dir}/mm-shap_results_{model_name.replace('/', '_')}.csv", index=False)
 
     # If shap_values is complex, you can also use pickle:
     import pickle
-    with open("shap_results.pkl", "wb") as f:
+    with open(f"{args.output_dir}/mm-shap_results_{model_name.replace('/', '_')}.pkl", "wb") as f:
         pickle.dump(df, f)
-

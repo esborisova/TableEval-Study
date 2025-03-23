@@ -1,3 +1,4 @@
+import argparse
 import inseq
 import pandas as pd
 import pickle
@@ -5,13 +6,19 @@ import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--input_file", type=str, required=True,
+                    help="The input file with predictions to process.")
+parser.add_argument("--model_id", type=str, default="Qwen/Qwen2.5-0.5B",
+                    help="The model to use.")
+parser.add_argument("--output_dir", type=str, default="../../explanations")
+args = parser.parse_args()
 
-df = pd.read_json("../../predictions/mistralai/results_html_comtqa_fin_Mistral-7B-v0.1_2025-01-25_13_54_51.json")
 
-model_id = "mistralai/Mistral-7B-v0.1" #"Qwen/Qwen2.5-0.5B"
+df = pd.read_json(args.input_file)
+model_id = args.model_id
 tokenizer = AutoTokenizer.from_pretrained(model_id)
-
-explanations_save_dir = "../../explanations"
+explanations_save_dir = args.output_dir
 
 # Determine the device to use
 if torch.cuda.is_available():

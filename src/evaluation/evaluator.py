@@ -1,3 +1,4 @@
+import logging
 from typing import List, Dict, Optional, Union
 from tqdm.auto import tqdm
 from models import LanguageModel
@@ -13,6 +14,7 @@ import math
 
 TableResults = Dict[str, str]
 
+logger = logging.getLogger(__name__)
 
 class Evaluator:
     def __init__(
@@ -29,6 +31,7 @@ class Evaluator:
         output_path: str = "",
         save_columns: List = [],
         task_path: str = "./",
+        data_base_path: None | str = None,
     ) -> None:
         """
         Instantiate and evaluate a model on a list of tasks.
@@ -39,6 +42,7 @@ class Evaluator:
         :param batch_size: int or str, optional Batch size for model
         :param random_seed: int Random seed for python's random module. If set to None, the seed will not be set.
         :param task_path: str Path to task YAML files.
+        :param data_base_path: None | str Base path for datasets.
         """
         self.register = TaskManager(task_path=task_path)
         self.tasks_list = self.register.get_task(tasks)
@@ -51,11 +55,13 @@ class Evaluator:
         self.output_path = output_path
         self.log_logits = log_logits
         self.save_columns = save_columns
+        self.data_base_path = data_base_path
+
         random.seed(random_seed)
         numpy.random.seed(random_seed)
         torch.manual_seed(random_seed)
 
-    def simple_eval(self, task_name="") -> Dict:
+    def simple_eval(self, task_name="", limit_samples: int = 0) -> Dict:
 
         if task_name:
             self.tasks_list = self.register.get_task(task_name)
@@ -66,6 +72,13 @@ class Evaluator:
             save_columns, num_fewshot, logits_folder = self.init_task(task)
 
             samples, few_shot_samples = self.load_all_samples(task, num_fewshot)
+
+            if limit_samples > 0:
+                logger.info(f"Limit samples to {limit_samples}")
+
+                samples = samples.select(range(limit_samples))
+
+            logger.info(f"Samples: {samples}")
 
             inputs = generate_prompt(
                 samples, few_shot_samples, num_fewshot, task, self.use_chat_template
@@ -241,23 +254,23 @@ class Evaluator:
     def load_all_samples(self, task, num_fewshot):
         # load the evaluation and few_shot samples
         if task["test_split"]:
-            samples = load_samples(task["path"], task["test_split"])
+            samples = load_samples(task["path"], task["test_split"], base_path=self.data_base_path)
             if num_fewshot > 0:
                 if task["validation_split"]:
                     few_shot_samples = load_samples(
-                        task["path"], task["validation_split"]
+                        task["path"], task["validation_split"], base_path=self.data_base_path
                     )
                 elif task["train_split"]:
-                    few_shot_samples = load_samples(task["path"], task["train_split"])
+                    few_shot_samples = load_samples(task["path"], task["train_split"], base_path=self.data_base_path)
                 else:
                     few_shot_samples = None
             else:
                 few_shot_samples = None
         else:
-            samples = load_samples(task["path"], task["validation_split"])
+            samples = load_samples(task["path"], task["validation_split"], base_path=self.data_base_path)
             if num_fewshot > 0:
                 if task["train_split"]:
-                    few_shot_samples = load_samples(task["path"], task["train_split"])
+                    few_shot_samples = load_samples(task["path"], task["train_split"], base_path=self.data_base_path)
                 else:
                     few_shot_samples = None
             else:

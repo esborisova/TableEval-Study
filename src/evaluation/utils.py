@@ -10,9 +10,13 @@ import h5py
 import numpy as np
 
 
-def load_samples(path: str, split: str) -> Dataset:
+def load_samples(path: str, split: str, base_path: None | str = None) -> Dataset:
     """Load the dataset from a HF source. either from a local source or from
     the Hub."""
+
+    if base_path:
+        path = os.path.join(base_path, path)
+
     if os.path.exists(path):
         dataset = load_from_disk(path)
         dataset = dataset[split]

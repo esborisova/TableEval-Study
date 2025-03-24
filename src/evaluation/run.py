@@ -1,4 +1,6 @@
 import argparse
+import logging
+import sys
 from typing import Union
 import ast
 from datetime import datetime
@@ -7,6 +9,7 @@ from evaluator import Evaluator
 from models import HFModel
 from utils import generate_output_folder, dump_files
 
+logger = logging.getLogger(__name__)
 
 def setup_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -103,21 +106,47 @@ def setup_parser() -> argparse.ArgumentParser:
         help="Path to task YAML files.",
     )
     parser.add_argument(
+        "--data_base_path",
+        type=str,
+        default=None,
+        help="If set, the base path is joined with data path to load task data.",
+    )
+    parser.add_argument(
+        "--limit_samples",
+        type=int,
+        default=0,
+        help="Limit number of task samples (0 = no limit).",
+    )
+    parser.add_argument(
         "--use_chat_template",
         action="store_true",
         help="if running multi modal LLMs. default: False",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable debug level logging",
     )
     return parser
 
 
 def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
-
     # load arguments
     if not args:
         parser = setup_parser()
         args = parser.parse_args()
     if args.log_logits and not args.log_samples:
         args.log_samples = True
+
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[logging.StreamHandler(sys.stdout)],
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        force=True,
+    )
+    
+    logger.info("Running evaluation pipeline")
 
     # load model
     model = HFModel(
@@ -130,6 +159,8 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         special_token_for_image=args.image_special_token,
         use_chat_template=args.use_chat_template,
     )
+
+    logger.info(f"Loaded model: {model}")
 
     current_datetime = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
     # load evaluator
@@ -145,12 +176,15 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         current_datetime=current_datetime,
         output_path=args.output_path,
         task_path=args.task_path,
+        data_base_path=args.data_base_path,
     )
 
     # save results
     for task in args.tasks.split(","):
         # evaluate
-        results = eval.simple_eval(task)
+        logger.info(f"Simple eval with {task=}")
+
+        results = eval.simple_eval(task_name=task, limit_samples=args.limit_samples)
 
         scores_folder, results_folder, _ = generate_output_folder(
             args.output_path,
@@ -165,6 +199,7 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
 
         eval.reset()
 
+    logger.info("done")
 
 if __name__ == "__main__":
     cli_evaluate()

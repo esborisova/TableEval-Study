@@ -11,10 +11,10 @@ doc_to_target: description
 metric_list:
   #- perplexity
   - sacrebleu
-  - moverS
+  # - moverS  # disabled because CUDA required
   - meteor
   - bertS
-  - bleurt
+  # - bleurt
   - bleu1
   - bleu2
   - bleu3

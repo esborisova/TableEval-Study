@@ -12,7 +12,7 @@ multi_modal_data: True
 metric_list:
 #- perplexity
   - sacrebleu
-  - moverS
+  # - moverS  # disabled because CUDA required
   - meteor
   - bertS
   - bleurt

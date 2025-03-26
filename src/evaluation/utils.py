@@ -7,6 +7,8 @@ import json
 import random
 import copy
 import h5py
+import base64
+from io import BytesIO
 import numpy as np
 
 
@@ -109,7 +111,12 @@ def save_results(results, scores_path, logits_path):
 
 
 def generate_prompt(
-    samples, few_shot_samples, num_fewshot, task, prompt_template: bool = False
+    samples,
+    few_shot_samples,
+    num_fewshot,
+    task,
+    prompt_template: bool = False,
+    api_call: bool = False,
 ):
     """There are two options to generate the prompt. Either as a single string
     or using the chat template structure of a list with meta data. For more
@@ -119,10 +126,7 @@ def generate_prompt(
 
     if prompt_template:
         return generate_template_prompt(
-            samples,
-            few_shot_samples,
-            num_fewshot,
-            task,
+            samples, few_shot_samples, num_fewshot, task, api_call
         )
     else:
         return generate_string_prompt(
@@ -137,7 +141,13 @@ def drop_nones(samples, column_names):
     return [s for s in samples if all(s.get(c) is not None for c in column_names)]
 
 
-def generate_template_prompt(samples, few_shot_samples, num_fewshot, task):
+def generate_template_prompt(
+    samples,
+    few_shot_samples,
+    num_fewshot,
+    task,
+    api_call: bool = False,
+):
     """generate the prompts from the template of the yampl file but not in the
     template structure but as a single input string"""
 
@@ -160,12 +170,28 @@ def generate_template_prompt(samples, few_shot_samples, num_fewshot, task):
         for few_shot_example, sample in zip(few_shot_text_samples, few_shot_examples):
             if "multi_modal_data" not in task:
                 init_message = text_to_template(
-                    init_message, few_shot_example, sample, task["doc_to_target"]
+                    init_message,
+                    few_shot_example,
+                    sample,
+                    task["doc_to_target"],
                 )
             else:
-                init_message = mm_to_template(
-                    init_message, few_shot_example, sample, task["doc_to_target"]
-                )
+                if not api_call:
+                    init_message = mm_to_template(
+                        init_message,
+                        few_shot_example[1],
+                        sample,
+                        task["doc_to_target"],
+                    )
+                else:
+                    base64_image = convert_base64_image(few_shot_example[0])
+                    init_message = mm_to_template(
+                        init_message,
+                        few_shot_example[1],
+                        sample,
+                        task["doc_to_target"],
+                        base64_image=base64_image,
+                    )
     samples_with_input_text = sample_to_text(task["doc_to_text"], samples)
     outputs = []
 
@@ -174,19 +200,58 @@ def generate_template_prompt(samples, few_shot_samples, num_fewshot, task):
         if "multi_modal_data" not in task:
             outputs.append(text_to_template(message, input))
         else:
-            outputs.append([input[0], mm_to_template(message, input[1])])
+            if not api_call:
+                outputs.append([input[0], mm_to_template(message, input[1])])
+            else:
+                base64_image = convert_base64_image(input[0])
+                outputs.append(
+                    [
+                        input[0],
+                        mm_to_template(
+                            message,
+                            input[1],
+                            base64_image=base64_image,
+                        ),
+                    ],
+                )
     return outputs
 
 
+def convert_base64_image(base_image):
+    buffered = BytesIO()
+    base_image.save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue())
+
+
 def mm_to_template(
-    template: list, text_sample: str, sample=None, doc_to_target: str = ""
+    template: list,
+    text_sample: str,
+    sample=None,
+    doc_to_target: str = "",
+    base64_image: str = "",
 ):
-    template.append(
-        {
-            "role": "user",
-            "content": [{"type": "image"}, {"type": "text", "text": text_sample}],
-        }
-    )
+    if not base64_image:
+        template.append(
+            {
+                "role": "user",
+                "content": [{"type": "image"}, {"type": "text", "text": text_sample}],
+            }
+        )
+    else:
+        template.append(
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": text_sample},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image}",
+                        },
+                    },
+                ],
+            }
+        )
     if doc_to_target:
         template.append(
             {

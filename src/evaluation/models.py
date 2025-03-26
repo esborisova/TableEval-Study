@@ -214,7 +214,7 @@ class LiteLLM(LanguageModel):
         return output, None
 
     def step(self, inputs, **kwargs):
-        output = batch_completion(model=self.model_name, message=inputs)
+        output = batch_completion(model=self.model_name, messages=inputs)
         return [o["choices"][0]["message"]["content"] for o in output]
 
     def generate_inputs(self, raw_input):

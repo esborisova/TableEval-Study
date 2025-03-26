@@ -23,6 +23,6 @@
 |  Logic2Text              |   72               |    72             |     72        |    72         |       72      |
 |  **Total**               |   **3075**         |                   |               |               |               |
 
-**Number of unique instances per format and dataset.
+**Number of tables per format and dataset.
 
 # Citation

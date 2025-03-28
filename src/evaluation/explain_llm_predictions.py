@@ -44,6 +44,9 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
     if not generated_text:
         continue
 
+    if type(input_text) == dict:
+        input_text = input_text["content"]
+
     attribution_output = inseq_model.attribute(
         input_text,
         input_text + generated_text

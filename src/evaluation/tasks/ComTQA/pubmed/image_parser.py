@@ -1,8 +1,7 @@
 from PIL import Image
 
-def parse(samples):
+def parse(samples, image_path='/netscratch/borisova/TableEval/data/ComTQA_data/pubmed/images/png'):
     inputs = []
-    image_path = '/netscratch/borisova/TableEval/data/ComTQA_data/pubmed/images/png'
     for sample in samples:
         with Image.open(f'{image_path}/{sample["image_name"]}') as image:
             image = image.convert("RGB") 

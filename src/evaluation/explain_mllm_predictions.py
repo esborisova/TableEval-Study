@@ -8,7 +8,6 @@ import shap
 import torch
 
 from evaluation.models import HFModel
-from evaluation.tasks.ComTQA.fintabnet.image_parser import parse
 from evaluator import generate_prompt
 
 
@@ -33,6 +32,13 @@ if __name__ == "__main__":
 
     predictions_file = args.input_file
     df = pd.read_json(predictions_file)
+
+    if 'ComTQA_data/fintabnet' in args.image_path:
+        from evaluation.tasks.ComTQA.fintabnet.image_parser import parse
+    elif 'ComTQA_data/pubmed' in args.image_path:
+        from evaluation.tasks.ComTQA.pubmed.image_parser import parse
+    else:
+        raise ValueError('Invalid dataset: {}'.format(args.image_path))
     df["parsed_image"] = parse(df["example"].tolist(), image_path=args.image_path)
     print(df.head())
 

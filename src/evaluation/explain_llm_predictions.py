@@ -12,7 +12,7 @@ parser.add_argument("--input_file", type=str, required=True,
                     help="The input file with predictions to process.")
 parser.add_argument("--model_id", type=str, default="Qwen/Qwen2.5-0.5B",
                     help="The model to use.")
-parser.add_argument("--output_dir", type=str, default="../../explanations")
+parser.add_argument("--output_dir", type=str, default="../../explanations/inseq")
 args = parser.parse_args()
 
 

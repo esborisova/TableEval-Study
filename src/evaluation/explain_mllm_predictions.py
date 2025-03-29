@@ -56,13 +56,21 @@ if __name__ == "__main__":
 
     random.seed(1520)
 
+    # Determine the device to use
+    if torch.cuda.is_available():
+        device = "cuda"  # CUDA (NVIDIA GPU)
+    elif torch.backends.mps.is_available():
+        device = "mps"  # MPS (Apple GPU)
+    else:
+        device = "cpu"  # CPU fallback
+
     model_name = args.model_id
 
     model = HFModel(
         model_name=model_name,
         model_args={},
         multi_modal=True,
-        device="mps",
+        device=device,
     )
 
     max_new_tokens = 1024

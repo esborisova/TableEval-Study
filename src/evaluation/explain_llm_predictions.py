@@ -1,5 +1,6 @@
 import argparse
 import inseq
+import os
 import pandas as pd
 import pickle
 import torch
@@ -36,21 +37,28 @@ inseq_model = inseq.load_model(
 )
 
 for i, instance in tqdm(df.iterrows(), total=len(df)):
+    filename = instance["example"]["id"]
+    pickle_out = f"{explanations_save_dir}/{filename}_dic.pickle"
+    if os.path.exists(pickle_out):
+        continue
+
     input_text = instance["input"]
     generated_text = instance["prediction"]
-
-    filename = instance["example"]["id"]
-
     if not generated_text:
         continue
 
     if type(input_text) == dict:
         input_text = input_text["content"]
 
-    attribution_output = inseq_model.attribute(
-        input_text,
-        input_text + generated_text
-    )
+    try:
+        attribution_output = inseq_model.attribute(
+            input_text,
+            input_text + generated_text
+        )
+    except torch.cuda.OutOfMemoryError:
+        print("Out of memory for file: {}".format(filename))
+        torch.cuda.empty_cache()
+        continue
 
     # Accessing the input tokens for modification
     for seq in attribution_output.sequence_attributions:  # Iterate over sequences
@@ -68,6 +76,6 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
     with open(f"{explanations_save_dir}/{filename}_result.html", "w", encoding="utf-8") as f:
         f.write(result)
 
-    with open(f"{explanations_save_dir}/{filename}_dic.pickle", "wb") as f: # Use 'wb' for writing binary data
+    with open(pickle_out, "wb") as f: # Use 'wb' for writing binary data
         pickle.dump(dic, f)  # Save dic using pickle
 

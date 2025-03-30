@@ -1,12 +1,15 @@
 import argparse
 import copy
 import datasets
+import json
 import math
 import numpy as np
 import pandas as pd
+import pickle
 import random
 import shap
 import torch
+from tqdm import tqdm
 
 from evaluation.models import HFModel
 from evaluator import generate_prompt
@@ -34,6 +37,8 @@ if __name__ == "__main__":
                         help="The model to use.")
     parser.add_argument("--output_dir", type=str,
                         default="../../explanations/mm-shap")
+    parser.add_argument("--subset_size", type=int,
+                        default=50)
     args = parser.parse_args()
 
     predictions_file = args.input_file
@@ -58,7 +63,7 @@ if __name__ == "__main__":
 
     # Determine the device to use
     if torch.cuda.is_available():
-        device = "cuda"  # CUDA (NVIDIA GPU)
+        device = "cuda:0"  # CUDA (NVIDIA GPU)
     elif torch.backends.mps.is_available():
         device = "mps"  # MPS (Apple GPU)
     else:
@@ -75,6 +80,25 @@ if __name__ == "__main__":
 
     max_new_tokens = 1024
 
+    def compute_sort_key(parsed_image):
+        raw_image, prompt = parsed_image
+        # Compute prompt length.
+        prompt_length = len(prompt)
+        # Compute pixel count.
+        # If raw_image is a numpy array, use its shape.
+        if isinstance(raw_image, np.ndarray):
+            pixel_count = raw_image.shape[0] * raw_image.shape[1]
+        else:
+            # Assume it's a PIL Image: raw_image.size returns (width, height)
+            pixel_count = raw_image.size[0] * raw_image.size[1]
+        return prompt_length + pixel_count
+
+    # Add a new column for the sort key.
+    merged_df["sort_key"] = merged_df["parsed_image"].apply(compute_sort_key)
+    # Sort the DataFrame in ascending order.
+    merged_df = merged_df.sort_values("sort_key", ascending=True)
+    # Take subsample
+    merged_df = merged_df[:args.subset_size]
 
     def prepare_shap_input(sample):
         """
@@ -96,8 +120,9 @@ if __name__ == "__main__":
             [sample], few_shot_samples, num_fewshot=0, task=task, prompt_template=False)[0]
         return prompt_pair
 
+    full_inputs = {}
 
-    for i, row in merged_df.iterrows():
+    for i, row in tqdm(merged_df.iterrows(), total=len(merged_df), desc="Preparing SHAP inputs"):
         raw_image, prompt = row["parsed_image"]
         #prompt = row["parsed_image"][1]
 
@@ -128,6 +153,8 @@ if __name__ == "__main__":
 
         # Determine the number of text tokens and compute the patching parameters.
         nb_text_tokens = inputs["input_ids"].shape[1]
+        merged_df.loc[i, "nb_text_tokens"] = nb_text_tokens
+
         nb_special_image_prompt_tokens = 0
         p = int(math.ceil(np.sqrt(nb_text_tokens - nb_special_image_prompt_tokens)))
         patch_size = inputs["pixel_values"].shape[-1] // p
@@ -135,7 +162,9 @@ if __name__ == "__main__":
         image_token_ids = torch.tensor(range(-1, -p ** 2 - 1, -1)).unsqueeze(0)
         # Concatenate image token ids with the text input ids.
         X = torch.cat((image_token_ids, inputs["input_ids"]), 1).unsqueeze(1)
+        full_inputs[row["id"]] = X
 
+    for i, row in merged_df.iterrows():
 
         def custom_masker(mask, x):
             """
@@ -231,18 +260,37 @@ if __name__ == "__main__":
                     result[i] = logits[0, output_ids]
             return result
 
-        explainer = shap.Explainer(get_model_prediction, custom_masker, max_evals=2 * X.shape[2]+1)
-        shap_values = explainer(X)[0]
+        print(f"Calculating SHAP values for ID {row['id']}")
+        full_input = full_inputs[row["id"]]
+
+        explainer = shap.Explainer(get_model_prediction, custom_masker, max_evals=2 * full_input.shape[2]+1)
+        shap_values = explainer(full_input)[0]
 
         if len(shap_values.values.shape) == 2:
             shap_values.values = np.expand_dims(shap_values.values, axis=2)
         print("shap_values: ", shap_values)
 
-        mm_score = compute_mm_score(nb_text_tokens, shap_values)
+        mm_score = compute_mm_score(row["nb_text_tokens"], shap_values)
         print("mm_score: ", mm_score)
 
-        merged_df.loc[i, "shap_values"] = shap_values.values.tolist()  # convert numpy array to list
+        def serialize_shap(shap_expl):
+            # Create a dictionary of the relevant attributes
+            # (if an attribute isn’t present, store None)
+            return {
+                "values": shap_expl.values.tolist(),
+                "base_values": shap_expl.base_values.tolist() if hasattr(shap_expl, "base_values") else None,
+                "data": shap_expl.data.tolist() if hasattr(shap_expl, "data") else None,
+            }
+
+        # Inside your loop, after computing shap_values and mm_score:
+        serialized_shap = serialize_shap(shap_values)
+        # Use .loc to update the DataFrame so the values are stored properly.
+        merged_df.loc[i, "shap_values"] = json.dumps(serialized_shap)  # if you want a JSON string
         merged_df.loc[i, "mm_score"] = mm_score
+
+        # After processing all rows, you can save the DataFrame.
+        with open(f"{args.output_dir}/mm-shap_results_{model_name.replace('/', '_')}_id-{row['id']}.pkl", "wb") as f:
+            pickle.dump(df, f)
 
     merged_df.to_json(f"{args.output_dir}/mm-shap_results_{model_name.replace('/', '_')}.json", orient="records")
     merged_df.to_csv(f"{args.output_dir}/mm-shap_results_{model_name.replace('/', '_')}.csv", index=False)

@@ -17,6 +17,7 @@ from evaluator import generate_prompt
 
 def compute_mm_score(text_length, shap_values):
     """ Compute Multimodality Score. (80% textual, 20% visual, possibly: 0% knowledge). """
+    text_length = int(text_length)  # ensure text_length is an integer (type mismatch might be caused by pandas column)
     text_contrib = np.abs(shap_values.values[0, 0, :text_length]).sum()
     image_contrib = np.abs(shap_values.values[0, 0, text_length:]).sum()
     text_score = text_contrib / (text_contrib + image_contrib)
@@ -57,7 +58,6 @@ if __name__ == "__main__":
     else:
         raise ValueError('Invalid dataset: {}'.format(args.source_data_path))
     merged_df["parsed_image"] = parse(merged_df.to_records(), image_path=args.image_path)
-    print(merged_df.head())
 
     random.seed(1520)
 
@@ -99,6 +99,8 @@ if __name__ == "__main__":
     merged_df = merged_df.sort_values("sort_key", ascending=True)
     # Take subsample
     merged_df = merged_df[:args.subset_size]
+
+    print(merged_df.head())
 
     def prepare_shap_input(sample):
         """

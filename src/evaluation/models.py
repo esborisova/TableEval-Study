@@ -209,14 +209,32 @@ class LiteLLM(LanguageModel):
         if not self.use_chat_template:
             prompts = self.generate_inputs(prompts)
 
-        output = self.step(inputs=prompts, **kwargs, **self.model_args)
+        output = self.step(inputs=prompts, **kwargs)
 
         return output, None
 
-    def step(self, inputs, **kwargs):
+    def get_azure_ad_token_from_bearer_token_provider(self):
+        """Azure token via bearer token provider."""
+        from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+
+        token_provider = get_bearer_token_provider(
+            DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+        )()
+
+        return token_provider
+
+    def step(self, inputs, **kwargs):   
+        if self.model_args and "azure_ad_token" in self.model_args and self.model_args["azure_ad_token"] == "bearer_token":
+            # if `azure_ad_token` is part of model args and bearer token is required -> set token accordingly
+            self.model_args["azure_ad_token"] = self.get_azure_ad_token_from_bearer_token_provider()
+
         output = batch_completion(
-            model=self.model_name, messages=inputs, **kwargs, **self.model_args
+            model=self.model_name, 
+            messages=inputs, 
+            **kwargs, 
+            **self.model_args
         )
+
         return [o["choices"][0]["message"]["content"] for o in output]
 
     def generate_inputs(self, raw_input):

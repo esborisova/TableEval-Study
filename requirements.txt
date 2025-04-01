@@ -36,3 +36,6 @@ pyemd
 bert-score>=0.3.13
 # git+https://github.com/google-research/bleurt.git
 git+https://github.com/inseq-team/inseq.git
+accelerate
+litellm
+azure-identity>=1.19.0

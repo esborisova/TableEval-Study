@@ -204,7 +204,7 @@ class Evaluator:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()  # Free unused cached memory
             torch.cuda.ipc_collect()  # Collect internal shared memory (for multiprocessing)
-        if delete_model:
+        if delete_model and self.model and hasattr(self.model, "model"):
             del self.model.model
 
         # Optional: Reset PyTorch’s CUDNN state

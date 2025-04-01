@@ -6,7 +6,7 @@ import ast
 from datetime import datetime
 
 from evaluator import Evaluator
-from models import HFModel
+from models import HFModel, LiteLLM
 from utils import generate_output_folder, dump_files
 
 logger = logging.getLogger(__name__)
@@ -123,6 +123,17 @@ def setup_parser() -> argparse.ArgumentParser:
         help="if running multi modal LLMs. default: False",
     )
     parser.add_argument(
+        "--api_model",
+        action="store_true",
+        help="if running an model that should be used with API calls. default: False",
+    )
+    parser.add_argument(
+        "--api_key",
+        type=str,
+        default="",
+        help="Updates the API key in os.environ[API_NAME]. Uses default API key in environ if not set",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Enable debug level logging",
@@ -149,16 +160,26 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
     logger.info("Running evaluation pipeline")
 
     # load model
-    model = HFModel(
-        args.model_name,
-        ast.literal_eval(args.model_args),
-        batch_size=args.batch_size,
-        random_seed=args.seed,
-        device=args.device,
-        multi_modal=args.multi_modal,
-        special_token_for_image=args.image_special_token,
-        use_chat_template=args.use_chat_template,
-    )
+    if args.api_model:
+        model = LiteLLM(
+            args.model_name,
+            ast.literal_eval(args.model_args),
+            random_seed=args.seed,
+            multi_modal=args.multi_modal,
+            use_chat_template=args.use_chat_template,
+            api_key=args.api_key,
+        )
+    else:
+        model = HFModel(
+            args.model_name,
+            ast.literal_eval(args.model_args),
+            batch_size=args.batch_size,
+            random_seed=args.seed,
+            device=args.device,
+            multi_modal=args.multi_modal,
+            special_token_for_image=args.image_special_token,
+            use_chat_template=args.use_chat_template,
+        )
 
     logger.info(f"Loaded model: {model}")
 
@@ -175,6 +196,7 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         use_chat_template=args.use_chat_template,
         current_datetime=current_datetime,
         output_path=args.output_path,
+        api_call=args.api_model,
         task_path=args.task_path,
         data_base_path=args.data_base_path,
     )

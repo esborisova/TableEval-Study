@@ -1,17 +1,25 @@
+import argparse
 import inseq
+import os
 import pandas as pd
 import pickle
 import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--input_file", type=str, required=True,
+                    help="The input file with predictions to process.")
+parser.add_argument("--model_id", type=str, default="Qwen/Qwen2.5-0.5B",
+                    help="The model to use.")
+parser.add_argument("--output_dir", type=str, default="../../explanations/inseq")
+args = parser.parse_args()
 
-df = pd.read_json("../../predictions/mistralai/results_html_comtqa_fin_Mistral-7B-v0.1_2025-01-25_13_54_51.json")
 
-model_id = "mistralai/Mistral-7B-v0.1" #"Qwen/Qwen2.5-0.5B"
+df = pd.read_json(args.input_file)
+model_id = args.model_id
 tokenizer = AutoTokenizer.from_pretrained(model_id)
-
-explanations_save_dir = "../../explanations"
+explanations_save_dir = args.output_dir
 
 # Determine the device to use
 if torch.cuda.is_available():
@@ -29,18 +37,28 @@ inseq_model = inseq.load_model(
 )
 
 for i, instance in tqdm(df.iterrows(), total=len(df)):
+    filename = instance["example"]["id"]
+    pickle_out = f"{explanations_save_dir}/{filename}_dic.pickle"
+    if os.path.exists(pickle_out):
+        continue
+
     input_text = instance["input"]
     generated_text = instance["prediction"]
-
-    filename = instance["example"]["id"]
-
     if not generated_text:
         continue
 
-    attribution_output = inseq_model.attribute(
-        input_text,
-        input_text + generated_text
-    )
+    if type(input_text) == dict:
+        input_text = input_text["content"]
+
+    try:
+        attribution_output = inseq_model.attribute(
+            input_text,
+            input_text + generated_text
+        )
+    except torch.cuda.OutOfMemoryError:
+        print("Out of memory for file: {}".format(filename))
+        torch.cuda.empty_cache()
+        continue
 
     # Accessing the input tokens for modification
     for seq in attribution_output.sequence_attributions:  # Iterate over sequences
@@ -58,6 +76,6 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
     with open(f"{explanations_save_dir}/{filename}_result.html", "w", encoding="utf-8") as f:
         f.write(result)
 
-    with open(f"{explanations_save_dir}/{filename}_dic.pickle", "wb") as f: # Use 'wb' for writing binary data
+    with open(pickle_out, "wb") as f: # Use 'wb' for writing binary data
         pickle.dump(dic, f)  # Save dic using pickle
 

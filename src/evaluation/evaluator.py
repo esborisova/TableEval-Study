@@ -32,6 +32,7 @@ class Evaluator:
         save_columns: List = [],
         task_path: str = "./",
         data_base_path: None | str = None,
+        api_call: bool = False,
     ) -> None:
         """
         Instantiate and evaluate a model on a list of tasks.
@@ -57,6 +58,7 @@ class Evaluator:
         self.save_columns = save_columns
         self.data_base_path = data_base_path
 
+        self.api_call = api_call
         random.seed(random_seed)
         numpy.random.seed(random_seed)
         torch.manual_seed(random_seed)
@@ -81,7 +83,12 @@ class Evaluator:
             logger.info(f"Samples: {samples}")
 
             inputs = generate_prompt(
-                samples, few_shot_samples, num_fewshot, task, self.use_chat_template
+                samples,
+                few_shot_samples,
+                num_fewshot,
+                task,
+                self.use_chat_template,
+                self.api_call,
             )
             # run all samples
             for i in tqdm(range(0, len(inputs), self.batch_size)):
@@ -192,7 +199,7 @@ class Evaluator:
 
         return save_columns, num_fewshot, logits_folder
 
-    def reset(self, delete_model:bool = False):
+    def reset(self, delete_model: bool = False):
         gc.collect()  # Collect garbage
         if torch.cuda.is_available():
             torch.cuda.empty_cache()  # Free unused cached memory

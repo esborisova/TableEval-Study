@@ -55,6 +55,8 @@ if __name__ == "__main__":
         from evaluation.tasks.ComTQA.fintabnet.image_parser import parse
     elif "ComTQA_data/pubmed" in args.image_path:
         from evaluation.tasks.ComTQA.pubmed.image_parser import parse
+    elif "LogicNLG" in args.image_path:
+        from evaluation.tasks.LogicNLG.image_parser import parse
     else:
         raise ValueError('Invalid dataset: {}'.format(args.source_data_path))
     merged_df["parsed_image"] = parse(merged_df.to_records(), image_path=args.image_path)

@@ -43,18 +43,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     predictions_file = args.input_file
-    data = []
-    with open(predictions_file, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue  # skip empty lines
-            try:
-                data.append(json.loads(line))
-            except json.JSONDecodeError as e:
-                print(f"Skipping bad line: {e}")
-
-    df = pd.DataFrame(data)
+    df = pd.read_json(predictions_file)
     od = datasets.load_from_disk(args.source_data_path)["test"].to_pandas()
 
     # First, extract instance_id from the example dict into a new column

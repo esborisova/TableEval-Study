@@ -391,106 +391,88 @@ def custom_masker(mask, x, num_patches, num_text_tokens, pad_token_id, image_seq
     return masked_X # Return CPU tensor
 
 
-def get_model_prediction(x, model, device, processor,
-                         raw_image,
-                         p, patch_size_h, patch_size_w,
-                         num_patches,
+def get_model_prediction(x, model, device,
+                         original_inputs_cpu, # Full original processor output dict
+                         num_image_placeholders,
                          num_text_tokens,
-                         target_output_ids, pad_token_id,
-                         actual_image_token_ids): # <-- ADD ARGUMENT HERE
-    """ SHAP prediction function: Reconstructs inputs by masking raw image and re-processing. """
+                         target_output_ids, pad_token_id):
+    """ SHAP prediction function: Feeds masked inputs directly to the model. """
     if isinstance(x, np.ndarray): x = torch.from_numpy(x)
     if x.ndim == 1: x = x.unsqueeze(0)
-    x = x.to('cpu') # Ensure x is on CPU
+    x = x.to('cpu') # Process masking logic on CPU
 
     num_permutations = x.shape[0]
     num_output_tokens = target_output_ids.shape[1]
     results = np.zeros((num_permutations, num_output_tokens))
-    target_output_ids_cpu = target_output_ids.cpu()
-    tokenizer = processor.tokenizer # Get tokenizer from processor
 
-    # Pre-calculate decoded image token string IF sequence was found
-    decoded_image_token_string = ""
-    if actual_image_token_ids:
-         try:
-              decoded_image_token_string = tokenizer.decode(actual_image_token_ids, skip_special_tokens=False)
-         except Exception:
-              print("Warning: Failed to decode actual_image_token_ids.")
-              pass # Keep it empty if decoding fails
+    target_output_ids_cpu = target_output_ids.cpu() # Ensure target IDs are on CPU
 
+    # Identify vision-related keys and prepare them on device once if they exist
+    vision_keys = [k for k in original_inputs_cpu.keys() if 'pixel' in k or 'image' in k or 'vision' in k] # Broader search
+    if 'pixel_values' not in vision_keys and 'pixel_values' in original_inputs_cpu:
+        vision_keys.append('pixel_values')
+    # Add potential Idefics keys if known, e.g., 'pixel_attention_mask' ?
+    # For now, rely on general search
+
+    original_vision_inputs_on_device = {}
+    for v_key in vision_keys:
+         if v_key in original_inputs_cpu and original_inputs_cpu[v_key] is not None:
+              if isinstance(original_inputs_cpu[v_key], torch.Tensor):
+                   try:
+                        # Use model's dtype for vision features if different from default float32
+                        target_dtype = model.dtype # Use the loaded model's dtype
+                        original_vision_inputs_on_device[v_key] = original_inputs_cpu[v_key].to(device).to(target_dtype)
+                   except Exception as e_move:
+                        print(f"Warning: Error moving vision key '{v_key}' to device/dtype: {e_move}. Skipping this key.")
+              else:
+                   original_vision_inputs_on_device[v_key] = original_inputs_cpu[v_key] # Keep non-tensors
+
+    # --- Print Vision Inputs (keep this debug) ---
+    # print("\n--- Vision Inputs Going to Model (when image included) ---")
+    # ... (print shapes/types) ...
+    # print("-----------------------------------------------------------\n")
 
     with torch.no_grad():
-        batch_size = 1 # Process individually
+        batch_size = 16 # Process in batches
         for i_start in tqdm(range(0, num_permutations, batch_size), desc="SHAP Permutations", leave=False):
             i_end = min(i_start + batch_size, num_permutations)
             current_batch_indices = range(i_start, i_end)
+            actual_batch_size = len(current_batch_indices)
 
+            # Process items individually to handle conditional vision inputs correctly
             for k, global_idx in enumerate(current_batch_indices):
-                current_x = x[global_idx : global_idx + 1, :]
-
-                # 1. Extract masked text token IDs
-                item_input_ids_masked = current_x[:, num_patches:].to(torch.long)
-
-                # 2. Extract image patch mask
-                image_patch_indicators = current_x[0, :num_patches]
-
-                # 3. Create masked raw image (same as before)
-                try:
-                     masked_raw_image_pil = raw_image.copy()
-                     if masked_raw_image_pil.mode != 'RGB': masked_raw_image_pil = masked_raw_image_pil.convert('RGB')
-                     masked_raw_image_np = np.array(masked_raw_image_pil)
-                     patch_idx = 0
-                     for r in range(p):
-                         for c in range(p):
-                             if image_patch_indicators[patch_idx].item() == 0:
-                                 r_start, r_end = r * patch_size_h, (r + 1) * patch_size_h
-                                 c_start, c_end = c * patch_size_w, (c + 1) * patch_size_w
-                                 masked_raw_image_np[r_start:r_end, c_start:c_end, :] = 0
-                             patch_idx += 1
-                     masked_image_for_processor = Image.fromarray(masked_raw_image_np)
-                except Exception as e_img_mask:
-                     print(f"ERROR Predict (idx {global_idx}): Failed masking raw image: {e_img_mask}")
-                     results[global_idx] = np.zeros(num_output_tokens); continue
-
-                # 4. Decode masked input IDs back to text (handle PAD tokens)
-                valid_token_ids = item_input_ids_masked[0][item_input_ids_masked[0] != pad_token_id].tolist()
-                try:
-                    text_for_processor = tokenizer.decode(valid_token_ids, skip_special_tokens=False)
-                    text_for_processor = text_for_processor.strip()
-
-                    # *** USE actual_image_token_ids TO CLEAN TEXT ***
-                    # Remove potential leading image token string if it was decoded
-                    if decoded_image_token_string and text_for_processor.startswith(decoded_image_token_string):
-                         print(f"DEBUG Predict (idx {global_idx}): Removing decoded image token prefix.") # Optional Debug
-                         text_for_processor = text_for_processor[len(decoded_image_token_string):].lstrip()
-
-                except Exception as e_decode:
-                     print(f"ERROR Predict (idx {global_idx}): Failed decoding masked text tokens: {e_decode}")
-                     results[global_idx] = np.zeros(num_output_tokens); continue
-
-                if not text_for_processor:
-                     print(f"Warning Predict (idx {global_idx}): Decoded text empty after masking. Skipping.")
-                     results[global_idx] = np.zeros(num_output_tokens); continue
+                current_x = x[global_idx : global_idx + 1, :] # Shape (1, 1 + num_text_tokens)
+                # input_ids potentially have PAD tokens where image sequence was
+                item_input_ids = current_x[:, num_image_placeholders:].to(torch.long) # Shape [1, SeqLen]
+                image_placeholder_value = current_x[0, 0].item()
+                include_image = (image_placeholder_value != 0)
+                item_attn_mask = (item_input_ids != pad_token_id).long() # Shape [1, SeqLen]
+                item_input_len = item_input_ids.shape[1]
 
                 try:
-                    # 5. Re-run processor with masked image and cleaned text
-                    # Note: The processor will re-add the <image> token based on the presence of the image argument
-                    # So, we pass the text *without* the <image> token string.
-                    batch = processor(
-                        text=text_for_processor, # Pass cleaned text
-                        images=masked_image_for_processor,
-                        return_tensors="pt",
-                        padding=True,
-                        truncation=True
-                    ).to(device)
+                    # --- REMOVE PROCESSOR CALL ---
+                    # batch = processor( # THIS WAS WRONG
+                    #     text=masked_input_texts,
+                    #     images=current_pixel_values, # Incorrect type
+                    #     return_tensors="pt",
+                    #     padding=True,
+                    #     truncation=True,
+                    # ).to(device)
 
-                    item_input_len = batch['input_ids'].shape[1] # Get length AFTER processing
+                    # --- CORRECT BATCH CONSTRUCTION ---
+                    # Build batch directly for the model using masked IDs and original vision features
+                    batch = {
+                        "input_ids": item_input_ids.to(device),
+                        "attention_mask": item_attn_mask.to(device),
+                    }
+                    if include_image:
+                        for v_key, v_tensor_on_device in original_vision_inputs_on_device.items():
+                            batch[v_key] = v_tensor_on_device # Pass original vision features
+                    # --- END CORRECTION ---
 
-                    # 6. Run model (same as before)
                     outputs = model(**batch, return_dict=True, output_attentions=False, output_hidden_states=False)
 
                     # --- Logit Extraction ---
-                    # ... (safe logit extraction logic) ...
                     item_logits = outputs.logits.detach().cpu()[0] if hasattr(outputs, 'logits') and outputs.logits is not None else None
                     if item_logits is None: raise ValueError("Model output missing logits")
                     target_ids_np = target_output_ids_cpu.numpy()[0]
@@ -507,7 +489,6 @@ def get_model_prediction(x, model, device, processor,
                         results[global_idx, :effective_num_output_tokens] = logits_for_available_tokens
                         if effective_num_output_tokens < num_output_tokens: results[global_idx, effective_num_output_tokens:] = 0.0
                     except IndexError as e_fancy: print(f"ERROR Predict (idx {global_idx}): IndexError: {e_fancy}"); results[global_idx] = np.zeros(num_output_tokens)
-
 
                 except Exception as e_pred_item:
                      print(f"ERROR Predict (Item idx {global_idx}): {e_pred_item}")
@@ -622,24 +603,22 @@ def explain_mllm(prompt, raw_image, model_wrapper: HFModel,
 
     # Masker needs to know patch/text split
     shap_masker = lambda mask, x: custom_masker(mask, x,
-                                                num_patches=num_patches,  # Pass num_patches now
+                                                num_image_placeholders=num_image_placeholders,  # Use placeholder count
                                                 num_text_tokens=num_text_tokens,
                                                 pad_token_id=pad_token_id,
-                                                image_sequence_ids=actual_image_token_ids,
-                                                bos_id=bos_token_id, eos_id=eos_token_id)
+                                                image_sequence_ids=actual_image_token_ids,  # Found sequence
+                                                bos_id=bos_token_id,
+                                                eos_id=eos_token_id)
 
     # Predictor needs info to reconstruct inputs from scratch
-    shap_predictor = lambda x: get_model_prediction(x, model=model, device=device, processor=processor,
-                                                    # Pass processor
-                                                    raw_image=raw_image,  # Pass original PIL image
-                                                    p=p, patch_size_h=patch_size_h, patch_size_w=patch_size_w,
-                                                    # Pass patch info
-                                                    num_patches=num_patches,  # Pass num_patches
+    shap_predictor = lambda x: get_model_prediction(x, model=model, device=device,
+                                                    original_inputs_cpu=original_inputs_cpu,
+                                                    # Pass the original processed inputs
+                                                    num_image_placeholders=num_image_placeholders,
+                                                    # Use placeholder count
                                                     num_text_tokens=num_text_tokens,
-                                                    target_output_ids=target_output_ids,
-                                                    pad_token_id=pad_token_id,
-                                                    actual_image_token_ids=actual_image_token_ids,
-                                                    )
+                                                    target_output_ids=target_output_ids,  # Target for explanation
+                                                    pad_token_id=pad_token_id)
 
     # --- Run SHAP Explainer ---
     if num_evals is None:

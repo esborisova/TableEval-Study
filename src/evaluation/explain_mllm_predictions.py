@@ -603,7 +603,7 @@ def explain_mllm(prompt, raw_image, model_wrapper: HFModel,
 
     # Masker needs to know patch/text split
     shap_masker = lambda mask, x: custom_masker(mask, x,
-                                                num_image_placeholders=num_image_placeholders,  # Use placeholder count
+                                                #num_image_placeholders=num_image_placeholders,  # Use placeholder count
                                                 num_text_tokens=num_text_tokens,
                                                 pad_token_id=pad_token_id,
                                                 image_sequence_ids=actual_image_token_ids,  # Found sequence
@@ -998,6 +998,8 @@ if __name__ == "__main__":
             print("Explaining the explanation task...")
             explanation_prompt_text = create_explanation_prompt(prediction_prompt, original_prediction_text, args.model_family)
 
+            num_image_placeholders = 1  # Use 1 for the new approach
+
             shap_values_expl, mm_score_expl, _, n_text_expl, explained_expl_ids = explain_mllm(
                 prompt=explanation_prompt_text,
                 raw_image=raw_image,
@@ -1027,8 +1029,6 @@ if __name__ == "__main__":
             # If it includes the question "Why did you ... step.\nASSISTANT:", marginalize that.
             # Adjust based on actual prompt structure used for explanation SHAP run
             marg_expl_str = " Why did you generate the previous response? Please explain your reasoning step by step.\nASSISTANT:" # Match create_explanation_prompt
-
-            num_image_placeholders = 1  # Use 1 for the new approach
 
             cosine_dist, dist_correl, mse, var_diff, kl_div, js_div, shap_plot_info = compute_cc_shap(
                 values_prediction=shap_values_pred,

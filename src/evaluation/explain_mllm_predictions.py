@@ -603,6 +603,7 @@ def explain_mllm(prompt, raw_image, model_wrapper: HFModel,
 
     # Masker needs to know patch/text split
     shap_masker = lambda mask, x: custom_masker(mask, x,
+                                                num_patches=num_patches,
                                                 #num_image_placeholders=num_image_placeholders,  # Use placeholder count
                                                 num_text_tokens=num_text_tokens,
                                                 pad_token_id=pad_token_id,

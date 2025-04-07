@@ -18,10 +18,10 @@
 |  ComTQA (PubTables-1M)   |   932              |   932             |    932        |    932        |       932     |   
 |  numericNLG              |   135              |   135             |    135        |    135        |       135     |             
 |  SciGen                  |   1035             |   1035            |    928        |    985        |       961     |
-|  ComTQA (FinTabNet)      |   659              |                   |               |               |               |
+|  ComTQA (FinTabNet)      |   659              |   659             |  659          |    659        |     659       |
 |  LogicNLG                |   184              |  184              |     184       |    184        |       184     |
 |  Logic2Text              |   72               |    72             |     72        |    72         |       72      |
-|  **Total**               |   **3075**         |                   |               |               |               |
+|  **Total**               |   **3017**         |   **3017**        |   **2910**    |   **2967**    |  **2943**     |
 
 **Number of tables per format and dataset.
 

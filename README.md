@@ -1,4 +1,4 @@
-# Data
+# TableEval dataset
 
 | Dataset               | Task               | Source             | Image         | Dict          |  LaTeX        | HTML          | XML           |
 |-----------------------|--------------------|-------------------|---------------|---------------|---------------|---------------|---------------|
@@ -39,4 +39,13 @@
 |                          |   Qwen2.5-14B-Instruct    |    14             |    ❌         |    
 | Mistral-Nemo             |Mistral-Nemo-Instruct-2407 |  12               |    ❌         | 
 
+
+# Repository structure
+```
+    ├── src               
+    │   ├── application    # data preparation scripts       
+    │   ├── evaluation     # evaluation pipeline and code for running intepretability tools
+    │   ├── utils          # functions used for data preparation      
+    └──  explanations      # intepretability analysis results                         
+```
 # Citation

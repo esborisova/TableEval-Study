@@ -2,7 +2,9 @@
 
 # TableEval dataset
 
-TableEval corpus is developed for benchmarking (M)LLMs performance across different table modalities. It contains six data subsets, comprising 3017 tables and 11312 instances in total. Tables are available as PNG images and in four textual formats including HTML, XML, LaTeX, and Dictionary (Dict). The dataset can be dowloaded from Zenodo: 
+TableEval corpus is developed for benchmarking (M)LLMs performance across different table modalities. It contains six data subsets, comprising 3017 tables and 11312 instances in total. Tables are available as PNG images and in four textual formats including HTML, XML, LaTeX, and Dictionary (Dict). 
+
+The dataset can be dowloaded from Zenodo: 
 
 
 | Dataset               | Task               | Source             | Image         | Dict          |  LaTeX        | HTML          | XML           |

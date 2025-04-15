@@ -1,4 +1,9 @@
+# 
+
 # TableEval dataset
+
+TableEval corpus is developed for benchmarking (M)LLMs performance across different table modalities. It contains six data subsets, comprising 3017 tables and 11312 instances in total. Tables are available as PNG images and in four textual formats including HTML, XML, LaTeX, and Dictionary (Dict). The dataset can be dowloaded from Zenodo: 
+
 
 | Dataset               | Task               | Source             | Image         | Dict          |  LaTeX        | HTML          | XML           |
 |-----------------------|--------------------|-------------------|---------------|---------------|---------------|---------------|---------------|
@@ -12,6 +17,7 @@
 **Symbol ⬇️ indicates formats already available in the given corpus, while  📄  and ⚙️  denote formats extracted from the table source files (e. g., article PDF, Wikipedia page) and generated from other formats in this study, respectively.
 
 # Statistics 
+#### Number of tables per format and dataset
 
 | Dataset                  |  Image             | Dict              |  LaTeX        | HTML          | XML           |
 |------------------------- |--------------------|-------------------|---------------|---------------|---------------|
@@ -23,7 +29,19 @@
 |  Logic2Text              |   72               |    72             |     72        |    72         |       72      |
 |  **Total**               |   **3017**         |   **3017**        |   **2910**    |   **2967**    |  **2943**     |
 
-**Number of tables per format and dataset.
+
+#### Total number of instances per format and dataset
+
+| Dataset                  |  Image             | Dict              |  LaTeX        | HTML          | XML           |
+|------------------------- |--------------------|-------------------|---------------|---------------|---------------|
+|  ComTQA (PubTables-1M)   |   6232             |    6232           |    6232       |    6232       |      6232     |   
+|  numericNLG              |   135              |   135             |    135        |    135        |       135     |             
+|  SciGen                  |   1035             |   1035            |    928        |    985        |       961     |
+|  ComTQA (FinTabNet)      |   2838             | 2838              |  2838         |   2838        |      2838     |
+|  LogicNLG                |   917              |  917              |  917          |  917          |       917     |
+|  Logic2Text              |   155              |    155            |     155       |     155       |        155    |
+|  **Total**               |   **11312**        |   **11312**        |   **11205**  |   **11262**   |  **11238**    |
+
 
 # Models
 
@@ -39,6 +57,11 @@
 |                          |   Qwen2.5-14B-Instruct    |    14             |    ❌         |    
 | Mistral-Nemo             |Mistral-Nemo-Instruct-2407 |  12               |    ❌         | 
 
+# Interpretability tools
+
+# Evaluation pipeline
+
+All the instructions on how to run the evaluation are provided in this [README.md](https://github.com/esborisova/Table-Understanding-Evaluation-Study/tree/main/src/evaluation) file.
 
 # Repository structure
 ```
@@ -49,3 +72,4 @@
     └──  explanations      # intepretability analysis results                         
 ```
 # Citation
+TBA

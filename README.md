@@ -25,4 +25,18 @@
 
 **Number of tables per format and dataset.
 
+# Models
+
+| Model                    |   🤗 HF checkpoint        | Size (B)          | Vision        | 
+|------------------------- |---------------------------|-------------------|---------------|
+|  Gemini-2.0-Flash        |   --                      |   --              |    ✅         |   
+|  LLaVa-NeXT              | llama3-llava-next-8b-hf   |   8               |    ✅         |         
+|  Qwen2.5-VL              |  Qwen2.5-VL-3B-Instruct   |  3                |    ✅         |   
+|                          |Qwen2.5-VL-7B-Instruct     |  7                |    ✅         |   
+|  Idefics3                |   Idefics3-8B-Llama3      |  8                |    ✅         |   
+| Llama-3                  |    Llama-3.2-3B-Instruct  |  3                |    ❌         |    
+| Qwen2.5                  |  Qwen2.5-3B-Instruct      |    3              |    ❌         |    
+|                          |   Qwen2.5-14B-Instruct    |    14             |    ❌         |    
+| Mistral-Nemo             |Mistral-Nemo-Instruct-2407 |  12               |    ❌         | 
+
 # Citation

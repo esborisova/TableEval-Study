@@ -4,8 +4,6 @@
 
 TableEval corpus is developed for benchmarking (M)LLMs performance across different table modalities. It contains six data subsets, comprising 3017 tables and 11312 instances in total. Tables are available as PNG images and in four textual formats including HTML, XML, LaTeX, and Dictionary (Dict). 
 
-The dataset can be dowloaded from Zenodo: 
-
 
 | Dataset               | Task               | Source             | Image         | Dict          |  LaTeX        | HTML          | XML           |
 |-----------------------|--------------------|-------------------|---------------|---------------|---------------|---------------|---------------|
@@ -17,6 +15,9 @@ The dataset can be dowloaded from Zenodo:
 | Logic2Text  <img src='https://img.shields.io/badge/ACL-2020-red'> <a href='https://aclanthology.org/2020.findings-emnlp.190/'><img src='https://img.shields.io/badge/PDF-blue'></a> <a href='https://huggingface.co/datasets/kasnerz/logic2text'><img src='https://img.shields.io/badge/Dataset-gold'></a>          |   T2T              |   Wikipedia              |       ⚙️         |      ⬇️         |      ⚙️        |       📄          |      ⚙️         |
 
 **Symbol ⬇️ indicates formats already available in the given corpus, while  📄  and ⚙️  denote formats extracted from the table source files (e. g., article PDF, Wikipedia page) and generated from other formats in this study, respectively.
+
+
+The dataset can be dowloaded from Zenodo: 
 
 # Statistics 
 #### Number of tables per format and dataset

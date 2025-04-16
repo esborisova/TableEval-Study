@@ -46,6 +46,39 @@ Run the evaluation pipeline using the `src/evaluation/run.py` script with custom
 - **`--api_model`**: If set to `True`, the model will be evaluated using API calls via liteLLM. Default: `False`
 - **`--api_key`**: set the API key for the LLM. It is recommended to set the API key manually with `os.environ["GEMINI_API_KEY"] = "your-api-key"`
 
+### Predefined Tasks
+- **ComTQA**:
+   - **Fintabnet**:
+
+      | **Format**   | **Image**     | **Dictonary**     | **HTML**     | **Latex**     | **XML**     | **Dictonary Spacylayout**     | **HTML Spacylayout**     | **Latex Spacylayout**     | **XML Spacylayout**     |
+      |--------------|---------------|-------------------|--------------|---------------|-------------|-------------|---------------|-------------|-------------|
+      | **Taks Name**| `image_comtqa_fin`|`dict_comtqa_fin`  | `html_comtqa_fin`   |  `latex_comtqa_fin`     |`xml_comtqa_fin`     |`dict_spacy_comtqa_fin`     |`html_spacy_comtqa_fin`     |`latex_spacy_comtqa_fin`     |`xml_spacy_comtqa_fin`     |
+   - **Pubmed**:
+
+     | **Format**   | **Image**     | **Dictonary**     | **HTML**     | **Latex**     | **XML**     |
+     |--------------|---------------|-------------------|--------------|---------------|-------------|
+     | **Taks Name**| `image_comtqa_pmc`      |      `dict_comtqa_pmc`     | `html_comtqa_pmc`     |  `latex_comtqa_pmc`     |`xml_comtqa_pmc`     |
+- **Logic2Text**:
+  
+  | **Format**   | **Image**     | **Dictonary**     | **HTML**     | **Latex**     | **XML**     |
+  |--------------|---------------|-------------------|--------------|---------------|-------------|
+  | **Taks Name**| `image_logic2text`      |      `dict_logic2text`     | `html_logic2text`     |  `latex_logic2text`     |`xml_logic2text`     |
+- **LogicNLG**:
+
+  | **Format**   | **Image**     | **Dictonary**     | **HTML**     | **Latex**     | **XML**     |
+  |--------------|---------------|-------------------|--------------|---------------|-------------|
+  | **Taks Name**| `image_logicnlg`      |      `dict_logicnlg`     | `html_logicnlg`     |  `latex_logicnlg`     |`xml_logicnlg`     |
+- **SciGen**:
+
+  | **Format**   | **Image**     | **Dictonary**     | **HTML**     | **Latex**     | **XML**     |
+  |--------------|---------------|-------------------|--------------|---------------|-------------|
+  | **Taks Name**| `image_scigen`      |      `dict_scigen`     | `html_scigen`     |  `latex_scigen`     |`xml_scigen`     |
+- **numericNLG**:
+
+  | **Format**   | **Image**     | **Dictonary**     | **HTML**     | **Latex**     | **XML**     |
+  |--------------|---------------|-------------------|--------------|---------------|-------------|
+  | **Taks Name**| `image_numericnlg`      |      `dict_numericnlg`     | `html_numericnlg`     |  `latex_numericnlg`     |`xml_numericnlg`     |
+
 ### Example Command
 For LLMs:
 
@@ -53,7 +86,7 @@ For LLMs:
 python run.py \
     --model_name EleutherAI/pythia-160m \
     --model_args pretrained=EleutherAI/pythia-160m,dtype=float32 \
-    --tasks task1,task2 \
+    --tasks dict_scigen,dict_numericnlg \
     --num_fewshot 5 \
     --batch_size 16 \
     --device cuda:0 \
@@ -68,7 +101,7 @@ For MLLMs:
 ```bash
 python run.py \
     --model_name google/paligemma-3b-mix-224 \
-    --image_comtqa_fin \
+    --tasks image_logicnlg,image_numericnlg \
     --num_fewshot 0 \
     --batch_size 1 \
     --device cuda:0 \

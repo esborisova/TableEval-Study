@@ -1,13 +1,13 @@
 # Table Understanding Evaluation Pipeline
 
-The **Table Understanding Evaluation Pipeline** provides a comprehensive framework for evaluating multimodal large language models (LLMs) on various table-understanding benchmarks. The pipeline supports custom evaluation tasks and integrates seamlessly with Huggingface models or local LLM implementations. And a README written by ChatGPT :D.
+The Table Understanding Evaluation Pipeline provides a comprehensive framework for evaluating multimodal large language models (LLMs) on various table-understanding benchmarks. The pipeline supports custom evaluation tasks and integrates seamlessly with Huggingface models or local LLM implementations, as well as commercial models via API calls using liteLLM. In the `/task` folder, we provide predefined experiment setups for all published benchmarks. 
 
 ## Features
 - **Supports Multiple Tasks**: Evaluate your model on a wide variety of predefined table-understanding benchmarks.
 - **Flexible Configuration**: Customize model arguments, evaluation tasks, few-shot examples, batch sizes, and device settings.
 - **Extensible**: Add your own tasks with a simple YAML configuration.
 - **Reproducible**: Set seeds for consistent and reproducible evaluations.
-- **Output Logging**: Save model predictions and evaluation scores in JSON format.
+- **Output Logging**: Save model predictions and evaluation scores in JSON format and the logits in HDF5 format.
 
 ---
 
@@ -15,7 +15,7 @@ The **Table Understanding Evaluation Pipeline** provides a comprehensive framewo
 1. Clone the repository:
    ```bash
    git clone https://github.com/esborisova/Table-Understanding-Evaluation-Study.git
-   cd Table-Understanding-Evaluation-Study/src/evaluation
+   cd Table-Understanding-Evaluation-Study
    ```
 2. Install the required dependencies:
    ```bash
@@ -25,22 +25,26 @@ The **Table Understanding Evaluation Pipeline** provides a comprehensive framewo
 ---
 
 ## Usage
-Run the evaluation pipeline using the `run.py` script with customizable arguments:
+Run the evaluation pipeline using the `src/evaluation/run.py` script with customizable arguments:
 
 ### Script Arguments
-- **`--model_name`**: Specify the Huggingface model ID or the local path of the LLM to evaluate (e.g., `gpt-3`, `EleutherAI/pythia-160m`).
-- **`--tasks`**: Comma-separated task names as defined in the YAML files (e.g., `task1,task2`).
+- **`--model_name`**: Specify the Huggingface model ID or the local path of the LLM to evaluate (e.g., `google/gemma-2-2b-it`, `EleutherAI/pythia-160m`).
+- **`--tasks`**: Comma-separated task names as defined in the YAML files (e.g., `task1,task2`, `latex_scigen,html_scigen`).
 - **`--model_args`**: String with dict containing arguments for the model (e.g., '{"load_in_8bit": True, "use_cache": True}').
 - **`--num_fewshot`**: Number of few-shot examples to use for all tasks (default: task-specific value from the YAML file).
 - **`--batch_size`**: Batch size for evaluation.
 - **`--device`**: Device to run the evaluation (e.g., `cuda`, `cuda:0`, `cpu`).
 - **`--output_path`**: Path to save the outputs (default: `./output`).
 - **`--seed`**: Set the seed for reproducibility.
-- **`--log_samples`**: If set to `True`, saves model predictions along with scores.
-- **`--log_logits`**: If set to `True`, saves logits.
-- **`--multi_modal or -mm`**: If set to `True`, runs multi-modal LLMs.
-- **`--image_special_token`**: Changing the special token for the multi_modal LLMs. The default is <image.
-- **`--use_chat_template`**: If set to `True`, runs multi-modal LLMs in chat formatted prompt. 
+- **`--log_samples`**: If set to `True`, saves model predictions along with scores. Default: `False`
+- **`--log_logits`**: If set to `True`, saves logits. Default: `False`
+- **`--use_chat_template`**: If set to `True`, LLMs pre-defined chat template is applied to the prompt. Default: `False`
+#### Multi-Modal LLM Evaluation:
+- **`--multi_modal or -mm`**: If set to `True`, tasks evaluate on multi-modal LLMs. Default: `False`
+- **`--image_special_token`**: Changing the special token for the multi_modal LLMs. The default is <image>. 
+#### API Model Evaluation:
+- **`--api_model`**: If set to `True`, the model will be evaluated using API calls via liteLLM. Default: `False`
+- **`--api_key`**: set the API key for the LLM. It is recommended to set the API key manually with `os.environ["GEMINI_API_KEY"] = "your-api-key"`
 
 ### Example Command
 For LLMs:
@@ -100,6 +104,7 @@ validation_split: <Validation Split Name>  # Optional
 train_split: <Train Split Name>  # Optional
 num_fewshot: <Default Number of Few-Shots>  # Optional
 ignore_columns" <COLUMN NAMES TO DROP NONE FROM> #Optional
+save_columns: <COLUMN NAMES TO SAVE IN THE RESULTS> The rest will be dropped #Optional
 instruction: <Task Instruction>  # e.g., 'Describe the following table' (Optional)
 doc_to_text: <Prompt Template>  # e.g., "{{caption}} {{row_headers}} {{column_headers}}" (Jinja2 format)
 doc_to_target: <Target Column>  # The column containing the reference answer
@@ -124,6 +129,7 @@ test_split: test
 validation_split: validation
 train_split: train
 num_fewshot: 0
+save_columns: instance_id,table_id,image_name
 instruction: ""
 doc_to_text: "{{caption}} {{row_headers}} {{column_headers}}"
 doc_to_target: description
@@ -143,6 +149,7 @@ test_split: test
 validation_split: validation
 train_split: train
 num_fewshot: 0
+save_columns: instance_id,table_id,image_name
 instruction: ""
 doc_to_text: !function image_parser.parse
 doc_to_target: answer
@@ -153,6 +160,13 @@ metric_list:
   - bleu
   - rougeL
   - meteor
+  - bleurt
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - rougeL
+  - rougeLsum
 ```
 
 ---
@@ -184,8 +198,6 @@ This repository supports a variety of metrics for evaluating predictions against
 | `bleu2`      | BLEU-2                    | Evaluates 2-gram overlap (bigrams) in BLEU calculations.                                                                                              |
 | `bleu3`      | BLEU-3                    | Measures 3-gram overlap (trigrams) in BLEU calculations.                                                                                              |
 | `bleu4`      | BLEU-4                    | Focuses on 4-gram overlap (quadgrams) in BLEU calculations, commonly used in translation tasks.                                                       |
-| `bleu5`      | BLEU-5                    | Extends BLEU evaluation to 5-gram overlaps, providing more detailed scoring.                                                                          |
-| `parent`     | PARENT                    | A metric designed for data-to-text generation, evaluating faithfulness and precision against multiple references.                                      |
 |`sacrebleu`   |SacreBLEU                  | Provides hassle-free computation of shareable, comparable, and reproducible BLEU scores. Expects detokenized outputs, applying its own metric-internal preprocessing, and produces the same values as WMT.|
 
 

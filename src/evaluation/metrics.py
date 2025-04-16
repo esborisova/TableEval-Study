@@ -204,13 +204,6 @@ def f1(predictions, references):
     return {"f1": f1_score, "precision": precision, "recall": recall}
 
 
-@register("old_perplexity")
-def old_perplexity(predictions, model_id):
-    perplexity = load("perplexity", module_type="metric")
-    results = perplexity.compute(predictions=predictions, model_id=model_id)
-    return results
-
-
 @register("rouge")
 def rouge(predictions, references, r_type: str = ""):
     """there are multiple rouge scores (rougeS, rougeL, rougeN, rouge1, rouge2,

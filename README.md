@@ -6,6 +6,9 @@ TableEval corpus is developed for benchmarking (M)LLMs performance across differ
 
 **The dataset can be dowloaded from Hugging Face:** TBA 
 
+Temproraly data is available here: https://anonymous.4open.science/r/TableEval-70BB/README.md.
+
+
 ## Dataset overview
 
 

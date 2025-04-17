@@ -1,5 +1,5 @@
 task_name: xml_numericnlg
-path: /netscratch/borisova/TableEval/data/numericNLG/numericnlg_updated_2025-03-07
+path: numericNLG/numericnlg_updated_2025-03-07
 test_split: test
 validation_split: validation
 train_split: test
@@ -11,10 +11,10 @@ doc_to_target: description
 metric_list:
   #- perplexity
   - sacrebleu
-  - moverS
+  # - moverS  # disabled because CUDA required
   - meteor
   - bertS
-  - bleurt
+  # - bleurt
   - bleu1
   - bleu2
   - bleu3

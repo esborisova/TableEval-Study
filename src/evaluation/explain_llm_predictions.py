@@ -30,7 +30,7 @@ parser.add_argument("--model_id", type=str, default="Qwen/Qwen2.5-0.5B",
 parser.add_argument("--attribution_method", type=str, default="saliency")
 parser.add_argument("--source_data_path", type=str,
                     default="../../data/LogicNLG/logicnlg_updated_2025-03-13")
-parser.add_argument("--instance_ids", default=[])
+parser.add_argument("--instance_ids", nargs="+", type=str, default=[])
 parser.add_argument("--output_dir", type=str, default="../../explanations/inseq")
 args = parser.parse_args()
 
@@ -141,7 +141,8 @@ else:
     step_scores = ["probability"]
 
 for i, instance in tqdm(df.iterrows(), total=len(df)):
-    if instance["instance_id"] not in args.instance_ids and args.instance_ids != []:
+    iid = str(instance["instance_id"])
+    if args.instance_ids and iid not in args.instance_ids:
         continue
     print(f"Processing instance ID: {instance['instance_id']}, table ID: {instance['table_id']}")
 

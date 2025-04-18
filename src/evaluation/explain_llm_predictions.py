@@ -2,14 +2,25 @@ import argparse
 import datasets
 import inseq
 import math
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
 import pickle
+import re
 import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer
+
+
+mpl.rcParams['text.usetex']        = False
+mpl.rcParams['mathtext.default']   = 'regular'
+mpl.rcParams['mathtext.fontset']    = 'dejavusans'  # or whatever font you like
+
+_escape_re = re.compile(r'([\\\$\_\%\&\#\{\}])')
+def escape_for_matplotlib(s: str) -> str:
+    return _escape_re.sub(r'\\\1', s)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_file", type=str, required=True,
@@ -103,7 +114,8 @@ df = merged_df
 
 model_id = args.model_id
 tokenizer = AutoTokenizer.from_pretrained(model_id)
-explanations_save_dir = args.output_dir + "/" + model_id.split("/")[-1]
+input_format = args.input_file.split("/")[-1].split("_")[1]
+explanations_save_dir = args.output_dir + "/" + model_id.split("/")[-1] + "_" + input_format
 
 # Determine the device to use
 if torch.cuda.is_available():
@@ -227,6 +239,7 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
         x_frac = 0.0
         y_frac = 1.0 - (text_h_px / fig_h_px)  # start just below top
         for tok, s in zip(toks, norm):
+            tok = escape_for_matplotlib(tok)
             # desired colours
             col = colormap_fn(s)
             face = (col[0], col[1], col[2], alpha_bg)

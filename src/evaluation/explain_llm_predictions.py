@@ -16,6 +16,7 @@ parser.add_argument("--input_file", type=str, required=True,
                     help="The input file with predictions to process.")
 parser.add_argument("--model_id", type=str, default="Qwen/Qwen2.5-0.5B",
                     help="The model to use.")
+parser.add_argument("--attribution_method", type=str, default="saliency")
 parser.add_argument("--source_data_path", type=str,
                     default="../../data/LogicNLG/logicnlg_updated_2025-03-13")
 parser.add_argument("--output_dir", type=str, default="../../explanations/inseq")
@@ -102,7 +103,7 @@ df = merged_df
 
 model_id = args.model_id
 tokenizer = AutoTokenizer.from_pretrained(model_id)
-explanations_save_dir = args.output_dir
+explanations_save_dir = args.output_dir + "/" + model_id.split("/")[-1]
 
 # Determine the device to use
 if torch.cuda.is_available():
@@ -112,15 +113,22 @@ elif torch.backends.mps.is_available():
 else:
     device = "cpu"   # CPU fallback
 
+attribution_method = args.attribution_method
+
 inseq_model = inseq.load_model(
     model=model_id,
     tokenizer=tokenizer,
-    attribution_method="saliency",
+    attribution_method=attribution_method,
     device=device,
 )
 
+if attribution_method in ["attention", "value_zeroing"]:
+    step_scores = []
+else:
+    step_scores = ["probability"]
+
 for i, instance in tqdm(df.iterrows(), total=len(df)):
-    filename = instance["table_id"]
+    filename = f"{instance['table_id']}-id-{instance['instance_id']}"
     pickle_out = f"{explanations_save_dir}/{filename}_dic.pickle"
     if os.path.exists(pickle_out):
         continue
@@ -137,8 +145,9 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
         attribution_output = inseq_model.attribute(
             input_text,
             input_text + generated_text,
+            skip_special_tokens=True,
             clean_special_chars=True,
-            step_scores=["probability"],
+            step_scores=step_scores,
         )
     except torch.cuda.OutOfMemoryError:
         print("Out of memory for file: {}".format(filename))
@@ -160,7 +169,7 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
 
     def plot_heatmap(    d,
             colormap_fn=plt.cm.coolwarm,
-            figsize=(12, 4),
+            figsize=(6, 4),
             fontsize=15,
             alpha_bg=0.4,
             pad=0.2,
@@ -258,11 +267,11 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
         ax.set_xlim(0, 1)  # exactly span [0,1] in x
         ax.set_ylim(0, 1)  # exactly span [0,1] in y
 
-        plt.tight_layout(pad=0.05)
+        plt.tight_layout(pad=0)
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-        plt.show()
-        plt.savefig(f"{explanations_save_dir}/{filename}_{target}_heatmap.pdf",
-                    dpi=300, bbox_inches='tight', pad_inches=0)
+        #plt.show()
+        plt.savefig(f"{explanations_save_dir}/{filename}-{target}-{attribution_method}.pdf",
+                    dpi=300, bbox_inches='tight', pad_inches=0.125)
 
     plot_heatmap(
         aggregated_ctx_attributions,
@@ -272,7 +281,7 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
     plot_heatmap(
         dic[0]["step_scores"],
         colormap_fn=plt.cm.Greens,
-        figsize=(4, 2),
+        figsize=(5, 2),
         gap_frac=0.03,
         target="output"
     )

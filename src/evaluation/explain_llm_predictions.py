@@ -140,6 +140,10 @@ else:
     step_scores = ["probability"]
 
 for i, instance in tqdm(df.iterrows(), total=len(df)):
+    if instance["instance_id"] not in ["49", "70", "101"]:
+        continue
+    print(f"Processing instance ID: {instance['instance_id']}, table ID: {instance['table_id']}")
+
     filename = f"{instance['table_id']}-id-{instance['instance_id']}"
     output_figure_path_proxy = f"{explanations_save_dir}/{filename}-context-{attribution_method}.pdf"
     if os.path.exists(output_figure_path_proxy):
@@ -157,11 +161,24 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
     if type(input_text) == dict:
         input_text = input_text["content"]
 
+    if "meta-llama" in model_id:
+        input_message = [{"role": "user", "content": input_text}]
+        input_text = "<s>" + tokenizer.apply_chat_template(input_message,
+                                                           tokenize=False,
+                                                           add_generation_prompt=True)
+        generated_message = [{"role": "assistant", "content": generated_text}]
+        generated_text = "<s>" + tokenizer.apply_chat_template(generated_message,
+                                                               tokenize=False,
+                                                               add_generation_prompt=True)
+        skip_special_tokens = False
+    else:
+        skip_special_tokens = True
+
     try:
         attribution_output = inseq_model.attribute(
             input_text,
             input_text + generated_text,
-            skip_special_tokens=True,
+            skip_special_tokens=skip_special_tokens,
             clean_special_chars=True,
             step_scores=step_scores,
         )

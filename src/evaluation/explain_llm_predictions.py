@@ -141,6 +141,10 @@ else:
 
 for i, instance in tqdm(df.iterrows(), total=len(df)):
     filename = f"{instance['table_id']}-id-{instance['instance_id']}"
+    output_figure_path_proxy = f"{explanations_save_dir}/{filename}-context-{attribution_method}.pdf"
+    if os.path.exists(output_figure_path_proxy):
+        continue
+
     pickle_out = f"{explanations_save_dir}/{filename}_dic.pickle"
     if os.path.exists(pickle_out):
         continue
@@ -200,6 +204,8 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
         gap_frac:   extra frac of fig width between tokens
         target:     "context" or "output"
         """
+        output_figure_path = f"{explanations_save_dir}/{filename}-{target}-{attribution_method}.pdf"
+
         # 1) extract + normalize
         toks, scs = [], []
         for (_, tok), raw in sorted(d.items(), key=lambda kv: kv[0][0]):
@@ -282,9 +288,7 @@ for i, instance in tqdm(df.iterrows(), total=len(df)):
 
         plt.tight_layout(pad=0)
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-        #plt.show()
-        plt.savefig(f"{explanations_save_dir}/{filename}-{target}-{attribution_method}.pdf",
-                    dpi=300, bbox_inches='tight', pad_inches=0.125)
+        plt.savefig(output_figure_path, dpi=300, bbox_inches='tight', pad_inches=0.125)
 
     plot_heatmap(
         aggregated_ctx_attributions,

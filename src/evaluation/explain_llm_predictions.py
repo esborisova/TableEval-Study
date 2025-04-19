@@ -116,7 +116,12 @@ df = merged_df
 model_id = args.model_id
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 input_format = args.input_file.split("/")[-1].split("_")[1]
-explanations_save_dir = args.output_dir + "/" + model_id.split("/")[-1] + "_" + input_format
+dataset_name = args.input_file.split("/")[-2]
+explanations_save_dir = args.output_dir + "/" + model_id.split("/")[-1] + "_" + input_format + "/" + dataset_name
+
+if not os.path.exists(explanations_save_dir):
+    os.makedirs(explanations_save_dir)
+    print(f"Created directory: {explanations_save_dir}")
 
 # Determine the device to use
 if torch.cuda.is_available():

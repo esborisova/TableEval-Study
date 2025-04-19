@@ -1,23 +1,21 @@
-## Results from interpretability analyses
+## Interpretability analyses
 
 ### Inseq (Text-only)
-Model: [mistralai/Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407)
-* ✅ mistralai/results_dict_comtqa_pmc_Mistral-Nemo-Instruct-2407_2025-03-12_21_15_02.json
-* mistralai/results_dict_logicnlg_Mistral-Nemo-Instruct-2407_2025-03-14_21_19_48.json
+Models tested:
+* [mistralai/Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407)
+* [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct)
 
+Example of generating saliency maps for ComTQA-PMC using Mistral-Nemo and constraining the analysis to two instances (IDs 49 and 101):  
 ```bash
-python ./explain_llm_predictions.py --input_file results.json --model_id mistralai/Mistral-Nemo-Instruct-2407
+python ./src/evaluation/explain_llm_predictions.py \
+  --input_file comtqa_pmc_results.json \
+  --model_id mistralai/Mistral-Nemo-Instruct-2407 \
+  --source_data_path data/ComTQA_data/comtqa_pmc_updated_2025-03-07 \
+  --instance_ids 49 \
+  --instance_ids 101
 ```
-Results are in explanations/inseq/
+Results are in subdirectories of explanations/inseq/
 
-### MM-SHAP (Vision-language)
-Model: [HuggingFaceM4/Idefics3-8B-Llama3](https://huggingface.co/HuggingFaceM4/Idefics3-8B-Llama3)
-* idefics/results_image_comtqa_pmc_Idefics3-8B-Llama3_2025-03-12_20_42_17.json
-* idefics/results_image_logicnlg_Idefics3-8B-Llama3_2025-03-13_14_32_09.json
+---
 
-```bash
-python ./explain_mllm_predictions.py --image_path ../../data/ComTQA_data/pubmed/images/png --input_file results.json --model_id HuggingFaceM4/Idefics3-8B-Llama3
-```
-Remember to replace --image_path with correct path to the chosen dataset!
-
-Results are in explanations/mm-shap/
+MLLM analysis using CC-SHAP currently not supported.

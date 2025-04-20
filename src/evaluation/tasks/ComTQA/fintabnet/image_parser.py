@@ -1,6 +1,6 @@
 from PIL import Image
 
-def parse(samples, image_path=''):
+def parse(samples, image_path='/netscratch/user/TableEval/data/ComTQA_data/comtqa_fin_updated_2025-03-13'):
     inputs = []
     for sample in samples:
         with Image.open(f'{image_path}/{sample["image_name"]}') as image:

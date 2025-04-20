@@ -2,8 +2,8 @@ from PIL import Image
 
 def parse(samples):
     inputs = []
-    other_image_path = '/netscratch/borisova/TableEval/data/SciGen/test-Other/generated_imgs_other'
-    cl_image_path = '/netscratch/borisova/TableEval/data/SciGen/test-CL/generated_imgs_cl_update_2025_01_08'
+    other_image_path = '/netscratch/user/TableEval/data/SciGen/test-Other/generated_imgs_other'
+    cl_image_path = '/netscratch/user/TableEval/data/SciGen/test-CL/generated_imgs_cl_update_2025_01_08'
     
     for sample in samples:
         if sample['subset'].startswith('other'):

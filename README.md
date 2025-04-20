@@ -65,7 +65,9 @@ Data is temporary hosted at: https://anonymous.4open.science/r/TableEval-70BB/RE
 |                          |   Qwen2.5-14B-Instruct    |    14             |    ❌         |    
 | Mistral-Nemo             |Mistral-Nemo-Instruct-2407 |  12               |    ❌         | 
 
-# Interpretability tools
+# Interpretability 
+
+The code, instructions, and examples of silency maps are avaialble [here](https://github.com/esborisova/Table-Understanding-Evaluation-Study/tree/main/explanations).
 
 # Evaluation pipeline
 

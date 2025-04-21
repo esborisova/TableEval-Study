@@ -82,7 +82,7 @@ All the instructions on how to run the evaluation are provided in this [README.m
     │   ├── application    # data preparation scripts       
     │   ├── evaluation     # evaluation pipeline and code for running intepretability tools
     │   ├── utils          # functions used for data preparation      
-    └──  explanations      # code and results for the intepretability analysis                     
+    └──  explanations      # intepretability analysis results                    
 ```
 # Citation
 TBA

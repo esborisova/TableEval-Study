@@ -41,7 +41,7 @@ All instructions on how to run the evaluation are provided in this [README.md](h
 ```
 # Citation
 ```bibtex
-@inproceedings{borisova-ekaterina-2024,
+@inproceedings{borisova-ekaterina-2025,
     title = "Table Understanding and (Multimodal) LLMs: A Cross-Domain Case Study on Scientific vs. Non-Scientific Data",
     author = "Borisova, Ekaterina and Barth, Fabio and Feldhus, Nils and
               Ahmad, Raia Abu and Ostendorff, Malte and Ortiz Suarez, Pedro and

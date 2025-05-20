@@ -3,56 +3,13 @@ This repository contains code for the paper *"Table Understanding and (Multimoda
 
 We investigate the effectiveness of both text-based and multimodal LLMs on table understanding tasks through a cross-domain and cross-modality evaluation. Specifically, we compare their performance on tables from scientific vs. non-scientific contexts and examine their robustness on tables represented as images vs. text. Additionally, we conduct an interpretability analysis to measure context usage and input relevance. We also introduce the **TableEval** benchmark, comprising 3017 tables from scholarly publications, Wikipedia, and financial reports, where each table is provided in five different formats: Image, Dictionary, HTML, XML, and LaTeX. 
 
+For more details, please, refer to the paper.
+
 # TableEval dataset
 
 TableEval corpus is developed for benchmarking (M)LLMs performance across different table modalities. It contains six data subsets, comprising 3017 tables and 11312 instances in total. Tables are available as PNG images and in four textual formats including HTML, XML, LaTeX, and Dictionary (Dict). All task annotations are taken from the source datasets. 
 
-**The dataset can be dowloaded from Hugging Face:** TBA 
-
-Data is temporary hosted at: https://anonymous.4open.science/r/TableEval-70BB/README.md.
-
-
-## Dataset overview
-
-
-| Dataset               | Task               | Source             | Image         | Dict          |  LaTeX        | HTML          | XML           |
-|-----------------------|--------------------|-------------------|---------------|---------------|---------------|---------------|---------------|
-| ComTQA (PubTables-1M) <img src='https://img.shields.io/badge/arXiv-2024-red'> <a href='https://arxiv.org/abs/2406.01326'><img src='https://img.shields.io/badge/PDF-blue'></a> <a href='https://huggingface.co/datasets/ByteDance/ComTQA'><img src='https://img.shields.io/badge/Dataset-gold'> |   VQA              |   PubMed Central                     |       ⬇️        |          ⚙️     |    ⚙️           |    ⚙️           |     📄           |
-| numericNLG <img src='https://img.shields.io/badge/ACL-2021-red'> <a href='https://aclanthology.org/2021.acl-long.115.pdf'><img src='https://img.shields.io/badge/PDF-blue'></a> <a href='https://huggingface.co/datasets/kasnerz/numericnlg?row=0'><img src='https://img.shields.io/badge/Dataset-gold'></a>          |   T2T              |   ACL Anthology     |    📄            |       ⬇️         |        ⚙️        |     ⬇️          |       ⚙️         |
-| SciGen <img src='https://img.shields.io/badge/arXiv-2021-red'> <a href='https://arxiv.org/abs/2104.08296'><img src='https://img.shields.io/badge/PDF-blue'></a> <a href='https://github.com/UKPLab/SciGen/tree/main'><img src='https://img.shields.io/badge/Dataset-gold'></a>               |   T2T              |   arXiv and ACL Anthology|    📄          |    ⬇️            |       📄        |      ⚙️         |        ⚙️       |
-| ComTQA (FinTabNet)  <img src='https://img.shields.io/badge/arXiv-2024-red'> <a href='https://arxiv.org/abs/2406.01326'><img src='https://img.shields.io/badge/PDF-blue'></a> <a href='https://huggingface.co/datasets/ByteDance/ComTQA'><img src='https://img.shields.io/badge/Dataset-gold'>  |   VQA              |   Earnings reports of S&P 500 companies         | 📄              |      ⚙️          |     ⚙️          |       ⚙️        |      ⚙️         |
-| LogicNLG <img src='https://img.shields.io/badge/ACL-2020-red'> <a href='https://aclanthology.org/2020.acl-main.708/'><img src='https://img.shields.io/badge/PDF-blue'></a> <a href='https://huggingface.co/datasets/kasnerz/logicnlg'><img src='https://img.shields.io/badge/Dataset-gold'></a>             |   T2T              |   Wikipedia            |  ⚙️              |         ⬇️      |       ⚙️       |      📄           |     ⚙️          |
-| Logic2Text  <img src='https://img.shields.io/badge/ACL-2020-red'> <a href='https://aclanthology.org/2020.findings-emnlp.190/'><img src='https://img.shields.io/badge/PDF-blue'></a> <a href='https://huggingface.co/datasets/kasnerz/logic2text'><img src='https://img.shields.io/badge/Dataset-gold'></a>          |   T2T              |   Wikipedia              |       ⚙️         |      ⬇️         |      ⚙️        |       📄          |      ⚙️         |
-
-**Symbol ⬇️ indicates formats already available in the given corpus, while  📄  and ⚙️  denote formats extracted from the table source files (e. g., article PDF, Wikipedia page) and generated from other formats in this study, respectively.
-
-
-## Dataset statistics 
-#### Number of tables per format and dataset
-
-| Dataset                  |  Image             | Dict              |  LaTeX        | HTML          | XML           |
-|------------------------- |--------------------|-------------------|---------------|---------------|---------------|
-|  ComTQA (PubTables-1M)   |   932              |   932             |    932        |    932        |       932     |   
-|  numericNLG              |   135              |   135             |    135        |    135        |       135     |             
-|  SciGen                  |   1035             |   1035            |    928        |    985        |       961     |
-|  ComTQA (FinTabNet)      |   659              |   659             |  659          |    659        |     659       |
-|  LogicNLG                |   184              |  184              |     184       |    184        |       184     |
-|  Logic2Text              |   72               |    72             |     72        |    72         |       72      |
-|  **Total**               |   **3017**         |   **3017**        |   **2910**    |   **2967**    |  **2943**     |
-
-
-#### Total number of instances per format and dataset
-
-| Dataset                  |  Image             | Dict              |  LaTeX        | HTML          | XML           |
-|------------------------- |--------------------|-------------------|---------------|---------------|---------------|
-|  ComTQA (PubTables-1M)   |   6232             |    6232           |    6232       |    6232       |      6232     |   
-|  numericNLG              |   135              |   135             |    135        |    135        |       135     |             
-|  SciGen                  |   1035             |   1035            |    928        |    985        |       961     |
-|  ComTQA (FinTabNet)      |   2838             | 2838              |  2838         |   2838        |      2838     |
-|  LogicNLG                |   917              |  917              |  917          |  917          |       917     |
-|  Logic2Text              |   155              |    155            |     155       |     155       |        155    |
-|  **Total**               |   **11312**        |   **11312**        |   **11205**  |   **11262**   |  **11238**    |
-
+**The dataset can be dowloaded from Hugging Face 🤗:** https://huggingface.co/datasets/katebor/TableEval
 
 # Models
 
@@ -74,7 +31,7 @@ The code, instructions, and examples of silency maps are avaialble [here](https:
 
 # Evaluation pipeline
 
-All the instructions on how to run the evaluation are provided in this [README.md](https://github.com/esborisova/Table-Understanding-Evaluation-Study/tree/main/src/evaluation) file.
+All instructions on how to run the evaluation are provided in this [README.md](https://github.com/esborisova/Table-Understanding-Evaluation-Study/tree/main/src/evaluation) file.
 
 # Repository structure
 ```
@@ -85,4 +42,16 @@ All the instructions on how to run the evaluation are provided in this [README.m
     └──  explanations      # intepretability analysis results                    
 ```
 # Citation
-TBA
+```
+@inproceedings{borisova-ekaterina-2024,
+    title = "Table Understanding and (Multimodal) LLMs: A Cross-Domain Case Study on Scientific vs. Non-Scientific Data",
+    author = "Borisova, Ekaterina and Barth, Fabio and Feldhus, Nils and
+              Ahmad, Raia Abu and Ostendorff, Malte and Ortiz Suarez, Pedro and
+              Rehm, Georg and Möller, Sebastian",
+    booktitle = "Proceedings of the 4th Workshop on Table Representation Learning (TRL)",
+    year = "2025",
+    address = "Vienna, Austria",
+    publisher = "Association for Computational Linguistics",
+    comment = "accepted" 
+}
+```

@@ -42,7 +42,7 @@ All instructions on how to run the evaluation are provided in this [README.md](h
     └──  explanations      # intepretability analysis results                    
 ```
 # Citation
-```
+```bibtex
 @inproceedings{borisova-ekaterina-2024,
     title = "Table Understanding and (Multimodal) LLMs: A Cross-Domain Case Study on Scientific vs. Non-Scientific Data",
     author = "Borisova, Ekaterina and Barth, Fabio and Feldhus, Nils and

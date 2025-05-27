@@ -1,0 +1,29 @@
+task_name: latex_comtqa_pmc
+path: /netscratch/usera/TableEval/data/ComTQA_data/comtqa_pmc_updated_2025-03-07
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+save_columns: instance_id,id,image_name
+instruction: ""
+doc_to_text: 'Refer to the provided table and answer the question. Question: {{question}}. Table: {{table_latex}}.' 
+doc_to_target: answer
+metric_list:
+  #- perplexity
+  - accuracy
+  - f1
+  - sacrebleu
+  - moverS
+  - meteor
+  - bertS
+  - bleurt
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - rougeL
+  - rougeLsum
+  - rouge1
+  - rouge2
+  - rouge3
+  - rouge4

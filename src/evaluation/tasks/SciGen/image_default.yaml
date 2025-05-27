@@ -1,0 +1,28 @@
+task_name: image_scigen
+path: /netscratch/user/TableEval/data/SciGen/scigen_updated_2025-03-07
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+save_columns: instance_id,image_id,paper_id
+instruction: ""
+doc_to_text: !function image_parser.parse
+doc_to_target: text_cleaned
+multi_modal_data: True
+metric_list:
+  #- perplexity
+  - sacrebleu
+  - moverS
+  - meteor
+  - bertS
+  - bleurt
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - rougeL
+  - rougeLsum
+  - rouge1
+  - rouge2
+  - rouge3
+  - rouge4

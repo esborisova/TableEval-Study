@@ -1,0 +1,27 @@
+task_name: xml_logic2text
+path: /netscratch/user/TableEval/data/Logic2Text/logic2text_updated_2025-03-13
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+save_columns: instance_id,image_name,filename,table_id,topic,title
+instruction: ""
+doc_to_text: 'Generate a one sentence statement based on the table and logical form. Logical form: {{logic_str}}. Table title: {{title}}. Table: {{table_xml}}.'
+doc_to_target: sent
+metric_list:
+  #- perplexity
+  - sacrebleu
+  - moverS
+  - meteor
+  - bertS
+  - bleurt
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - rougeL
+  - rougeLsum
+  - rouge1
+  - rouge2
+  - rouge3
+  - rouge4

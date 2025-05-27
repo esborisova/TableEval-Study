@@ -1,0 +1,30 @@
+task_name: image_comtqa_fin
+path: /netscratch/user/TableEval/data/ComTQA_data/comtqa_fin_updated_2025-03-13
+test_split: test
+validation_split: validation
+train_split: test
+num_fewshot: 0
+save_columns: instance_id,table_id,image_name
+instruction: ""
+doc_to_text: !function image_parser.parse
+doc_to_target: answer
+multi_modal_data: True
+metric_list:
+  #- perplexity
+  - accuracy
+  - f1
+  - sacrebleu
+  - moverS
+  - meteor
+  - bertS
+  - bleurt
+  - bleu1
+  - bleu2
+  - bleu3
+  - bleu4
+  - rougeL
+  - rougeLsum
+  - rouge1
+  - rouge2
+  - rouge3
+  - rouge4

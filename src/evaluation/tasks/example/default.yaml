@@ -1,0 +1,14 @@
+task_name: <Task Name>
+path: <Path_to_data_or_HF_ID>
+instruction: "instruction head (optional)"
+doc_to_target: <Target_Row>
+doc_to_text: "Prompt template in Jinja2 format"
+test_split: <Name_of_Test_split> 
+validation_split: <Name_of_Val_split> 
+train_split: <Name_of_Train_split> (optional)
+num_fewshot: <Default Number of Few-Shots>  (optional)
+ignore_columns: <COLUMN NAMES TO DROP NONE FROM> (optional)
+save_columns: <COLUMN NAMES TO SAVE IN THE RESULTS> (optional)
+multi_modal_data: <Boolean> (optional)
+metric_list:
+  - metric_name (optional)

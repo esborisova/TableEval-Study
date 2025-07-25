@@ -41,15 +41,29 @@ All instructions on how to run the evaluation are provided in this [README.md](h
 ```
 # Citation
 ```bibtex
-@inproceedings{borisova-ekaterina-2025,
-    title = "Table Understanding and (Multimodal) LLMs: A Cross-Domain Case Study on Scientific vs. Non-Scientific Data",
-    author = "Borisova, Ekaterina and Barth, Fabio and Feldhus, Nils and
-              Ahmad, Raia Abu and Ostendorff, Malte and Ortiz Suarez, Pedro and
-              Rehm, Georg and Möller, Sebastian",
-    booktitle = "Proceedings of the 4th Workshop on Table Representation Learning (TRL)",
+@inproceedings{borisova-etal-2025-table,
+    title = "Table Understanding and (Multimodal) {LLM}s: A Cross-Domain Case Study on Scientific vs. Non-Scientific Data",
+    author = {Borisova, Ekaterina  and
+      Barth, Fabio  and
+      Feldhus, Nils  and
+      Abu Ahmad, Raia  and
+      Ostendorff, Malte  and
+      Ortiz Suarez, Pedro  and
+      Rehm, Georg  and
+      M{\"o}ller, Sebastian},
+    editor = "Chang, Shuaichen  and
+      Hulsebos, Madelon  and
+      Liu, Qian  and
+      Chen, Wenhu  and
+      Sun, Huan",
+    booktitle = "Proceedings of the 4th Table Representation Learning Workshop",
+    month = jul,
     year = "2025",
     address = "Vienna, Austria",
     publisher = "Association for Computational Linguistics",
-    comment = "accepted" 
+    url = "https://aclanthology.org/2025.trl-1.10/",
+    pages = "109--142",
+    ISBN = "979-8-89176-268-8",
+    abstract = "Tables are among the most widely used tools for representing structured data in research, business, medicine, and education. Although LLMs demonstrate strong performance in downstream tasks, their efficiency in processing tabular data remains underexplored. In this paper, we investigate the effectiveness of both text-based and multimodal LLMs on table understanding tasks through a cross-domain and cross-modality evaluation. Specifically, we compare their performance on tables from scientific vs. non-scientific contexts and examine their robustness on tables represented as images vs. text. Additionally, we conduct an interpretability analysis to measure context usage and input relevance. We also introduce the TableEval benchmark, comprising 3017 tables from scholarly publications, Wikipedia, and financial reports, where each table is provided in five different formats: Image, Dictionary, HTML, XML, and LaTeX. Our findings indicate that while LLMs maintain robustness across table modalities, they face significant challenges when processing scientific tables."
 }
 ```

@@ -1,5 +1,5 @@
 # Introduction
-This repository contains code for the paper *"Table Understanding and (Multimodal) LLMs: A Cross-Domain Case Study on Scientific vs. Non-Scientific Data"*.
+This repository contains code for the paper [Table Understanding and (Multimodal) LLMs: A Cross-Domain Case Study on Scientific vs. Non-Scientific Data](https://aclanthology.org/2025.trl-1.10/).
 
 We investigate the effectiveness of both *text-based* and *multimodal* LLMs on table understanding tasks through a cross-domain and cross-modality evaluation. Specifically, we compare their performance on tables from *scientific* vs. *non-scientific* contexts and examine their robustness on tables represented as *images* vs. *text*. Additionally, we conduct an interpretability analysis to measure context usage and input relevance. We also introduce the **TableEval** benchmark, comprising **3017** tables from scholarly publications, Wikipedia, and financial reports, where each table is provided in five different formats: **Image**, **Dictionary**, **HTML**, **XML**, and **LaTeX**. For more details, please, refer to the paper.
 
